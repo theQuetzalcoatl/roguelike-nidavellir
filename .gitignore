@@ -1,0 +1,25 @@
+# This is gitignore file
+
+##############
+## binaries 
+##############
+ 
+*.a
+*.bin
+*.out
+*.elf
+*.exe
+*.o
+
+################
+## temp files
+################
+*.s
+*.i
+
+##################
+## Miscellaneous 
+##################
+ 
+*.vscode
+*ANSI Control Functions*
