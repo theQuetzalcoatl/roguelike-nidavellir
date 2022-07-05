@@ -2,6 +2,7 @@
 #include "termios.h"
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 #pragma GCC diagnostic ignored "-Wunused-result"
@@ -36,7 +37,16 @@ void term_setup(void)
     //s.c_cc[VTIME] = 0; s.c_cc[VMIN] = 1; IMPLICIT 
     printf("\x1B[?25l"); /* make cursor invisible */
 
-    system("resize -s " TERM_ROWS " "  TERM_COLS " > /dev/null");
+    char resize_command[200] = "resize -s ";
+    char tmp[10] = {0};
+    sprintf(tmp, "%d", TERM_ROWS_NUM);
+    strcat(resize_command, tmp);
+    strcat(resize_command, " ");
+    sprintf(tmp, "%d", TERM_COLS_NUM);
+    strcat(resize_command, tmp);
+    strcat(resize_command, " > /dev/null");
+    system(resize_command);
+    
     system("temp_PS1=${PS1}");
     system("PS1=\"\""); /* deleting prompt */
     system("clear");
@@ -48,7 +58,7 @@ void term_setup(void)
 void term_restore_original(void)
 {
     tcsetattr(1, TCSANOW, &original_term_settings);
-    term_move_cursor(1,1);
+    term_move_cursor(0,0);
     system("PS1=$temp_PS1");
     system("clear");
     printf("\x1B[?25h"); /* make cursor visible */
@@ -56,7 +66,7 @@ void term_restore_original(void)
 
 void term_move_cursor(uint16_t x, uint16_t y)
 {
-    printf("\x1B[%u;%uH", y, x);
+    printf("\x1B[%u;%uH", y + 1, x + 1); /* terminal is 1 based, not 0 */
     win.cursor.x = x;
     win.cursor.y = y;
 }

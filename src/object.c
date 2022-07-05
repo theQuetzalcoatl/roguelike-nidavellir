@@ -16,4 +16,3 @@ void obj_make_invisible(object_t * const obj)
 {
     obj->is_visible = false;
 }
-

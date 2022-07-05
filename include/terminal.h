@@ -17,9 +17,6 @@ extern void term_putchar(char c);
 extern char term_getchar(void);
 extern char term_getchar_xy(uint16_t x, uint16_t y);
 
-
-#define TERM_ROWS "70"
-#define TERM_COLS "180"
 #define TERM_ROWS_NUM (70u)
 #define TERM_COLS_NUM (180u) 
 
