@@ -9,7 +9,7 @@ function remove_binaries()
 function main()
 {
     local warnings="-Wall -Wextra";
-    local optimization="-O2";
+    local optimization="-O0";
     local debug_lvl="-g2";
     local game_name="nidavellir";
 

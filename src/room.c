@@ -6,8 +6,6 @@
 #define MAX_ROOM_HEIGHT (15u)
 #define MAX_ROOM_WIDTH MAX_ROOM_HEIGHT
 
-#define CALC_RAND(max, min) (rand()%(max - min + 1) + min) 
-
 /****************************
  ** LOCAL FUNCTION DECS 
  ****************************/
@@ -83,8 +81,9 @@ CASE_0:
                 if(!upper_wall){
                     room->doors[door_num].obj.pos.y = room->obj.pos.y;
                     room->doors[door_num].obj.pos.x = rand()%(room->width-2) + 1 + room->obj.pos.x;
-                    room->doors[door_num].is_closed = false;
+                    room->doors[door_num].is_locked = false;
                     room->doors[door_num].obj.is_visible = false;
+                    room->doors[door_num].side = up_side;
 
                     upper_wall = 1;
                     ++door_num;
@@ -96,8 +95,9 @@ CASE_1:
                 if(!lower_wall){
                     room->doors[door_num].obj.pos.y = room->obj.pos.y + room->height - 1;
                     room->doors[door_num].obj.pos.x = rand()%(room->width-2) + 1 + room->obj.pos.x;
-                    room->doors[door_num].is_closed = false;
+                    room->doors[door_num].is_locked = false;
                     room->doors[door_num].obj.is_visible = false;
+                    room->doors[door_num].side = down_side;
 
                     lower_wall = 1;
                     ++door_num;
@@ -109,8 +109,9 @@ CASE_2:
                 if(!left_wall){
                     room->doors[door_num].obj.pos.x = room->obj.pos.x;
                     room->doors[door_num].obj.pos.y = rand()%(room->height-2) + 1 + room->obj.pos.y;
-                    room->doors[door_num].is_closed = false;
+                    room->doors[door_num].is_locked = false;
                     room->doors[door_num].obj.is_visible = false;
+                    room->doors[door_num].side = left_side;
 
                     left_wall = 1;
                     ++door_num;
@@ -122,8 +123,9 @@ CASE_3:
                 if(!right_wall){
                     room->doors[door_num].obj.pos.x = room->obj.pos.x + room->width - 1;
                     room->doors[door_num].obj.pos.y = rand()%(room->height-2) + 1 + room->obj.pos.y;
-                    room->doors[door_num].is_closed = false;
+                    room->doors[door_num].is_locked = false;
                     room->doors[door_num].obj.is_visible = false;
+                    room->doors[door_num].side = right_side;
 
                     right_wall = 1;
                     ++door_num;
