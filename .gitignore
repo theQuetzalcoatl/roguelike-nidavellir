@@ -23,3 +23,9 @@
  
 *.vscode
 *ANSI Control Functions*
+*.png
+*.jpg
+*.jpeg
+
+# the executable itself
+nidavellir
