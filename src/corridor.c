@@ -16,11 +16,11 @@ typedef enum
 
 void corridor_create(door_t *d1, door_t *d2)
 {
-    term_move_cursor(d1->obj.pos.x, d1->obj.pos.y);
+   /* term_move_cursor(d1->obj.pos.x, d1->obj.pos.y);
     term_putchar(ROOM_DOOR);
 
     term_move_cursor(d2->obj.pos.x, d2->obj.pos.y);
-    term_putchar(ROOM_DOOR);
+    term_putchar(ROOM_DOOR);*/
     int16_t x = d1->obj.pos.x - d2->obj.pos.x; 
     int16_t y = d1->obj.pos.y - d2->obj.pos.y;
     quarter_e quarter = upper_right;

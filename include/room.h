@@ -32,6 +32,7 @@ typedef struct room_t
     int16_t height; /* [chars] */
     door_t doors[MAX_DOOR_NUM];
     uint8_t door_num;
+    struct room_t *next;
 }room_t;
 
 extern void room_draw(room_t r);
