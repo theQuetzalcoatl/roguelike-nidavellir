@@ -1,2 +1,2 @@
 # roguelike-nidavellir
-This is suppose to be a rogue-like game with an emphasis on viking stuff
+This is supposed to be a rogue-like game with an emphasis on viking stuff
