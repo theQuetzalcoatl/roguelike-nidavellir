@@ -35,7 +35,7 @@ typedef struct room_t
     struct room_t *next;
 }room_t;
 
-extern void room_draw(room_t r);
+extern void room_draw(const room_t r);
 extern room_t room_create(void);
 
 #define VERTICAL_WALL   '|'

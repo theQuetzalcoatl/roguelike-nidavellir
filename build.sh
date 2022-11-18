@@ -1,11 +1,5 @@
 #!/bin/bash
 
-function remove_binaries()
-{
-    local tmp=$(find . -name "*.o");
-    rm ${tmp};
-}
-
 function main()
 {
     local warnings="-Wall -Wextra";
@@ -14,9 +8,8 @@ function main()
     local game_name="nidavellir";
 
     local c_files=$(find . -name "*.c");
-    local h_files=$(find . -name "*.h");
 
-    remove_binaries;
+    find . -type f -name "*.o" -exec rm {} \;
 
     for c_file in ${c_files}; do
         gcc ${warnings} ${optimization} ${debug_lvl} -c ${c_file};

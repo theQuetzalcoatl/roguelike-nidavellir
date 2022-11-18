@@ -28,7 +28,7 @@ int main(void)
     creature_t player = {.obj.pos.x=r.obj.pos.x + 1, .obj.pos.y=r.obj.pos.y + 1, .stands_on='.', .symbol='@'};
     creature_move_abs(&player, (pos_t){.x=player.obj.pos.x, .y=player.obj.pos.y});
 
-    creature_t player = {.obj.pos.x=10, .obj.pos.y=10, .stands_on='.', .symbol='@'};
+    //creature_t player = {.obj.pos.x=10, .obj.pos.y=10, .stands_on='.', .symbol='@'};
 
     door_t start_d1 = {.obj.pos.x = TERM_COLS_NUM/2-2, .obj.pos.y = TERM_ROWS_NUM/2, .side = up_side};
     door_t end_d1 = {.obj.pos.x = TERM_COLS_NUM/2 - 20, .obj.pos.y = TERM_ROWS_NUM/2 - 20, .side = down_side};

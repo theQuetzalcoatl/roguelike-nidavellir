@@ -10,6 +10,7 @@
 *.elf
 *.exe
 *.o
+nidavellir
 
 ################
 ## temp files
