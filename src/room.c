@@ -18,8 +18,8 @@ room_t room_create(void)
     obj_make_invisible(&r);
     r.width = CALC_RAND(MAX_ROOM_WIDTH, MIN_ROOM_WIDTH);
 
-    if(r.obj.pos.x + r.width >= TERM_COLS_NUM) r.obj.pos.x = TERM_COLS_NUM - r.width - 10;
-    if(r.obj.pos.y + r.height >= TERM_ROWS_NUM) r.obj.pos.y = TERM_ROWS_NUM - r.height - 10;
+    if(r.obj.pos.x + r.width >= (signed int)TERM_COLS_NUM) r.obj.pos.x = TERM_COLS_NUM - r.width - 10;
+    if(r.obj.pos.y + r.height >= (signed int)TERM_ROWS_NUM) r.obj.pos.y = TERM_ROWS_NUM - r.height - 10;
 
     add_doors(&r);
 
@@ -62,7 +62,7 @@ static void add_doors(room_t * const room)
     room->door_num = CALC_RAND(MAX_DOOR_NUM, MIN_DOOR_NUM);
 
     for(uint8_t door_num = 0; door_num < room->door_num; ++door_num){
-        uint8_t to_be_doored_wall = rand()%4;
+        uint8_t to_be_doored_wall = rand()%4; // a room has 4 sides
         switch(to_be_doored_wall)
         {
             case up_side:
