@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include "../include/terminal.h"
-#include "../include/creatures.h"
-
+#include "../include/creature.h"
 
 
 void creature_move_abs(creature_t *creature, pos_t pos)
@@ -14,6 +13,7 @@ void creature_move_abs(creature_t *creature, pos_t pos)
     creature->obj.pos.x = pos.x;
     creature->obj.pos.y = pos.y;
 }
+
 
 void creature_move_rel(creature_t *creature, pos_t rel_pos)
 {

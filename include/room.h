@@ -2,8 +2,8 @@
 #define _ROOM_
 
 #include <stdint.h>
-#include "../include/terminal.h"
-#include "../include/object.h"
+#include "terminal.h"
+#include "object.h"
 #include <stdlib.h>
 
 #define MAX_DOOR_NUM (4u)
@@ -32,17 +32,17 @@ typedef struct room_t
     int16_t height; /* [chars] */
     door_t doors[MAX_DOOR_NUM];
     uint8_t door_num;
-    struct room_t *next;
 }room_t;
 
 extern void room_draw(const room_t r);
-extern room_t room_create(void);
+extern uint8_t room_get_num_of_rooms(void);
+extern room_t *room_create_rooms(void);
 
 #define VERTICAL_WALL   '|'
 #define HORIZONTAL_WALL '='
 #define ROOM_FLOOR      '.'
 #define ROOM_DOOR       '/'
 
-#define CALC_RAND(max, min) (rand()%(max - min + 1) + min) 
+#define CALC_RAND(max, min) (rand()%(max - min + 1) + min) // [max:min]
 
 #endif /* _ROOM_ */

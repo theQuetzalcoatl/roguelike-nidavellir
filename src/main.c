@@ -2,16 +2,16 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include "../include/terminal.h"
-#include "../include/cutscenes.h"
-#include "../include/creatures.h"
-#include "../include/object.h"
-#include "../include/room.h"
-#include "../include/corridor.h"
-#include "../include/input.h"
+#include "/home/dani/sajat/Villamosmernok/Sajat projektek/Roguelike/include/terminal.h"
+#include "cutscenes.h"
+#include "creature.h"
+#include "object.h"
+#include "room.h"
+#include "corridor.h"
+#include "input.h"
 
 
-static void update(void)
+static void draw(void)
 {
     fflush(stdout);
 }
@@ -26,21 +26,19 @@ int main(void)
 
      //cutscene_intro();
 
-    for(int i = 0; i < 3; ++i)room_draw(room_create());
+    room_t *r = room_create_rooms();
+    for(int i = 0; i < room_get_num_of_rooms(); ++i) room_draw(r[i]);
 
-    room_t r = room_create();
-    room_draw(r);
-
-    creature_t player = {.obj.pos.x=r.obj.pos.x + 1, .obj.pos.y=r.obj.pos.y + 1, .stands_on='.', .symbol='@'};
+    creature_t player = {.obj.pos.x=r[0].obj.pos.x + 1, .obj.pos.y=r[0].obj.pos.y + 1, .stands_on='.', .symbol='@'};
     creature_move_abs(&player, (pos_t){.x=player.obj.pos.x, .y=player.obj.pos.y});
 
-    uint32_t input_char = 'a';
+    input_code_t input = 'a';
     char obj_ahead = 0;
-    fflush(stdout);
+    draw();
 
-    while(input_char != 'q' && input_char != 'Q'){
-        input_char = get_keypress();
-        switch(input_char)
+    while(input != 'q' && input != 'Q'){
+        input = get_keypress();
+        switch(input)
         {
             case ARROW_UP:
                 obj_ahead = term_getchar_xy(player.obj.pos.x, player.obj.pos.y - 1);
@@ -65,9 +63,11 @@ int main(void)
             default:
                 break;
         }
-        update();
+        draw();
     }
 
+    /* CLEAN UP*/
+    free(r);
     term_restore_original();
 
     return 0;

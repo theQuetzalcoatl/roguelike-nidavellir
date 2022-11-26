@@ -6,10 +6,39 @@
 #define MAX_ROOM_HEIGHT (15u)
 #define MAX_ROOM_WIDTH MAX_ROOM_HEIGHT
 
+#define MAX_NUM_OF_ROOMS_PER_LEVEL (5u)
+#define MIN_NUM_OF_ROOMS_PER_LEVEL (3u)
+
 static void add_doors(room_t * const room);
+static room_t calculate_one_room(void);
+
+static uint8_t num_of_rooms = 0;
 
 
-room_t room_create(void)
+uint8_t room_get_num_of_rooms(void)
+{
+    return num_of_rooms;
+}
+
+
+room_t *room_create_rooms(void)
+{
+    uint8_t number_of_rooms = CALC_RAND(MAX_NUM_OF_ROOMS_PER_LEVEL, MIN_NUM_OF_ROOMS_PER_LEVEL);
+    room_t *room = malloc(number_of_rooms*sizeof(room_t));
+
+    if(room == NULL){ /* NOTE: should we decrease the room number until MIN in order to try avoiding a crash? */
+        printf("Could not allocate enough memory for rooms in %s:%i.\n", __FILE__, __LINE__);
+        exit(1);
+    }
+
+    for(int i = 0; i < number_of_rooms; ++i) *(room + i) = calculate_one_room();
+
+    num_of_rooms += number_of_rooms; 
+    return room;
+}
+
+
+static room_t calculate_one_room(void)
 {
     room_t r = {0};
     r.height = CALC_RAND(MAX_ROOM_HEIGHT, MIN_ROOM_HEIGHT);
@@ -24,34 +53,6 @@ room_t room_create(void)
     add_doors(&r);
 
     return r;
-}
-
-
-void room_draw(const room_t r)
-{
-    /* upper wall */
-    for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x){
-        term_move_cursor(x, r.obj.pos.y);
-        term_putchar(HORIZONTAL_WALL);
-    }
-    /* sidewalls and floor */
-    for(int y = r.obj.pos.y + 1; y < r.height + r.obj.pos.y - 1; ++y){
-        for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x){
-            term_move_cursor(x, y);
-            if(x != r.obj.pos.x && x != r.obj.pos.x + r.width - 1) term_putchar(ROOM_FLOOR); 
-            else term_putchar(VERTICAL_WALL);
-        }
-    }
-    /* lower wall */
-    for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x){
-        term_move_cursor(x, r.obj.pos.y + r.height - 1);
-        term_putchar(HORIZONTAL_WALL);
-    }
-    /* placing doors */
-    for(uint8_t door_num = 0; door_num < r.door_num; ++door_num){
-        term_move_cursor(r.doors[door_num].obj.pos.x, r.doors[door_num].obj.pos.y);
-        term_putchar(ROOM_DOOR);
-    }
 }
 
 
@@ -106,5 +107,33 @@ static void add_doors(room_t * const room)
         }
         room->doors[door_num].is_locked = false;
         obj_make_invisible(&room->doors[door_num]);
+    }
+}
+
+
+void room_draw(const room_t r)
+{
+    /* upper wall */
+    for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x){
+        term_move_cursor(x, r.obj.pos.y);
+        term_putchar(HORIZONTAL_WALL);
+    }
+    /* sidewalls and floor */
+    for(int y = r.obj.pos.y + 1; y < r.height + r.obj.pos.y - 1; ++y){
+        for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x){
+            term_move_cursor(x, y);
+            if(x != r.obj.pos.x && x != r.obj.pos.x + r.width - 1) term_putchar(ROOM_FLOOR); 
+            else term_putchar(VERTICAL_WALL);
+        }
+    }
+    /* lower wall */
+    for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x){
+        term_move_cursor(x, r.obj.pos.y + r.height - 1);
+        term_putchar(HORIZONTAL_WALL);
+    }
+    /* placing doors */
+    for(uint8_t door_num = 0; door_num < r.door_num; ++door_num){
+        term_move_cursor(r.doors[door_num].obj.pos.x, r.doors[door_num].obj.pos.y);
+        term_putchar(ROOM_DOOR);
     }
 }

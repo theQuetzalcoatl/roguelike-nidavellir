@@ -1,5 +1,5 @@
-#ifndef _CREATURES_
-#define _CREATURES_
+#ifndef _CREATURE_
+#define _CREATURE_
 
 #include <stdint.h>
 #include "terminal.h"
@@ -16,4 +16,4 @@ typedef struct creature_t
 extern void creature_move_rel(creature_t *creature, pos_t rel_pos);
 extern void creature_move_abs(creature_t *creature, pos_t pos);
 
-#endif /* _CREATURES_ */
+#endif /* _CREATURE_ */
