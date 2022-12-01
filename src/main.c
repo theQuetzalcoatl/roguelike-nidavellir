@@ -2,13 +2,14 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include "/home/dani/sajat/Villamosmernok/Sajat projektek/Roguelike/include/terminal.h"
+#include "terminal.h"
 #include "cutscenes.h"
 #include "creature.h"
 #include "object.h"
 #include "room.h"
 #include "corridor.h"
 #include "input.h"
+#include "display.h"
 
 
 static void draw(void)
@@ -17,14 +18,15 @@ static void draw(void)
 }
 
 
-
 int main(void)
 {
+    bool game_running = true;
+
     srand(time(NULL)); /* RNG init */
 
     term_setup();
 
-     //cutscene_intro();
+    cutscene_intro();
 
     room_t *r = room_create_rooms();
     for(int i = 0; i < room_get_num_of_rooms(); ++i) room_draw(r[i]);
@@ -32,11 +34,16 @@ int main(void)
     creature_t player = {.obj.pos.x=r[0].obj.pos.x + 1, .obj.pos.y=r[0].obj.pos.y + 1, .stands_on='.', .symbol='@'};
     creature_move_abs(&player, (pos_t){.x=player.obj.pos.x, .y=player.obj.pos.y});
 
+    display_runic_line();
+
+    //corridor_create(&r[0].doors[0], &r[1].doors[0]);
+
     input_code_t input = 'a';
     char obj_ahead = 0;
+
     draw();
 
-    while(input != 'q' && input != 'Q'){
+    while(game_running){
         input = get_keypress();
         switch(input)
         {
@@ -60,8 +67,21 @@ int main(void)
                 if(player.obj.pos.x < (signed int)TERM_COLS_NUM-1 && (obj_ahead != VERTICAL_WALL && obj_ahead != HORIZONTAL_WALL)) creature_move_rel(&player, (pos_t){.x=1, .y=0});
                 break;
 
+            case 'q':
+            case 'Q':
+                game_running = false;
+                break;
+
             default:
                 break;
+        }
+
+        /*  temporarily teleporting the player due to the lack of corridors*/
+        if(player.stands_on == ROOM_DOOR) {
+            int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
+            int x = r[num].obj.pos.x + 1;
+            int y = r[num].obj.pos.y + 1;
+            creature_move_abs(&player, (pos_t){.x=x, .y=y});
         }
         draw();
     }

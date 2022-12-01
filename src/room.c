@@ -1,5 +1,6 @@
-#include "../include/room.h"
+#include "room.h"
 #include <stdlib.h>
+#include "display.h"
 
 #define MIN_ROOM_HEIGHT (4u)
 #define MIN_ROOM_WIDTH MIN_ROOM_HEIGHT
@@ -11,6 +12,7 @@
 
 static void add_doors(room_t * const room);
 static room_t calculate_one_room(void);
+static void draw_debug_info(room_t room);
 
 static uint8_t num_of_rooms = 0;
 
@@ -44,11 +46,11 @@ static room_t calculate_one_room(void)
     r.height = CALC_RAND(MAX_ROOM_HEIGHT, MIN_ROOM_HEIGHT);
     r.obj.pos.x = CALC_RAND(TERM_COLS_NUM, 0);
     r.obj.pos.y = CALC_RAND(TERM_ROWS_NUM, 0);
-    obj_make_invisible(&r);
+    obj_make_invisible((object_t*)&r);
     r.width = CALC_RAND(MAX_ROOM_WIDTH, MIN_ROOM_WIDTH);
 
     if(r.obj.pos.x + r.width >= (signed int)TERM_COLS_NUM) r.obj.pos.x = TERM_COLS_NUM - r.width - 10;
-    if(r.obj.pos.y + r.height >= (signed int)TERM_ROWS_NUM) r.obj.pos.y = TERM_ROWS_NUM - r.height - 10;
+    if(r.obj.pos.y + r.height >= (signed int)RUNIC_LINE) r.obj.pos.y = RUNIC_LINE - r.height - 10;
 
     add_doors(&r);
 
@@ -106,7 +108,7 @@ static void add_doors(room_t * const room)
                 }
         }
         room->doors[door_num].is_locked = false;
-        obj_make_invisible(&room->doors[door_num]);
+        obj_make_invisible((object_t*)&room->doors[door_num]);
     }
 }
 
@@ -136,4 +138,17 @@ void room_draw(const room_t r)
         term_move_cursor(r.doors[door_num].obj.pos.x, r.doors[door_num].obj.pos.y);
         term_putchar(ROOM_DOOR);
     }
+
+    draw_debug_info(r);
+}
+
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
+void draw_debug_info(room_t room)
+{
+#ifdef DEBUG
+    uint16_t above_room = (room.obj.pos.y) > 0 ? room.obj.pos.y - 1 : 0;
+    term_move_cursor(room.obj.pos.x, above_room);
+    printf("x:%d y:%d w:%d h:%d\n", room.obj.pos.x, room.obj.pos.y, room.width, room.height);
+#endif
 }
