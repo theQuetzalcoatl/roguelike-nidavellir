@@ -37,21 +37,17 @@ void term_setup(void)
     //s.c_cc[VTIME] = 0; s.c_cc[VMIN] = 1; IMPLICIT 
     printf("\x1B[?25l"); /* make cursor invisible */
 
-    char resize_command[200] = "resize -s ";
-    char tmp[10] = {0};
-    sprintf(tmp, "%d", TERM_ROWS_NUM);
-    strcat(resize_command, tmp);
-    strcat(resize_command, " ");
-    sprintf(tmp, "%d", TERM_COLS_NUM);
-    strcat(resize_command, tmp);
-    strcat(resize_command, " > /dev/null");
-    system(resize_command);
+    /*char resize_command[200] = {0};
+    sprintf(resize_command, "resize %d %d > /dev/null", TERM_ROWS_NUM, TERM_COLS_NUM);
+    system(resize_command);*/
+
+    printf("\e[8;%d;%dt", TERM_ROWS_NUM, TERM_COLS_NUM); /* resize window */
     
     system("temp_PS1=${PS1}");
     system("PS1=\"\""); /* deleting prompt */
     system("clear");
 
-    tcsetattr(1, TCSANOW, &s);
+    tcsetattr(1, TCSAFLUSH, &s);
 }
 
 
@@ -64,11 +60,13 @@ void term_restore_original(void)
     printf("\x1B[?25h"); /* make cursor visible */
 }
 
-void term_move_cursor(uint16_t x, uint16_t y)
+void term_move_cursor(const uint16_t x, const uint16_t y)
 {
-    printf("\x1B[%u;%uH", y + 1, x + 1); /* terminal is 1 based, not 0 */
-    win.cursor.x = x;
-    win.cursor.y = y;
+    if(x < TERM_COLS_NUM && y < TERM_ROWS_NUM){
+        printf("\x1B[%u;%uH", y + 1, x + 1); /* terminal is 1 based, not 0 */
+        win.cursor.x = x;
+        win.cursor.y = y;
+    }
 }
 
 void term_putchar(char c)
@@ -82,8 +80,14 @@ char term_getchar(void)
     return win.content[win.cursor.y][win.cursor.x];
 }
 
-char term_getchar_xy(uint16_t x, uint16_t y)
+char term_getchar_xy(const uint16_t x, const uint16_t y)
 {
     term_move_cursor(x, y);
     return term_getchar();
+}
+
+void term_putchar_xy(const char c, const uint16_t x, const uint16_t y)
+{
+    term_move_cursor(x, y);
+    term_putchar(c);
 }

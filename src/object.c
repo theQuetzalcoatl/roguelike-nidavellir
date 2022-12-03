@@ -1,5 +1,5 @@
-#include "../include/object.h"
-#include "../include/terminal.h"
+#include "object.h"
+#include "terminal.h"
 
 #include <stdlib.h>
 #include <time.h>

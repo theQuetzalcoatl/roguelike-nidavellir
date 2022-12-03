@@ -3,6 +3,8 @@
 #include <termios.h>
 #include <stdlib.h>
 
+#pragma GCC diagnostic ignored "-Wunused-result"
+
 void cutscene_intro(void)
 {
     char intro_text[] = "Death may be permanent, but Valhalla is eternal....";

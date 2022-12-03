@@ -46,7 +46,7 @@ static room_t calculate_one_room(void)
     r.height = CALC_RAND(MAX_ROOM_HEIGHT, MIN_ROOM_HEIGHT);
     r.obj.pos.x = CALC_RAND(TERM_COLS_NUM, 0);
     r.obj.pos.y = CALC_RAND(TERM_ROWS_NUM, 0);
-    obj_make_invisible((object_t*)&r);
+    obj_make_visible((object_t*)&r); // NOTE: temporarily visible
     r.width = CALC_RAND(MAX_ROOM_WIDTH, MIN_ROOM_WIDTH);
 
     if(r.obj.pos.x + r.width >= (signed int)TERM_COLS_NUM) r.obj.pos.x = TERM_COLS_NUM - r.width - 10;
@@ -55,6 +55,18 @@ static room_t calculate_one_room(void)
     add_doors(&r);
 
     return r;
+}
+
+static void hide_room(room_t * const r)
+{
+    term_move_cursor(r->obj.pos.x, r->obj.pos.y);
+    for(uint8_t i = r->obj.pos.y; i < r->obj.pos.y + r->width-1; ++i){
+        for(uint8_t ii = r->obj.pos.x; ii < r->obj.pos.x-1; ++ii){
+            term_move_cursor(ii, i);
+            term_putchar(' ');
+        }
+    }
+    r->obj.is_visible = false;
 }
 
 
