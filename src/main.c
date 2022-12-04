@@ -17,6 +17,7 @@ static void draw(void)
     fflush(stdout);
 }
 
+#include <sys/ioctl.h>
 
 int main(void)
 {
@@ -24,7 +25,13 @@ int main(void)
 
     srand(time(NULL)); /* RNG init */
 
+    struct winsize ws = {0};
+
+    ioctl(0, TIOCGWINSZ, &ws);
+
+
     term_setup();
+    printf("screen -> %dx%d\n", ws.ws_col, ws.ws_row);
 
     atexit(term_restore_original);
 

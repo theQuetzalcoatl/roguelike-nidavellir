@@ -1,5 +1,5 @@
-#include "../include/terminal.h"
-#include "termios.h"
+#include "terminal.h"
+#include <termios.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,11 +37,7 @@ void term_setup(void)
     //s.c_cc[VTIME] = 0; s.c_cc[VMIN] = 1; IMPLICIT 
     printf("\x1B[?25l"); /* make cursor invisible */
 
-    /*char resize_command[200] = {0};
-    sprintf(resize_command, "resize %d %d > /dev/null", TERM_ROWS_NUM, TERM_COLS_NUM);
-    system(resize_command);*/
-
-    printf("\e[8;%d;%dt", TERM_ROWS_NUM, TERM_COLS_NUM); /* resize window */
+    printf("\e[8;%d;%dt", TERM_ROWS_NUM, TERM_COLS_NUM); /* resize window - 'resize' does the same thing */
     
     system("temp_PS1=${PS1}");
     system("PS1=\"\""); /* deleting prompt */
