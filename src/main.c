@@ -10,6 +10,7 @@
 #include "corridor.h"
 #include "input.h"
 #include "display.h"
+#include "debug.h"
 
 
 static void draw(void)
@@ -24,16 +25,21 @@ int main(void)
     bool game_running = true;
 
     srand(time(NULL)); /* RNG init */
+    debug_init();
 
     struct winsize ws = {0};
 
     ioctl(0, TIOCGWINSZ, &ws);
 
-
-    term_setup();
     printf("screen -> %dx%d\n", ws.ws_col, ws.ws_row);
 
+    if(ws.ws_col < TERM_COLS_NUM || ws.ws_row < TERM_ROWS_NUM){
+        printf("Terminal window is currently too small. Make it at least %dx%d large and try again!\n", TERM_COLS_NUM, TERM_ROWS_NUM);
+        exit(1);
+    }
+    term_setup();
     atexit(term_restore_original);
+    atexit(debug_deinit);
 
     room_t *r = room_create_rooms();
     for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
@@ -46,8 +52,6 @@ int main(void)
 
     display_runic_line();
     display_player_stats(*player);
-
-    //corridor_create(&r[0].doors[0], &r[1].doors[0]);
 
     input_code_t input = 'a';
     char obj_ahead = 0;
@@ -103,6 +107,8 @@ int main(void)
             int y = r[num].obj.pos.y + 1;
             creature_move_abs(player, (pos_t){.x=x, .y=y});
         }
+        display_runic_line();
+        display_player_stats(*creature_get_creatures());
         draw();
     }
 

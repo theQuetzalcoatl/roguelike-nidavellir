@@ -18,7 +18,7 @@ extern void term_putchar_xy(const char c, const uint16_t x, const uint16_t y);
 extern char term_getchar(void);
 extern char term_getchar_xy(const uint16_t x, const uint16_t y);
 
-#define TERM_ROWS_NUM (70u)
-#define TERM_COLS_NUM (180u) 
+#define TERM_ROWS_NUM (40u)
+#define TERM_COLS_NUM (160u) 
 
 #endif /* _TERMINAL_ */ 

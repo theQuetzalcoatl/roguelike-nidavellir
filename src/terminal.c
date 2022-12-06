@@ -37,7 +37,7 @@ void term_setup(void)
     //s.c_cc[VTIME] = 0; s.c_cc[VMIN] = 1; IMPLICIT 
     printf("\x1B[?25l"); /* make cursor invisible */
 
-    printf("\e[8;%d;%dt", TERM_ROWS_NUM, TERM_COLS_NUM); /* resize window - 'resize' does the same thing */
+    //printf("\e[8;%d;%dt", TERM_ROWS_NUM, TERM_COLS_NUM); /* resize window - 'resize' does the same thing */
     
     system("temp_PS1=${PS1}");
     system("PS1=\"\""); /* deleting prompt */

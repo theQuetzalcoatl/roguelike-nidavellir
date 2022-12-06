@@ -7,7 +7,6 @@
 void display_runic_line(void)
 {
     char *runic_string = "ᛁᚠᚢᚨᚱᛖᚨᛒᛚᛖᛏᛟᚱᛖᚨᛞᛏᚺᛁᛊᛏᚺᛖᚾᛁᚺᛟᛈᛖᚢᛚᛁᚲᛖᛏᚺᛖᚷᚨᛗᛖ"; // ifuareabletoreadthisthenihopeulikethegame
-    char *filler = "ᛁᚨᛗᚨᚠᛁᛚᛚᛖᚱᛚᛟᛚᛟᛚᛟ"; // imafillerlolol
 
     term_move_cursor(0, RUNIC_LINE);
 
@@ -15,7 +14,6 @@ void display_runic_line(void)
     printf("%s", runic_string);
     printf("%s", runic_string);
     printf("%s", runic_string);
-    printf("%s", filler);
 }
     
 

@@ -27,6 +27,7 @@ nidavellir
 *.png
 *.jpg
 *.jpeg
+debug.txt
 
 # the executable itself
 nidavellir
