@@ -19,9 +19,9 @@ enum CREATURES
     NUM_OF_CREATURES
 };
 
-typedef uint16_t creature_id_t;
+typedef uint16_t mob_id_t;
 
-typedef struct creature_t
+typedef struct mob_t
 {
     object_t obj;
     char symbol;
@@ -30,14 +30,14 @@ typedef struct creature_t
     uint8_t level;
     item_t left_hand_item;
     item_t right_hand_item;
-    struct creature_t *next;
-}creature_t;
+    struct mob_t *next;
+}mob_t;
 
 #define PLAYER_MAX_HEALTH (100u)
 
-extern void creature_move_rel(creature_t *creature, pos_t rel_pos);
-extern void creature_move_abs(creature_t *creature, pos_t pos);
-extern creature_t *creature_summon(const creature_id_t id);
-extern creature_t *creature_get_creatures(void);
+extern void mob_move_rel(mob_t *creature, pos_t rel_pos);
+extern void mob_move_abs(mob_t *creature, pos_t pos);
+extern mob_t *mob_summon(const mob_id_t id);
+extern mob_t *mob_get_creatures(void);
 
 #endif /* _CREATURE_ */

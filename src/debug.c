@@ -27,9 +27,9 @@ void debug_deinit(void)
 
 void nidebug(const char *s, ...)
 {
-    va_list args;
     time_t rawtime;
     struct tm * timeinfo;
+    va_list args;
 
     time( &rawtime );
     timeinfo = localtime( &rawtime );

@@ -4,7 +4,7 @@
 
 #include "terminal.h"
 #include "cutscenes.h"
-#include "creature.h"
+#include "mob.h"
 #include "object.h"
 #include "room.h"
 #include "corridor.h"
@@ -44,11 +44,11 @@ int main(void)
     room_t *r = room_create_rooms();
     for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
 
-    creature_t *player = creature_summon(ID_PLAYER);
+    mob_t *player = mob_summon(ID_PLAYER);
 
     player->obj.pos.x = r[0].obj.pos.x + 1;
     player->obj.pos.y = r[0].obj.pos.y + 1;
-    creature_move_abs(player, (pos_t){.x=player->obj.pos.x, .y=player->obj.pos.y});
+    mob_move_abs(player, (pos_t){.x=player->obj.pos.x, .y=player->obj.pos.y});
 
     display_runic_line();
     display_player_stats(*player);
@@ -66,28 +66,28 @@ int main(void)
             case ARROW_UP:
                 obj_ahead = term_getchar_xy(player->obj.pos.x, player->obj.pos.y - 1);
                 if(player->obj.pos.y > 0 && (obj_ahead != VERTICAL_WALL && obj_ahead != HORIZONTAL_WALL)){
-                    creature_move_rel(player, (pos_t){.x=0, .y=-1});
+                    mob_move_rel(player, (pos_t){.x=0, .y=-1});
                 }
                 break;
 
             case ARROW_LEFT:
                 obj_ahead = term_getchar_xy(player->obj.pos.x - 1, player->obj.pos.y);
                 if(player->obj.pos.x > 0 && (obj_ahead != VERTICAL_WALL && obj_ahead != HORIZONTAL_WALL)){
-                    creature_move_rel(player, (pos_t){.x=-1, .y=0});
+                    mob_move_rel(player, (pos_t){.x=-1, .y=0});
                 }
                 break;
         
             case ARROW_DOWN:
                 obj_ahead = term_getchar_xy(player->obj.pos.x, player->obj.pos.y + 1);
                 if(player->obj.pos.y < (signed int)TERM_ROWS_NUM-1 && (obj_ahead != VERTICAL_WALL && obj_ahead != HORIZONTAL_WALL)){
-                    creature_move_rel(player, (pos_t){.x=0, .y=1});
+                    mob_move_rel(player, (pos_t){.x=0, .y=1});
                 }
                 break;
         
             case ARROW_RIGHT:
                 obj_ahead = term_getchar_xy(player->obj.pos.x + 1, player->obj.pos.y);
                 if(player->obj.pos.x < (signed int)TERM_COLS_NUM-1 && (obj_ahead != VERTICAL_WALL && obj_ahead != HORIZONTAL_WALL)){
-                    creature_move_rel(player, (pos_t){.x=1, .y=0});
+                    mob_move_rel(player, (pos_t){.x=1, .y=0});
                 }
                 break;
 
@@ -105,10 +105,10 @@ int main(void)
             int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
             int x = r[num].obj.pos.x + 1;
             int y = r[num].obj.pos.y + 1;
-            creature_move_abs(player, (pos_t){.x=x, .y=y});
+            mob_move_abs(player, (pos_t){.x=x, .y=y});
         }
         display_runic_line();
-        display_player_stats(*creature_get_creatures());
+        display_player_stats(*mob_get_creatures());
         draw();
     }
 

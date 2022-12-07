@@ -2,10 +2,10 @@
 #define _DISPLAY_H
 
 #include "terminal.h"
-#include "creature.h"
+#include "mob.h"
 
 extern void display_runic_line(void);
-extern void display_player_stats(const creature_t player);
+extern void display_player_stats(const mob_t player);
 
 #define RUNIC_LINE (TERM_ROWS_NUM*6)/8
 

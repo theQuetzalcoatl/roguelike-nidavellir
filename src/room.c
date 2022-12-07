@@ -1,6 +1,7 @@
 #include "room.h"
 #include <stdlib.h>
 #include "display.h"
+#include "debug.h"
 
 #define MIN_ROOM_HEIGHT (4u)
 #define MIN_ROOM_WIDTH MIN_ROOM_HEIGHT
@@ -29,7 +30,7 @@ room_t *room_create_rooms(void)
     room_t *room = malloc(number_of_rooms*sizeof(room_t));
 
     if(room == NULL){ /* NOTE: should we decrease the room number until MIN in order to try avoiding a crash? */
-        printf("Could not allocate enough memory for rooms in %s:%i.\n", __FILE__, __LINE__);
+        nidebug("Could not allocate enough memory for rooms in %s:%i.\n", __FILE__, __LINE__);
         exit(1);
     }
 

@@ -1,16 +1,17 @@
 #include "terminal.h"
-#include "creature.h"
+#include "mob.h"
 #include <stdlib.h>
+#include "debug.h"
 
-static void summon_player(creature_t *player);
-static void add_to_list(creature_t *mob, const creature_id_t id);
-
-
-static creature_t *head = NULL;
-static creature_t *tail = NULL;
+static void summon_player(mob_t *player);
+static void add_to_list(mob_t *mob, const mob_id_t id);
 
 
-void creature_move_abs(creature_t *creature, pos_t pos)
+static mob_t *head = NULL;
+static mob_t *tail = NULL;
+
+
+void mob_move_abs(mob_t *creature, pos_t pos)
 {
     term_move_cursor(creature->obj.pos.x, creature->obj.pos.y);
     term_putchar(creature->stands_on);
@@ -22,7 +23,7 @@ void creature_move_abs(creature_t *creature, pos_t pos)
 }
 
 
-void creature_move_rel(creature_t *creature, pos_t rel_pos)
+void mob_move_rel(mob_t *creature, pos_t rel_pos)
 {
     term_move_cursor(creature->obj.pos.x, creature->obj.pos.y);
     term_putchar(creature->stands_on);
@@ -33,17 +34,17 @@ void creature_move_rel(creature_t *creature, pos_t rel_pos)
     creature->obj.pos.y += rel_pos.y;
 }
 
-creature_t *creature_get_creatures(void)
+mob_t *mob_get_creatures(void)
 {
     return head;
 }
 
 
-creature_t *creature_summon(const creature_id_t id)
+mob_t *mob_summon(const mob_id_t id)
 {
-    creature_t *summoned_creature = malloc(sizeof(creature_t));
+    mob_t *summoned_creature = malloc(sizeof(mob_t));
     if(summoned_creature == NULL){
-        printf("Could not summon creature in %s:%d", __FILE__, __LINE__);
+        nidebug("Could not summon creature in %s:%d", __FILE__, __LINE__);
         exit(1);
     }
 
@@ -54,7 +55,7 @@ creature_t *creature_summon(const creature_id_t id)
             break;
         
         default:
-            printf("Unknown creature id: %d", id);
+            nidebug("Unknown creature id: %d", id);
             free(summoned_creature);
             summoned_creature = NULL;
     }
@@ -69,7 +70,7 @@ creature_t *creature_summon(const creature_id_t id)
 }
 
 
-static void add_to_list(creature_t *mob, const creature_id_t id)
+static void add_to_list(mob_t *mob, const mob_id_t id)
 {
     if(id != ID_PLAYER && head != NULL){
         tail->next = mob;
@@ -80,18 +81,18 @@ static void add_to_list(creature_t *mob, const creature_id_t id)
         tail = head;
     }
     else{
-        printf("Something went wrong during list expansion. Maybe the orther?\n");
+        nidebug("Something went wrong during list expansion. Maybe the orther?\n");
         exit(0);
     }
 }
 
 
 
-static void summon_player(creature_t *player)
+static void summon_player(mob_t *player)
 {
     static bool summoned = false;
     if(summoned == false){
-        *player = (creature_t){.obj.pos.x=0, .obj.pos.y=0, .stands_on='.', .symbol='@', .health = 100, .level=1, .next = NULL};
+        *player = (mob_t){.obj.pos.x=0, .obj.pos.y=0, .stands_on='.', .symbol='@', .health = 100, .level=1, .next = NULL};
         summoned = true;
     }
     else{

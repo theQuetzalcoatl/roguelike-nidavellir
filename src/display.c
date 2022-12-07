@@ -17,7 +17,7 @@ void display_runic_line(void)
 }
     
 
-void display_player_stats(const creature_t player)
+void display_player_stats(const mob_t player)
 {
     term_move_cursor(0, RUNIC_LINE);
 
