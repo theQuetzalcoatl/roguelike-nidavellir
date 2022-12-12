@@ -75,51 +75,57 @@ static void add_doors(room_t * const room)
 {
     bool upper_wall_doored, lower_wall_doored, left_wall_doored, right_wall_doored;
     upper_wall_doored = lower_wall_doored = left_wall_doored = right_wall_doored = false;
+    bool doored = false;
     room->door_num = CALC_RAND(MAX_DOOR_NUM, MIN_DOOR_NUM);
 
     for(uint8_t door_num = 0; door_num < room->door_num; ++door_num){
-        uint8_t to_be_doored_wall = rand()%4; // a room has 4 sides
-        switch(to_be_doored_wall)
-        {
-            case up_side:
-                if(!upper_wall_doored){
-                    room->doors[door_num].obj.pos.y = room->obj.pos.y;
-                    room->doors[door_num].obj.pos.x = room->obj.pos.x + CALC_RAND(room->width - 2, 1); // 1 - to avoid x position corner, 2 - to avoid x+width corner also taking into account that drawing starts at x;
-                    room->doors[door_num].side = up_side;
-                    upper_wall_doored = true;
+        uint8_t room_side = rand()%4; // a room has 4 sides
+        while(!doored){
+            switch(room_side)
+            {
+                case up_side:
+                    if(!upper_wall_doored){
+                        room->doors[door_num].obj.pos.y = room->obj.pos.y;
+                        room->doors[door_num].obj.pos.x = room->obj.pos.x + CALC_RAND(room->width - 2, 1); // 1 - to avoid x position corner, 2 - to avoid x+width corner also taking into account that drawing starts at x;
+                        room->doors[door_num].side = up_side;
+                        upper_wall_doored = true;
+                        doored = true;
+                    }
                     break;
-                }
-                __attribute__ ((fallthrough));
 
-            case down_side:
-                if(!lower_wall_doored){
-                    room->doors[door_num].obj.pos.x = room->obj.pos.x + CALC_RAND(room->width - 2, 1); // 1 - to avoid x position corner, 2 - to avoid x+width corner also taking into account that drawing starts at x;
-                    room->doors[door_num].obj.pos.y = room->obj.pos.y + room->height - 1;
-                    room->doors[door_num].side = down_side;
-                    lower_wall_doored = true;
+                case down_side:
+                    if(!lower_wall_doored){
+                        room->doors[door_num].obj.pos.y = room->obj.pos.y + room->height - 1;
+                        room->doors[door_num].obj.pos.x = room->obj.pos.x + CALC_RAND(room->width - 2, 1); // 1 - to avoid x position corner, 2 - to avoid x+width corner also taking into account that drawing starts at x;
+                        room->doors[door_num].side = down_side;
+                        lower_wall_doored = true;
+                        doored = true;
+                    }
                     break;
-                }
-                __attribute__ ((fallthrough));
 
-            case left_side:
-                if(!left_wall_doored){
-                    room->doors[door_num].obj.pos.y = room->obj.pos.y + CALC_RAND(room->height - 2, 1); // 1 - to avoid y position corner, 2 - to avoid y+height corner also taking into account that drawing starts at y;
-                    room->doors[door_num].obj.pos.x = room->obj.pos.x;
-                    room->doors[door_num].side = left_side;
-                    left_wall_doored = true;
+                case left_side:
+                    if(!left_wall_doored){
+                        room->doors[door_num].obj.pos.y = room->obj.pos.y + CALC_RAND(room->height - 2, 1); // 1 - to avoid y position corner, 2 - to avoid y+height corner also taking into account that drawing starts at y;
+                        room->doors[door_num].obj.pos.x = room->obj.pos.x;
+                        room->doors[door_num].side = left_side;
+                        left_wall_doored = true;
+                        doored = true;
+                    }
                     break;
-                }
-                __attribute__ ((fallthrough));
 
-            case right_side:
-                if(!right_wall_doored){
-                    room->doors[door_num].obj.pos.y = room->obj.pos.y + CALC_RAND(room->height - 2, 1); // 1 - to avoid y position corner, 2 - to avoid y+height corner also taking into account that drawing starts at y;
-                    room->doors[door_num].obj.pos.x = room->obj.pos.x + room->width - 1;
-                    room->doors[door_num].side = right_side;
-                    right_wall_doored = true;
+                case right_side:
+                    if(!right_wall_doored){
+                        room->doors[door_num].obj.pos.y = room->obj.pos.y + CALC_RAND(room->height - 2, 1); // 1 - to avoid y position corner, 2 - to avoid y+height corner also taking into account that drawing starts at y;
+                        room->doors[door_num].obj.pos.x = room->obj.pos.x + room->width - 1;
+                        room->doors[door_num].side = right_side;
+                        right_wall_doored = true;
+                        doored = true;
+                    }
                     break;
-                }
+            }
+            room_side = (room_side + 1) % MAX_DOOR_NUM;
         }
+        doored = false;
         room->doors[door_num].is_locked = false;
         obj_make_invisible((object_t*)&room->doors[door_num]);
     }

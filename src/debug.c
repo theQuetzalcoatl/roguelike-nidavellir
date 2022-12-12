@@ -1,5 +1,6 @@
 #include "debug.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
 
@@ -27,14 +28,14 @@ void debug_deinit(void)
 
 void nidebug(const char *s, ...)
 {
-    time_t rawtime;
-    struct tm * timeinfo;
     va_list args;
+    time_t rawtime;
+    struct tm *timeinfo;
 
     time( &rawtime );
     timeinfo = localtime( &rawtime );
     fprintf(fp, "\n[%d:%d:%d] ", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
     va_start(args, s);
-    fprintf(fp, s, args);
-    va_end(args);
+    vfprintf(fp, s, args);
+    fflush(fp); // live debug file update
 }

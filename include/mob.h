@@ -13,6 +13,7 @@ enum CREATURES
     ID_THOR,
     ID_ODIN,
     ID_GOBLIN,
+    ID_DRAUGR,
     ID_TROLL,
     ID_WITCH,
     ID_MIMIR,
@@ -35,8 +36,9 @@ typedef struct mob_t
 
 #define PLAYER_MAX_HEALTH (100u)
 
-extern void mob_move_rel(mob_t *creature, pos_t rel_pos);
-extern void mob_move_abs(mob_t *creature, pos_t pos);
+extern void mob_move_by(mob_t *creature, pos_t rel_pos);
+extern void mob_move_to(mob_t *creature, pos_t pos);
+extern void mob_free_mobs(void);
 extern mob_t *mob_summon(const mob_id_t id);
 extern mob_t *mob_get_creatures(void);
 
