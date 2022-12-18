@@ -3,7 +3,7 @@
 #include "display.h"
 #include "debug.h"
 
-#define MIN_ROOM_HEIGHT (4u)
+#define MIN_ROOM_HEIGHT (5u)
 #define MIN_ROOM_WIDTH MIN_ROOM_HEIGHT
 #define MAX_ROOM_HEIGHT (15u)
 #define MAX_ROOM_WIDTH MAX_ROOM_HEIGHT
@@ -16,6 +16,7 @@ static room_t calculate_one_room(void);
 static void draw_debug_info(room_t room);
 
 static uint8_t num_of_rooms = 0;
+static room_t *rooms = NULL;
 
 
 uint8_t room_get_num_of_rooms(void)
@@ -24,20 +25,25 @@ uint8_t room_get_num_of_rooms(void)
 }
 
 
-room_t *room_create_rooms(void)
+room_t *room_get_rooms(void)
+{
+    return rooms;
+}
+
+
+void room_create_rooms(void)
 {
     uint8_t number_of_rooms = CALC_RAND(MAX_NUM_OF_ROOMS_PER_LEVEL, MIN_NUM_OF_ROOMS_PER_LEVEL);
-    room_t *room = malloc(number_of_rooms*sizeof(room_t));
+    rooms = malloc(number_of_rooms*sizeof(room_t));
 
-    if(room == NULL){ /* NOTE: should we decrease the room number until MIN in order to try avoiding a crash? */
+    if(rooms == NULL){ /* NOTE: should we decrease the room number until MIN in order to try avoiding a crash? */
         nidebug("Could not allocate enough memory for rooms in %s:%i.\n", __FILE__, __LINE__);
         exit(1);
     }
 
-    for(int i = 0; i < number_of_rooms; ++i) *(room + i) = calculate_one_room();
+    for(int i = 0; i < number_of_rooms; ++i) *(rooms + i) = calculate_one_room();
 
-    num_of_rooms += number_of_rooms; 
-    return room;
+    num_of_rooms += number_of_rooms; /* NOTE: I know it implies that the progam calls this function more than once but it really won't */
 }
 
 

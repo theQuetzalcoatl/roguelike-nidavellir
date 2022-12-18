@@ -7,7 +7,7 @@
 #include "item.h"
 
 
-enum CREATURES
+enum MOBS
 {
     ID_PLAYER,
     ID_THOR,
@@ -17,7 +17,7 @@ enum CREATURES
     ID_TROLL,
     ID_WITCH,
     ID_MIMIR,
-    NUM_OF_CREATURES
+    NUM_OF_MOBS
 };
 
 typedef uint16_t mob_id_t;
@@ -40,6 +40,6 @@ extern void mob_move_by(mob_t *creature, pos_t rel_pos);
 extern void mob_move_to(mob_t *creature, pos_t pos);
 extern void mob_free_mobs(void);
 extern mob_t *mob_summon(const mob_id_t id);
-extern mob_t *mob_get_creatures(void);
+extern mob_t *mob_get_mobs(void);
 
 #endif /* _CREATURE_ */
