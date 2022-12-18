@@ -64,6 +64,7 @@ static room_t calculate_one_room(void)
     return r;
 }
 
+/*
 static void hide_room(room_t * const r)
 {
     term_move_cursor(r->obj.pos.x, r->obj.pos.y);
@@ -75,7 +76,7 @@ static void hide_room(room_t * const r)
     }
     r->obj.is_visible = false;
 }
-
+*/
 
 static void add_doors(room_t * const room)
 {

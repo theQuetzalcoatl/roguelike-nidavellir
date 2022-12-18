@@ -1,8 +1,6 @@
 #include "room.h"
 #include "terminal.h"
-
-#define CORRIDOR_FLOOR '#'
-
+#include "corridor.h"
 
 void corridor_create(door_t *d1, door_t *d2)
 {

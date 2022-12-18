@@ -53,9 +53,6 @@ int main(void)
 
     mob_t *player = mob_summon(ID_PLAYER);
     mob_summon(ID_DRAUGR);
-    mob_summon(ID_DRAUGR);
-    mob_summon(ID_GOBLIN);
-    mob_summon(ID_GOBLIN);
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos);
 
     display_runic_line();
@@ -106,6 +103,8 @@ int main(void)
             default:
                 break;
         }
+
+        for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update_mob(mob, player);
 
         /*  temporarily teleporting the player due to the lack of corridors*/
         if(player->stands_on == ROOM_DOOR) {
