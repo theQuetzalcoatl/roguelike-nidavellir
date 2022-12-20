@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 
 #pragma GCC diagnostic ignored "-Wunused-result"
@@ -26,7 +27,7 @@ void term_setup(void)
         }
     }
 
-    tcgetattr(1, &s);
+    tcgetattr(STDOUT_FILENO, &s);
 
     original_term_settings = s;
 
@@ -43,7 +44,7 @@ void term_setup(void)
     system("PS1=\"\""); /* deleting prompt */
     system("clear");
 
-    tcsetattr(1, TCSAFLUSH, &s);
+    tcsetattr(STDOUT_FILENO, TCSAFLUSH, &s);
 }
 
 
