@@ -1,10 +1,10 @@
 
-#include "../include/input.h"
+#include "input.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #define KEY_ESCAPE (0x1b)
-#include <ctype.h>
 
 input_code_t get_keypress(void)
 {

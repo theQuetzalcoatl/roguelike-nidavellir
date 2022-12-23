@@ -53,6 +53,7 @@ int main(void)
 
     mob_t *player = mob_summon(ID_PLAYER);
     mob_summon(ID_DRAUGR);
+    mob_summon(ID_DRAUGR);
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos);
 
     display_runic_line();
@@ -104,7 +105,7 @@ int main(void)
                 break;
         }
 
-        for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update_mob(mob, player);
+        for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, player);
 
         /*  temporarily teleporting the player due to the lack of corridors*/
         if(player->stands_on == ROOM_DOOR) {
@@ -113,6 +114,7 @@ int main(void)
             int y = r[num].obj.pos.y + 1;
             mob_move_to(player, (pos_t){.x=x, .y=y});
         }
+
         display_runic_line();
         display_player_stats(*mob_get_mobs());
         draw();

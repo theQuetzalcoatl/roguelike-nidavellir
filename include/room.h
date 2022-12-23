@@ -20,17 +20,16 @@ typedef enum
 typedef struct
 {
     object_t obj;
-    bool is_locked;
     side_e side;
+    bool is_locked;
 }door_t;
-
 
 typedef struct room_t
 {
     object_t obj;
+    door_t doors[MAX_DOOR_NUM];
     int16_t width;  /* [chars] */
     int16_t height; /* [chars] */
-    door_t doors[MAX_DOOR_NUM];
     uint8_t door_num;
 }room_t;
 

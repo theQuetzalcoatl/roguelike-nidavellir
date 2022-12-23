@@ -1,5 +1,5 @@
-#include "room.h"
 #include <stdlib.h>
+#include "room.h"
 #include "display.h"
 #include "debug.h"
 
@@ -43,7 +43,7 @@ void room_create_rooms(void)
 
     for(int i = 0; i < number_of_rooms; ++i) *(rooms + i) = calculate_one_room();
 
-    num_of_rooms += number_of_rooms; /* NOTE: I know it implies that the progam calls this function more than once but it really won't */
+    num_of_rooms = number_of_rooms;
 }
 
 
@@ -57,7 +57,7 @@ static room_t calculate_one_room(void)
     r.width = CALC_RAND(MAX_ROOM_WIDTH, MIN_ROOM_WIDTH);
 
     if(r.obj.pos.x + r.width >= (signed int)TERM_COLS_NUM) r.obj.pos.x = TERM_COLS_NUM - r.width - 10;
-    if(r.obj.pos.y + r.height >= (signed int)RUNIC_LINE) r.obj.pos.y = RUNIC_LINE - r.height - 10;
+    if(r.obj.pos.y + r.height >= (signed int)RUNIC_LINE_POS) r.obj.pos.y = RUNIC_LINE_POS - r.height - 10;
 
     add_doors(&r);
 
@@ -142,10 +142,7 @@ static void add_doors(room_t * const room)
 void room_draw(const room_t r)
 {
     /* upper wall */
-    for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x){
-        term_move_cursor(x, r.obj.pos.y);
-        term_putchar(HORIZONTAL_WALL);
-    }
+    for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.obj.pos.y);
     /* sidewalls and floor */
     for(int y = r.obj.pos.y + 1; y < r.height + r.obj.pos.y - 1; ++y){
         for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x){
@@ -155,15 +152,9 @@ void room_draw(const room_t r)
         }
     }
     /* lower wall */
-    for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x){
-        term_move_cursor(x, r.obj.pos.y + r.height - 1);
-        term_putchar(HORIZONTAL_WALL);
-    }
+    for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.obj.pos.y + r.height - 1);
     /* placing doors */
-    for(uint8_t door_num = 0; door_num < r.door_num; ++door_num){
-        term_move_cursor(r.doors[door_num].obj.pos.x, r.doors[door_num].obj.pos.y);
-        term_putchar(ROOM_DOOR);
-    }
+    for(uint8_t door_num = 0; door_num < r.door_num; ++door_num) term_putchar_xy(ROOM_DOOR, r.doors[door_num].obj.pos.x, r.doors[door_num].obj.pos.y);
 
     draw_debug_info(r);
 }

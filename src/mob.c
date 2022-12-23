@@ -99,7 +99,7 @@ static void add_to_list(mob_t *mob, const mob_id_t id)
         tail = mob;
         mob->next = NULL;
     }
-    else if(id == ID_PLAYER && head == NULL){
+    else if(id == ID_PLAYER && head == NULL){ /* ensuring that player is the first mob */
         head = mob;
         tail = head;
     }
@@ -112,21 +112,23 @@ static void add_to_list(mob_t *mob, const mob_id_t id)
 
 static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
 {
-    int16_t lower_y = (mobp.y > playerp.y) ? mobp.y : playerp.y;
-    int16_t upper_y = (mobp.y > playerp.y) ? playerp.y : mobp.y;
-    ++upper_y; // not to start on the mob itself, takes care of 'next to each other' case
     char c = 0;
-    if(mobp.x == playerp.x){ /* vertical case */
-        for(; upper_y < lower_y; ++upper_y){
-            c = term_getchar_xy(playerp.x, upper_y);
+    if(mobp.x != playerp.x){ /* vertical case */
+        int16_t right_x = (mobp.x > playerp.x) ? mobp.x : playerp.x;
+        int16_t left_x  = (mobp.x > playerp.x) ? playerp.x : mobp.x;
+        float m = ((float)mobp.y - playerp.y) / (mobp.x - playerp.x);
+        float b = mobp.y - m*mobp.x;
+        for(++left_x; left_x < right_x; ++left_x){ // not to start on the mob itself, takes care of 'next to each other' case
+            c = term_getchar_xy(left_x, m*left_x + b + 0.5f);
             if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
         }
     }
     else{
-        float m = ((float)mobp.y - playerp.y) / (mobp.x - playerp.x);
-        float b = mobp.y - m*mobp.x;
+        int16_t lower_y = (mobp.y > playerp.y) ? mobp.y : playerp.y;
+        int16_t upper_y = (mobp.y > playerp.y) ? playerp.y : mobp.y;
+        ++upper_y; // not to start on the mob itself, takes care of 'next to each other' case
         for(; upper_y < lower_y; ++upper_y){
-            c = term_getchar_xy((upper_y - b)/m, upper_y);
+            c = term_getchar_xy(playerp.x, upper_y);
             if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
         }
     }
@@ -134,34 +136,38 @@ static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
 }
 
 
-void mob_update_mob(mob_t *mob, mob_t *player)
+void mob_update(mob_t *mob, mob_t *player)
 {
-    if(mob->obj.pos.x == player->obj.pos.x && mob->obj.pos.y == player->obj.pos.y) return; // sanity check, for mob = player, or if they are on top of each other
-    if(is_player_in_eyesight(mob->obj.pos, player->obj.pos));
+    int16_t dx = mob->obj.pos.x - player->obj.pos.x;
+    int16_t dy = mob->obj.pos.y - player->obj.pos.y;
+    if(mob == player) return; // NOTE: get rid of this ugly stuff asap
+
+    if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight. The equation hold even if the two sides are taken to the second power, thus removing the squaring
+        if(is_player_in_eyesight(mob->obj.pos, player->obj.pos));
+    }
+    else ;
 }
 
 
 static pos_t get_random_pos(void)
 {
-    const room_t *r;
+    const room_t *room;
     uint16_t x, y, selected_room, tries;
 
     for(tries = 10; tries; --tries){
         selected_room = CALC_RAND(room_get_num_of_rooms()-1, 1); // room[0] is where the player starts, it shall be safe originally, thats why it is [numofroom:1]
-        r = room_get_rooms() + selected_room;
+        room = room_get_rooms() + selected_room;
 
-        x = CALC_RAND(r->width - 1, 1);
-        x += r->obj.pos.x;
+        x = room->obj.pos.x;
+        x += CALC_RAND(room->width - 1, 1);
 
-        y = CALC_RAND(r->height - 1, 1);
-        y += r->obj.pos.y;
+        y = room->obj.pos.y;
+        y += CALC_RAND(room->height - 1, 1);
 
         if(term_getchar_xy(x, y) == ROOM_FLOOR) break;
     }
 
-    if(tries){
-        return (pos_t){.x=x, .y=y};
-    }
+    if(tries) return (pos_t){.x=x, .y=y};
     else{
         nidebug("Could not find a place to summon mob."); /* NOTE: handle it more elegantly */
         exit(1);

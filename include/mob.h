@@ -29,8 +29,6 @@ typedef struct mob_t
     uint8_t stands_on;
     uint8_t health;
     uint8_t level;
-    item_t left_hand_item;
-    item_t right_hand_item;
     struct mob_t *next;
 }mob_t;
 
@@ -41,6 +39,6 @@ extern void mob_move_to(mob_t *creature, pos_t pos);
 extern void mob_free_mobs(void);
 extern mob_t *mob_summon(const mob_id_t id);
 extern mob_t *mob_get_mobs(void);
-extern void mob_update_mob(mob_t *mob, mob_t *player);
+extern void mob_update(mob_t *mob, mob_t *player);
 
 #endif /* _CREATURE_ */

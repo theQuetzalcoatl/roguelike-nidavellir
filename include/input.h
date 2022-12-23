@@ -10,6 +10,6 @@
 
 typedef uint32_t input_code_t;
 
-extern uint32_t get_keypress(void);
+extern input_code_t get_keypress(void);
 
 #endif /* _INPUT_ */
