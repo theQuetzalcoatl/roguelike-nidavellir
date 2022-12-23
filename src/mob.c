@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 #include "terminal.h"
 #include "mob.h"
 #include "debug.h"
@@ -143,7 +144,10 @@ void mob_update(mob_t *mob, mob_t *player)
     if(mob == player) return; // NOTE: get rid of this ugly stuff asap
 
     if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight. The equation hold even if the two sides are taken to the second power, thus removing the squaring
-        if(is_player_in_eyesight(mob->obj.pos, player->obj.pos));
+        if(is_player_in_eyesight(mob->obj.pos, player->obj.pos)){
+            if(abs(dx) > abs(dy)) (dx > 0) ? mob_move_by(mob, (pos_t){.x=-1, .y=0}) : mob_move_by(mob, (pos_t){.x=1, .y=0});
+            else  (dy > 0) ? mob_move_by(mob, (pos_t){.x=0, .y=-1}) : mob_move_by(mob, (pos_t){.x=0, .y=1});
+        }
     }
     else ;
 }

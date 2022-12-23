@@ -18,7 +18,7 @@ function main()
     
     local obj_files=$(find . -name "*.o");
 
-    gcc -o ${game_name} ${obj_files};
+    gcc -o ${game_name} -lm ${obj_files};
 }
 
 main;
