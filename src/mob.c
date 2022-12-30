@@ -26,33 +26,80 @@ void mob_free_mobs(void)
 }
 
 
-void mob_move_to(mob_t *creature, pos_t pos)
+void mob_move_to(mob_t *mob, int16_t x, int16_t y)
 {
-    term_move_cursor(creature->obj.pos.x, creature->obj.pos.y);
-    term_putchar(creature->stands_on);
-    term_move_cursor(pos.x, pos.y);
-    creature->stands_on = term_getchar();
-    term_putchar(creature->symbol);
-    creature->obj.pos.x = pos.x;
-    creature->obj.pos.y = pos.y;
+    term_move_cursor(mob->obj.pos.x, mob->obj.pos.y);
+    term_putchar(mob->stands_on);
+    term_move_cursor(x, y);
+    mob->stands_on = term_getchar();
+    term_putchar(mob->symbol);
+    mob->obj.pos.x = x;
+    mob->obj.pos.y = y;
 }
 
 
-void mob_move_by(mob_t *creature, pos_t rel_pos)
+void mob_move_by(mob_t *mob, int16_t x, int16_t y)
 {
-    term_move_cursor(creature->obj.pos.x, creature->obj.pos.y);
-    term_putchar(creature->stands_on);
-    term_move_cursor(creature->obj.pos.x + rel_pos.x, creature->obj.pos.y + rel_pos.y);
-    creature->stands_on = term_getchar();
-    term_putchar(creature->symbol);
-    creature->obj.pos.x += rel_pos.x;
-    creature->obj.pos.y += rel_pos.y;
+    term_move_cursor(mob->obj.pos.x, mob->obj.pos.y);
+    term_putchar(mob->stands_on);
+    term_move_cursor(mob->obj.pos.x + x, mob->obj.pos.y + y);
+    mob->stands_on = term_getchar();
+    term_putchar(mob->symbol);
+    mob->obj.pos.x += x;
+    mob->obj.pos.y += y;
+    limit(TERM_COLS_NUM, &mob->obj.pos.x, 0);
+    limit(TERM_ROWS_NUM, &mob->obj.pos.y, 0);
 }
 
 
 mob_t *mob_get_mobs(void)
 {
     return head;
+}
+
+
+void mob_handle_movement(mob_t *mob, input_code_t step_to)
+{
+    char obj_ahead = 0;
+
+    switch(step_to)
+    {
+        case STEP_UP:
+            obj_ahead = term_getchar_xy(mob->obj.pos.x, mob->obj.pos.y - 1); break;
+        case STEP_LEFT:
+            obj_ahead = term_getchar_xy(mob->obj.pos.x - 1, mob->obj.pos.y); break;
+        case STEP_DOWN:
+            obj_ahead = term_getchar_xy(mob->obj.pos.x, mob->obj.pos.y + 1); break;
+        case STEP_RIGHT:
+            obj_ahead = term_getchar_xy(mob->obj.pos.x + 1, mob->obj.pos.y); break;
+        default:
+            nidebug("invalid option for stepping! %s:%d", __FILE__, __LINE__);
+    }
+
+    switch(obj_ahead)
+    {
+        case ROOM_FLOOR:
+        case ROOM_DOOR:
+        case CORRIDOR_FLOOR:
+            switch(step_to)
+            {
+                case STEP_UP:
+                    mob_move_by(mob, 0, -1); break;
+                case STEP_LEFT:
+                    mob_move_by(mob, -1, 0); break;
+                case STEP_DOWN:
+                    mob_move_by(mob, 0, 1); break;
+                case STEP_RIGHT:
+                    mob_move_by(mob, 1, 0); break;
+            }
+        case VERTICAL_WALL:
+        case HORIZONTAL_WALL:
+        /* do nothing */
+        break;
+
+        default:
+            nidebug("Unknown object ahead:[%c] in %s:%d", obj_ahead, __FILE__, __LINE__);
+    }
 }
 
 
@@ -114,7 +161,7 @@ static void add_to_list(mob_t *mob, const mob_id_t id)
 static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
 {
     char c = 0;
-    if(mobp.x != playerp.x){ /* vertical case */
+    if(mobp.x != playerp.x){
         int16_t right_x = (mobp.x > playerp.x) ? mobp.x : playerp.x;
         int16_t left_x  = (mobp.x > playerp.x) ? playerp.x : mobp.x;
         float m = ((float)mobp.y - playerp.y) / (mobp.x - playerp.x);
@@ -124,7 +171,7 @@ static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
             if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
         }
     }
-    else{
+    else{ /* vertical case */
         int16_t lower_y = (mobp.y > playerp.y) ? mobp.y : playerp.y;
         int16_t upper_y = (mobp.y > playerp.y) ? playerp.y : mobp.y;
         ++upper_y; // not to start on the mob itself, takes care of 'next to each other' case
@@ -145,8 +192,8 @@ void mob_update(mob_t *mob, mob_t *player)
 
     if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight. The equation hold even if the two sides are taken to the second power, thus removing the squaring
         if(is_player_in_eyesight(mob->obj.pos, player->obj.pos)){
-            if(abs(dx) > abs(dy)) (dx > 0) ? mob_move_by(mob, (pos_t){.x=-1, .y=0}) : mob_move_by(mob, (pos_t){.x=1, .y=0});
-            else  (dy > 0) ? mob_move_by(mob, (pos_t){.x=0, .y=-1}) : mob_move_by(mob, (pos_t){.x=0, .y=1});
+            if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
+            else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
         }
     }
     else ;

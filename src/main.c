@@ -12,6 +12,7 @@
 #include "input.h"
 #include "display.h"
 #include "debug.h"
+#include "utils.h"
 
 
 static void draw(void)
@@ -54,7 +55,7 @@ int main(void)
     mob_t *player = mob_summon(ID_PLAYER);
     mob_summon(ID_DRAUGR);
     mob_summon(ID_DRAUGR);
-    for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos);
+    for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);
 
     display_runic_line();
     display_player_stats(*player);
@@ -69,33 +70,11 @@ int main(void)
         switch(input)
         {
             case ARROW_UP:
-                obj_ahead = term_getchar_xy(player->obj.pos.x, player->obj.pos.y - 1);
-                if(player->obj.pos.y > 0 && (obj_ahead != VERTICAL_WALL && obj_ahead != HORIZONTAL_WALL)){
-                    mob_move_by(player, (pos_t){.x=0, .y=-1});
-                }
-                break;
-
             case ARROW_LEFT:
-                obj_ahead = term_getchar_xy(player->obj.pos.x - 1, player->obj.pos.y);
-                if(player->obj.pos.x > 0 && (obj_ahead != VERTICAL_WALL && obj_ahead != HORIZONTAL_WALL)){
-                    mob_move_by(player, (pos_t){.x=-1, .y=0});
-                }
-                break;
-        
             case ARROW_DOWN:
-                obj_ahead = term_getchar_xy(player->obj.pos.x, player->obj.pos.y + 1);
-                if(player->obj.pos.y < (signed int)TERM_ROWS_NUM-1 && (obj_ahead != VERTICAL_WALL && obj_ahead != HORIZONTAL_WALL)){
-                    mob_move_by(player, (pos_t){.x=0, .y=1});
-                }
-                break;
-        
             case ARROW_RIGHT:
-                obj_ahead = term_getchar_xy(player->obj.pos.x + 1, player->obj.pos.y);
-                if(player->obj.pos.x < (signed int)TERM_COLS_NUM-1 && (obj_ahead != VERTICAL_WALL && obj_ahead != HORIZONTAL_WALL)){
-                    mob_move_by(player, (pos_t){.x=1, .y=0});
-                }
+                mob_handle_movement(player, input);
                 break;
-
             case 'q':
             case 'Q':
                 game_running = false;
@@ -112,7 +91,7 @@ int main(void)
             int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
             int x = r[num].obj.pos.x + 1;
             int y = r[num].obj.pos.y + 1;
-            mob_move_to(player, (pos_t){.x=x, .y=y});
+            mob_move_to(player, x, y);
         }
 
         display_runic_line();

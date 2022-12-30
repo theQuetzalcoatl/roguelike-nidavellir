@@ -2,6 +2,7 @@
 #include "room.h"
 #include "display.h"
 #include "debug.h"
+#include "utils.h"
 
 #define MIN_ROOM_HEIGHT (5u)
 #define MIN_ROOM_WIDTH MIN_ROOM_HEIGHT

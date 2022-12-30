@@ -1,5 +1,6 @@
 #include "terminal.h"
 #include <unistd.h>
+#include "utils.h"
 #include <stdlib.h>
 
 #pragma GCC diagnostic ignored "-Wunused-result"

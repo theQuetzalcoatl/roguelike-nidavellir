@@ -10,7 +10,6 @@ typedef struct pos_t
     int16_t y;
 }pos_t;
 
-#define CALC_RAND(max, min) (rand()%(max - min + 1) + min) // [max:min]
 
 extern void term_setup(void);
 extern void term_restore_original(void);
