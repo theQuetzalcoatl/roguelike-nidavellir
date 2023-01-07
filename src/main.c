@@ -75,6 +75,7 @@ int main(void)
             case ARROW_RIGHT:
                 mob_handle_movement(player, input);
                 break;
+                
             case 'q':
             case 'Q':
                 game_running = false;

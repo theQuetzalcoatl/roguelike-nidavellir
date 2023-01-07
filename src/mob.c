@@ -162,13 +162,23 @@ static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
 {
     char c = 0;
     if(mobp.x != playerp.x){
-        int16_t right_x = (mobp.x > playerp.x) ? mobp.x : playerp.x;
-        int16_t left_x  = (mobp.x > playerp.x) ? playerp.x : mobp.x;
         float m = ((float)mobp.y - playerp.y) / (mobp.x - playerp.x);
         float b = mobp.y - m*mobp.x;
-        for(++left_x; left_x < right_x; ++left_x){ // not to start on the mob itself, takes care of 'next to each other' case
-            c = term_getchar_xy(left_x, m*left_x + b + 0.5f);
-            if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
+        if(fabsf(m) > 1.0f){
+            int16_t lower_y = (mobp.y > playerp.y) ? mobp.y : playerp.y;
+            int16_t upper_y = (mobp.y > playerp.y) ? playerp.y : mobp.y;
+            for(++upper_y; upper_y < lower_y; ++upper_y){ // not to start on the mob itself, takes care of 'next to each other' case
+                c = term_getchar_xy((upper_y - b)/m, upper_y);
+                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
+            }
+        }
+        else{
+            int16_t right_x = (mobp.x > playerp.x) ? mobp.x : playerp.x;
+            int16_t left_x  = (mobp.x > playerp.x) ? playerp.x : mobp.x;
+            for(++left_x; left_x < right_x; ++left_x){ // not to start on the mob itself, takes care of 'next to each other' case
+                c = term_getchar_xy(left_x, m*left_x + b + 0.5f);
+                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
+            }
         }
     }
     else{ /* vertical case */
