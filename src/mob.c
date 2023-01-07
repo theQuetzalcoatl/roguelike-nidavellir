@@ -28,11 +28,9 @@ void mob_free_mobs(void)
 
 void mob_move_to(mob_t *mob, int16_t x, int16_t y)
 {
-    term_move_cursor(mob->obj.pos.x, mob->obj.pos.y);
-    term_putchar(mob->stands_on);
-    term_move_cursor(x, y);
-    mob->stands_on = term_getchar();
-    term_putchar(mob->symbol);
+    term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
+    mob->stands_on = term_getchar_xy(x, y);
+    //term_putchar_xy(mob->symbol, x, y);
     mob->obj.pos.x = x;
     mob->obj.pos.y = y;
 }
@@ -40,15 +38,22 @@ void mob_move_to(mob_t *mob, int16_t x, int16_t y)
 
 void mob_move_by(mob_t *mob, int16_t x, int16_t y)
 {
-    term_move_cursor(mob->obj.pos.x, mob->obj.pos.y);
-    term_putchar(mob->stands_on);
-    term_move_cursor(mob->obj.pos.x + x, mob->obj.pos.y + y);
-    mob->stands_on = term_getchar();
-    term_putchar(mob->symbol);
+    term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
+    mob->stands_on = term_getchar_xy(mob->obj.pos.x + x, mob->obj.pos.y + y);
+    //term_putchar_xy(mob->symbol, mob->obj.pos.x + x, mob->obj.pos.y + y);
     mob->obj.pos.x += x;
     mob->obj.pos.y += y;
-    limit(TERM_COLS_NUM, &mob->obj.pos.x, 0);
-    limit(TERM_ROWS_NUM, &mob->obj.pos.y, 0);
+    //limit(TERM_COLS_NUM, &mob->obj.pos.x, 0); //limit(TERM_ROWS_NUM, &mob->obj.pos.y, 0);
+}
+
+static void draw_mob(mob_t mob)
+{
+    term_putchar_xy(mob.symbol, mob.obj.pos.x, mob.obj.pos.y);
+}
+
+static void hide_mob(mob_t mob)
+{
+    term_putchar_xy(mob.stands_on, mob.obj.pos.x, mob.obj.pos.y);
 }
 
 
@@ -194,17 +199,24 @@ static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
 }
 
 
-void mob_update(mob_t *mob, mob_t *player)
+void mob_update(mob_t *mob)
 {
+    mob_t *player = head;
     int16_t dx = mob->obj.pos.x - player->obj.pos.x;
     int16_t dy = mob->obj.pos.y - player->obj.pos.y;
-    if(mob == player) return; // NOTE: get rid of this ugly stuff asap
+    
+    if(mob == player){
+        draw_mob(*player);
+        return; // NOTE: get rid of this ugly stuff asap
+    }
 
     if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight. The equation hold even if the two sides are taken to the second power, thus removing the squaring
         if(is_player_in_eyesight(mob->obj.pos, player->obj.pos)){
             if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
             else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
+            draw_mob(*mob);
         }
+        else hide_mob(*mob);
     }
     else ;
 }

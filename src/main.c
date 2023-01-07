@@ -57,6 +57,8 @@ int main(void)
     mob_summon(ID_DRAUGR);
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);
 
+    term_putchar_xy(player->symbol, player->obj.pos.x, player->obj.pos.y); // NOTE: solve it nicer
+
     display_runic_line();
     display_player_stats(*player);
 
@@ -85,8 +87,6 @@ int main(void)
                 break;
         }
 
-        for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, player);
-
         /*  temporarily teleporting the player due to the lack of corridors*/
         if(player->stands_on == ROOM_DOOR) {
             int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
@@ -94,13 +94,14 @@ int main(void)
             int y = r[num].obj.pos.y + 1;
             mob_move_to(player, x, y);
         }
+        for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob);
 
         display_runic_line();
         display_player_stats(*mob_get_mobs());
         draw();
     }
 
-    /* CLEAN UP*/
+    /* CLEAN UP */
     free(r);
 
     return 0;
