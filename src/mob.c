@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <math.h>
 #include "terminal.h"
 #include "mob.h"
 #include "debug.h"
@@ -30,7 +29,6 @@ void mob_move_to(mob_t *mob, int16_t x, int16_t y)
 {
     term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
     mob->stands_on = term_getchar_xy(x, y);
-    //term_putchar_xy(mob->symbol, x, y);
     mob->obj.pos.x = x;
     mob->obj.pos.y = y;
 }
@@ -40,7 +38,6 @@ void mob_move_by(mob_t *mob, int16_t x, int16_t y)
 {
     term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
     mob->stands_on = term_getchar_xy(mob->obj.pos.x + x, mob->obj.pos.y + y);
-    //term_putchar_xy(mob->symbol, mob->obj.pos.x + x, mob->obj.pos.y + y);
     mob->obj.pos.x += x;
     mob->obj.pos.y += y;
     //limit(TERM_COLS_NUM, &mob->obj.pos.x, 0); //limit(TERM_ROWS_NUM, &mob->obj.pos.y, 0);
@@ -166,14 +163,18 @@ static void add_to_list(mob_t *mob, const mob_id_t id)
 static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
 {
     char c = 0;
-    if(mobp.x != playerp.x){
-        float m = ((float)mobp.y - playerp.y) / (mobp.x - playerp.x);
-        float b = mobp.y - m*mobp.x;
-        if(fabsf(m) > 1.0f){
+    int16_t dx = mobp.x - playerp.x;
+    int16_t dy = mobp.y - playerp.y;
+
+    if(dx != 0){
+        int16_t m = (mobp.y - playerp.y) / (mobp.x - playerp.x);
+        int16_t b = mobp.y - (dy*mobp.x)/dx;
+        
+        if(m <= -1 && m >= 1){
             int16_t lower_y = (mobp.y > playerp.y) ? mobp.y : playerp.y;
             int16_t upper_y = (mobp.y > playerp.y) ? playerp.y : mobp.y;
             for(++upper_y; upper_y < lower_y; ++upper_y){ // not to start on the mob itself, takes care of 'next to each other' case
-                c = term_getchar_xy((upper_y - b)/m, upper_y);
+                c = term_getchar_xy( ((upper_y - b)*dy)/dy, upper_y);
                 if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
             }
         }
@@ -181,7 +182,7 @@ static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
             int16_t right_x = (mobp.x > playerp.x) ? mobp.x : playerp.x;
             int16_t left_x  = (mobp.x > playerp.x) ? playerp.x : mobp.x;
             for(++left_x; left_x < right_x; ++left_x){ // not to start on the mob itself, takes care of 'next to each other' case
-                c = term_getchar_xy(left_x, m*left_x + b + 0.5f);
+                c = term_getchar_xy(left_x, (dy*left_x)/dx + b);
                 if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
             }
         }
@@ -189,8 +190,7 @@ static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
     else{ /* vertical case */
         int16_t lower_y = (mobp.y > playerp.y) ? mobp.y : playerp.y;
         int16_t upper_y = (mobp.y > playerp.y) ? playerp.y : mobp.y;
-        ++upper_y; // not to start on the mob itself, takes care of 'next to each other' case
-        for(; upper_y < lower_y; ++upper_y){
+        for(++upper_y; upper_y < lower_y; ++upper_y){// not to start on the mob itself, takes care of 'next to each other' case
             c = term_getchar_xy(playerp.x, upper_y);
             if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
         }
@@ -210,7 +210,7 @@ void mob_update(mob_t *mob)
         return; // NOTE: get rid of this ugly stuff asap
     }
 
-    if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight. The equation hold even if the two sides are taken to the second power, thus removing the squaring
+    if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight.
         if(is_player_in_eyesight(mob->obj.pos, player->obj.pos)){
             if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
             else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
