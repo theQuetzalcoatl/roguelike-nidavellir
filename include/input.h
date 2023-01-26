@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#define NO_ARROW    (0x0u)
 #define ARROW_UP    (0x1b5b41)
 #define ARROW_DOWN  (0x1b5b42)
 #define ARROW_RIGHT (0x1b5b43)

@@ -31,11 +31,11 @@ static void check_terminal_size(void)
     }
 }
 
+bool game_running = true;
+
 
 int main(void)
 {
-    bool game_running = true;
-
     check_terminal_size();
     term_setup();
     
@@ -46,7 +46,7 @@ int main(void)
     atexit(debug_deinit);
     atexit(mob_free_mobs);
 
-    //cutscene_intro();
+    cutscene_intro();
 
     room_create_rooms();
     room_t *r = room_get_rooms();
@@ -57,25 +57,27 @@ int main(void)
     mob_summon(ID_DRAUGR);
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);
 
-    term_putchar_xy(player->symbol, player->obj.pos.x, player->obj.pos.y); // NOTE: solve it nicer
+    mob_draw(*player);
 
     display_runic_line();
     display_player_stats(*player);
 
-    input_code_t input = 'a';
-    char obj_ahead = 0;
+    input_code_t input;
+    input_code_t step_to = NO_ARROW;
 
     draw();
 
     while(game_running){
         input = get_keypress();
+        step_to = NO_ARROW;
+
         switch(input)
         {
             case ARROW_UP:
             case ARROW_LEFT:
             case ARROW_DOWN:
             case ARROW_RIGHT:
-                mob_handle_movement(player, input);
+                step_to = input;
                 break;
                 
             case 'q':
@@ -84,24 +86,26 @@ int main(void)
                 break;
 
             default:
-                break;
+                nidebug("Unknown input: %i\n", input);
         }
 
+        for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, step_to);
         /*  temporarily teleporting the player due to the lack of corridors*/
         if(player->stands_on == ROOM_DOOR) {
             int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
             int x = r[num].obj.pos.x + 1;
             int y = r[num].obj.pos.y + 1;
             mob_move_to(player, x, y);
+            mob_draw(*player);
         }
-        for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob);
-
+        
         display_runic_line();
-        display_player_stats(*mob_get_mobs());
+        display_player_stats(*player);
         draw();
     }
 
     /* CLEAN UP */
+    cutscene_dead();
     free(r);
 
     return 0;

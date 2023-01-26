@@ -12,6 +12,7 @@ static void add_to_list(mob_t *mob, const mob_id_t id);
 
 static mob_t *head = NULL;
 static mob_t *tail = NULL;
+extern bool game_running;
 
 
 void mob_free_mobs(void)
@@ -43,7 +44,7 @@ void mob_move_by(mob_t *mob, int16_t x, int16_t y)
     //limit(TERM_COLS_NUM, &mob->obj.pos.x, 0); //limit(TERM_ROWS_NUM, &mob->obj.pos.y, 0);
 }
 
-static void draw_mob(mob_t mob)
+void mob_draw(mob_t mob)
 {
     term_putchar_xy(mob.symbol, mob.obj.pos.x, mob.obj.pos.y);
 }
@@ -60,20 +61,69 @@ mob_t *mob_get_mobs(void)
 }
 
 
+static void remove_mob(mob_t *mob)
+{
+    mob_t *prev_mob = head;
+    term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
+    for(mob_t *search_mob = mob_get_mobs()->next; search_mob; search_mob = search_mob->next){
+        if(search_mob == mob){
+            prev_mob->next = mob->next;
+            free(mob);
+            break;
+        }
+        else prev_mob = search_mob;
+    }
+}
+
+
+static void attack_mob(mob_t *mob)
+{
+    int8_t damage = CALC_RAND(20,0);
+    mob->health -= damage;
+    if(mob->health <= 0){
+        mob->health = 0;
+        if(mob == head) game_running = false;
+        else remove_mob(mob);
+    }
+}
+
+
+static void attack_player(void)
+{
+    attack_mob(head);
+}
+
+
 void mob_handle_movement(mob_t *mob, input_code_t step_to)
 {
     char obj_ahead = 0;
+    int16_t new_x = 0;
+    int16_t new_y = 0;
 
     switch(step_to)
     {
         case STEP_UP:
-            obj_ahead = term_getchar_xy(mob->obj.pos.x, mob->obj.pos.y - 1); break;
+            obj_ahead = term_getchar_xy(mob->obj.pos.x, mob->obj.pos.y - 1); 
+            new_x = mob->obj.pos.x;
+            new_y = mob->obj.pos.y - 1;
+            break;
         case STEP_LEFT:
-            obj_ahead = term_getchar_xy(mob->obj.pos.x - 1, mob->obj.pos.y); break;
+            obj_ahead = term_getchar_xy(mob->obj.pos.x - 1, mob->obj.pos.y);
+            new_x = mob->obj.pos.x - 1;
+            new_y = mob->obj.pos.y;
+            break;
         case STEP_DOWN:
-            obj_ahead = term_getchar_xy(mob->obj.pos.x, mob->obj.pos.y + 1); break;
+            obj_ahead = term_getchar_xy(mob->obj.pos.x, mob->obj.pos.y + 1);
+            new_x = mob->obj.pos.x;
+            new_y = mob->obj.pos.y + 1;
+            break;
         case STEP_RIGHT:
-            obj_ahead = term_getchar_xy(mob->obj.pos.x + 1, mob->obj.pos.y); break;
+            obj_ahead = term_getchar_xy(mob->obj.pos.x + 1, mob->obj.pos.y);
+            new_x = mob->obj.pos.x + 1;
+            new_y = mob->obj.pos.y;
+            break;
+        case NO_ARROW:
+            return; break;
         default:
             nidebug("invalid option for stepping! %s:%d", __FILE__, __LINE__);
     }
@@ -83,21 +133,24 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
         case ROOM_FLOOR:
         case ROOM_DOOR:
         case CORRIDOR_FLOOR:
-            switch(step_to)
-            {
-                case STEP_UP:
-                    mob_move_by(mob, 0, -1); break;
-                case STEP_LEFT:
-                    mob_move_by(mob, -1, 0); break;
-                case STEP_DOWN:
-                    mob_move_by(mob, 0, 1); break;
-                case STEP_RIGHT:
-                    mob_move_by(mob, 1, 0); break;
-            }
+            mob_move_to(mob, new_x, new_y);
+            break;
         case VERTICAL_WALL:
         case HORIZONTAL_WALL:
         /* do nothing */
-        break;
+            break;
+
+        case ID_DRAUGR:
+            if(mob == head){
+                for(mob_t *mob = mob_get_mobs()->next; mob; mob = mob->next){
+                    if(mob->obj.pos.x == new_x && mob->obj.pos.y == new_y){
+                        attack_mob(mob);
+                        nidebug("[%c] health: %i", mob->symbol, mob->health);
+                        break;
+                    }
+                }
+            }
+            break;
 
         default:
             nidebug("Unknown object ahead:[%c] in %s:%d", obj_ahead, __FILE__, __LINE__);
@@ -199,26 +252,29 @@ static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
 }
 
 
-void mob_update(mob_t *mob)
+void mob_update(mob_t *mob, input_code_t step_to)
 {
-    mob_t *player = head;
-    int16_t dx = mob->obj.pos.x - player->obj.pos.x;
-    int16_t dy = mob->obj.pos.y - player->obj.pos.y;
-    
-    if(mob == player){
-        draw_mob(*player);
-        return; // NOTE: get rid of this ugly stuff asap
+    if(mob == head){ /* player */
+        mob_handle_movement(mob, step_to);
+        mob_draw(*mob);
     }
+    else{
+        int16_t dx = mob->obj.pos.x - head->obj.pos.x;
+        int16_t dy = mob->obj.pos.y - head->obj.pos.y;
 
-    if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight.
-        if(is_player_in_eyesight(mob->obj.pos, player->obj.pos)){
-            if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
-            else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
-            draw_mob(*mob);
+        if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight.
+            if(is_player_in_eyesight(mob->obj.pos, head->obj.pos)){
+                if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
+                else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
+                mob_draw(*mob);
+            }
+            else hide_mob(*mob);
         }
-        else hide_mob(*mob);
+        else{
+            mob_draw(*mob);
+            attack_player();
+        }
     }
-    else ;
 }
 
 
@@ -255,7 +311,7 @@ static void summon_player(mob_t *player)
     static bool summoned = false;
     room_t *rooms = room_get_rooms();
     if(summoned == false){
-        *player = (mob_t){.obj.pos.x=rooms[0].obj.pos.x+1, .obj.pos.y=rooms[0].obj.pos.y+1, .stands_on='.', .symbol='@', .health = 100, .level=1, .next = NULL};
+        *player = (mob_t){.obj.pos.x=rooms[0].obj.pos.x+1, .obj.pos.y=rooms[0].obj.pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL};
         summoned = true;
     }
     else{
@@ -267,10 +323,10 @@ static void summon_player(mob_t *player)
 
 static void summon_goblin(mob_t *goblin)
 {
-    *goblin = (mob_t){.obj={get_random_pos()}, .stands_on='.', .symbol='G', .health=15, .level=1, .next = NULL};
+    *goblin = (mob_t){.obj={get_random_pos()}, .stands_on=ROOM_FLOOR, .symbol=ID_GOBLIN, .health=15, .level=1, .next = NULL};
 }
 
 static void summon_draugr(mob_t *draugr)
 {
-    *draugr = (mob_t){.obj={get_random_pos()}, .stands_on='.', .symbol='D', .health = 50, .level=10, .next = NULL}; 
+    *draugr = (mob_t){.obj={get_random_pos()}, .stands_on=ROOM_FLOOR, .symbol=ID_DRAUGR, .health = 50, .level=10, .next = NULL}; 
 }
