@@ -8,21 +8,17 @@
 static void summon_player(mob_t *player);
 static void summon_goblin(mob_t *goblin);
 static void summon_draugr(mob_t *draugr);
-static void add_to_list(mob_t *mob, const mob_id_t id);
+static void add_to_list(mob_t *mob);
 
 static mob_t *head = NULL;
-static mob_t *tail = NULL;
+static mob_t *player = NULL;
 extern bool game_running;
 
 
 void mob_free_mobs(void)
 {
-    mob_t *mob = head->next;
-    while(mob){
-        free(head);
-        head = mob;
-        mob = mob->next;
-    }
+    mob_t *mob = head;
+    while(mob) mob = mob->next;
 }
 
 
@@ -61,11 +57,17 @@ mob_t *mob_get_mobs(void)
 }
 
 
+mob_t *mob_get_player(void)
+{
+    return player;
+}
+
+
 static void remove_mob(mob_t *mob)
 {
     mob_t *prev_mob = head;
     term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
-    for(mob_t *search_mob = mob_get_mobs()->next; search_mob; search_mob = search_mob->next){
+    for(mob_t *search_mob = head->next; search_mob; search_mob = search_mob->next){
         if(search_mob == mob){
             prev_mob->next = mob->next;
             free(mob);
@@ -76,21 +78,21 @@ static void remove_mob(mob_t *mob)
 }
 
 
-static void attack_mob(mob_t *mob)
+static void attack(mob_t *attacked_mob)
 {
     int8_t damage = CALC_RAND(20,0);
-    mob->health -= damage;
-    if(mob->health <= 0){
-        mob->health = 0;
-        if(mob == head) game_running = false;
-        else remove_mob(mob);
+    attacked_mob->health -= damage;
+    if(attacked_mob->health <= 0){
+        attacked_mob->health = 0;
+        if(attacked_mob == player) game_running = false;
+        else remove_mob(attacked_mob);
     }
 }
 
 
 static void attack_player(void)
 {
-    attack_mob(head);
+    attack(player);
 }
 
 
@@ -137,15 +139,17 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
             break;
         case VERTICAL_WALL:
         case HORIZONTAL_WALL:
+        case EMPTY_SPACE:
         /* do nothing */
             break;
 
         case ID_DRAUGR:
-            if(mob == head){
-                for(mob_t *mob = mob_get_mobs()->next; mob; mob = mob->next){
-                    if(mob->obj.pos.x == new_x && mob->obj.pos.y == new_y){
-                        attack_mob(mob);
-                        nidebug("[%c] health: %i", mob->symbol, mob->health);
+        case ID_GOBLIN:
+            if(mob == player){
+                for(mob_t *hostile_mob = mob_get_mobs()->next; hostile_mob; hostile_mob = hostile_mob->next){
+                    if(hostile_mob->obj.pos.x == new_x && hostile_mob->obj.pos.y == new_y){
+                        nidebug("[%c] health: %i", hostile_mob->symbol, hostile_mob->health);
+                        attack(hostile_mob);
                         break;
                     }
                 }
@@ -160,6 +164,8 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
 
 mob_t *mob_summon(const mob_id_t id)
 {
+    static bool first_summon = true;
+
     mob_t *summoned_creature = malloc(sizeof(mob_t));
     if(summoned_creature == NULL){
         nidebug("Could not summon creature in %s:%d", __FILE__, __LINE__);
@@ -169,6 +175,7 @@ mob_t *mob_summon(const mob_id_t id)
     switch(id)
     {
         case ID_PLAYER:
+            player = summoned_creature;
             summon_player(summoned_creature);
             break;
 
@@ -183,33 +190,26 @@ mob_t *mob_summon(const mob_id_t id)
         default:
             nidebug("Unknown creature id: %d", id);
             free(summoned_creature);
-            summoned_creature = NULL;
+            return NULL;
     }
 
-    if(summoned_creature != NULL) add_to_list(summoned_creature, id);
+    if(summoned_creature != NULL && first_summon == false) add_to_list(summoned_creature);
     else{
-        /* This means either an invalid ID was supplied or could not summon the mob*/
+        first_summon = false;
+        head = summoned_creature;
+        head->next = NULL;
     }
 
     return summoned_creature;
 }
 
 
-static void add_to_list(mob_t *mob, const mob_id_t id)
+static void add_to_list(mob_t *mob)
 {
-    if(id != ID_PLAYER && head != NULL){
-        tail->next = mob;
-        tail = mob;
-        mob->next = NULL;
-    }
-    else if(id == ID_PLAYER && head == NULL){ /* ensuring that player is the first mob */
-        head = mob;
-        tail = head;
-    }
-    else{
-        nidebug("Something went wrong during list expansion. Maybe the order?\n");
-        exit(1);
-    }
+    mob_t *mobs = mob_get_mobs();
+    for(; mobs->next; mobs = mobs->next);
+    mobs->next = mob;
+    mob->next = NULL;
 }
 
 
@@ -254,13 +254,13 @@ static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
 
 void mob_update(mob_t *mob, input_code_t step_to)
 {
-    if(mob == head){ /* player */
+    if(mob == player){
         mob_handle_movement(mob, step_to);
         mob_draw(*mob);
     }
     else{
-        int16_t dx = mob->obj.pos.x - head->obj.pos.x;
-        int16_t dy = mob->obj.pos.y - head->obj.pos.y;
+        int16_t dx = mob->obj.pos.x - player->obj.pos.x;
+        int16_t dy = mob->obj.pos.y - player->obj.pos.y;
 
         if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight.
             if(is_player_in_eyesight(mob->obj.pos, head->obj.pos)){
@@ -282,24 +282,26 @@ static pos_t get_random_pos(void)
 {
     const room_t *room;
     uint16_t x, y, selected_room, tries;
-
-    for(tries = 10; tries; --tries){
-        selected_room = CALC_RAND(room_get_num_of_rooms()-1, 1); // room[0] is where the player starts, it shall be safe originally, thats why it is [numofroom:1]
-        room = room_get_rooms() + selected_room;
-
-        x = room->obj.pos.x;
-        x += CALC_RAND(room->width - 1, 1);
-
-        y = room->obj.pos.y;
-        y += CALC_RAND(room->height - 1, 1);
-
-        if(term_getchar_xy(x, y) == ROOM_FLOOR) break;
-    }
-
-    if(tries) return (pos_t){.x=x, .y=y};
+    if(room_get_rooms() == NULL || room_get_num_of_rooms == 0) return (pos_t){.x=0, .y=0};
     else{
-        nidebug("Could not find a place to summon mob."); /* NOTE: handle it more elegantly */
-        exit(1);
+        for(tries = 10; tries; --tries){
+            selected_room = CALC_RAND(room_get_num_of_rooms()-1, 1); // room[0] is where the player starts, it shall be safe originally, thats why it is [numofroom:1]
+            room = room_get_rooms() + selected_room;
+
+            x = room->obj.pos.x;
+            x += CALC_RAND(room->width - 1, 1);
+
+            y = room->obj.pos.y;
+            y += CALC_RAND(room->height - 1, 1);
+
+            if(term_getchar_xy(x, y) == ROOM_FLOOR) break;
+        }
+
+        if(tries) return (pos_t){.x=x, .y=y};
+        else{
+            nidebug("Could not find a place to summon mob."); /* NOTE: handle it more elegantly */
+            exit(1);
+        }    
     }
 }
 
@@ -311,7 +313,10 @@ static void summon_player(mob_t *player)
     static bool summoned = false;
     room_t *rooms = room_get_rooms();
     if(summoned == false){
-        *player = (mob_t){.obj.pos.x=rooms[0].obj.pos.x+1, .obj.pos.y=rooms[0].obj.pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL};
+        if(room_get_rooms() != NULL)
+            *player = (mob_t){.obj.pos.x=rooms[0].obj.pos.x+1, .obj.pos.y=rooms[0].obj.pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL};
+        else
+            *player = (mob_t){.obj.pos.x=1, .obj.pos.y=1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL};
         summoned = true;
     }
     else{
@@ -328,5 +333,5 @@ static void summon_goblin(mob_t *goblin)
 
 static void summon_draugr(mob_t *draugr)
 {
-    *draugr = (mob_t){.obj={get_random_pos()}, .stands_on=ROOM_FLOOR, .symbol=ID_DRAUGR, .health = 50, .level=10, .next = NULL}; 
+    *draugr = (mob_t){.obj={get_random_pos()}, .stands_on=ROOM_FLOOR, .symbol=ID_DRAUGR, .health = 20, .level=10, .next = NULL}; 
 }

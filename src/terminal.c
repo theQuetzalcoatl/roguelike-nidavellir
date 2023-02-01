@@ -22,9 +22,7 @@ void term_setup(void)
     struct termios s;
 
     for (uint16_t row = 0; row < TERM_ROWS_NUM; ++row){
-        for (uint16_t col = 0; col < TERM_COLS_NUM; ++col){
-            win.content[row][col] = ' ';
-        }
+        for (uint16_t col = 0; col < TERM_COLS_NUM; ++col) win.content[row][col] = ' ';
     }
 
     tcgetattr(STDOUT_FILENO, &s);

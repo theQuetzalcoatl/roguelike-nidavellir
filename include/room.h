@@ -42,5 +42,6 @@ extern room_t *room_get_rooms(void);
 #define HORIZONTAL_WALL '='
 #define ROOM_FLOOR      '.'
 #define ROOM_DOOR       '/'
+#define EMPTY_SPACE     ' '
 
 #endif /* _ROOM_ */

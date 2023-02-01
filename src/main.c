@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 
 #include "terminal.h"
@@ -13,6 +14,8 @@
 #include "display.h"
 #include "debug.h"
 #include "utils.h"
+
+extern void get_objects_from_custom_map(void);
 
 
 static void draw(void)
@@ -34,7 +37,7 @@ static void check_terminal_size(void)
 bool game_running = true;
 
 
-int main(void)
+int main(int argnum, char **argv)
 {
     check_terminal_size();
     term_setup();
@@ -46,17 +49,27 @@ int main(void)
     atexit(debug_deinit);
     atexit(mob_free_mobs);
 
-    cutscene_intro();
+    mob_t *player = NULL;
+    room_t *r = NULL;
 
-    room_create_rooms();
-    room_t *r = room_get_rooms();
-    for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
+    if(argnum == 2 && strstr(*(argv + 1), "--custom") != NULL){
+        get_objects_from_custom_map();
+        player = mob_get_player();
+    }
+    else{
+        //cutscene_intro();
+        room_create_rooms();
+        r = room_get_rooms();
+        for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
 
-    mob_t *player = mob_summon(ID_PLAYER);
-    mob_summon(ID_DRAUGR);
-    mob_summon(ID_DRAUGR);
+        player = mob_summon(ID_PLAYER);
+        mob_summon(ID_DRAUGR);
+        mob_summon(ID_DRAUGR);
+        mob_summon(ID_GOBLIN);
+        mob_summon(ID_GOBLIN);
+    }
+
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);
-
     mob_draw(*player);
 
     display_runic_line();
@@ -91,7 +104,7 @@ int main(void)
 
         for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, step_to);
         /*  temporarily teleporting the player due to the lack of corridors*/
-        if(player->stands_on == ROOM_DOOR) {
+        if(player->stands_on == ROOM_DOOR && argnum == 1) {
             int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
             int x = r[num].obj.pos.x + 1;
             int y = r[num].obj.pos.y + 1;
@@ -105,7 +118,7 @@ int main(void)
     }
 
     /* CLEAN UP */
-    cutscene_dead();
+    if(!player->health) cutscene_dead();
     free(r);
 
     return 0;

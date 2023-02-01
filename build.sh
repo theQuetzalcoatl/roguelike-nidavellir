@@ -4,7 +4,7 @@ function main()
 {
     local warnings="-Wall -Wextra";
     local optimization="-O2";
-    local debug_lvl="-g0";
+    local debug_lvl="-g3";
     local game_name="nidavellir";
     local includes="$PWD/include/";
     local c_files=$(find . -name "*.c");
