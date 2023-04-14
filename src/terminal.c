@@ -1,4 +1,5 @@
 #include "terminal.h"
+#include "room.h"
 #include <termios.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -21,12 +22,7 @@ void term_setup(void)
 {
     struct termios s;
 
-    for (uint16_t row = 0; row < TERM_ROWS_NUM; ++row){
-        for (uint16_t col = 0; col < TERM_COLS_NUM; ++col) win.content[row][col] = ' ';
-    }
-
     tcgetattr(STDOUT_FILENO, &s);
-
     original_term_settings = s;
 
     s.c_iflag |= IGNBRK | IGNCR | IGNPAR; /* ignore break(do not register it), ignore CR, ignore parity errors */
@@ -41,6 +37,10 @@ void term_setup(void)
     system("temp_PS1=${PS1}");
     system("PS1=\"\""); /* deleting prompt */
     system("clear");
+
+    for (uint16_t row = 0; row < TERM_ROWS_NUM; ++row){
+        for (uint16_t col = 0; col < TERM_COLS_NUM; ++col) term_putchar_xy(EMPTY_SPACE, col, row);
+    }
 
     tcsetattr(STDOUT_FILENO, TCSAFLUSH, &s);
 }

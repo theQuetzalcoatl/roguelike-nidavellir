@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #define CUSTOM_FILE_NAME ".custom_map.txt"
+#define TERM_ZERO (1u)
 
 
 void get_objects_from_custom_map(void)
@@ -21,16 +22,13 @@ void get_objects_from_custom_map(void)
     }
 
     fseek(fp, 0, SEEK_END);
-    uint32_t file_size = ftell(fp);
+    uint32_t file_size = ftell(fp) + TERM_ZERO;
     fseek(fp, 0, SEEK_SET);
 
-    file_size += 1; // for the terminating 0
     char *file_content = malloc(file_size);
     char * tmp = file_content;
-    fread(file_content, sizeof(char), file_size - 1, fp);
+    fread(file_content, sizeof(char), file_size - TERM_ZERO, fp);
     file_content[file_size-1] = 0;
-                nidebug(file_content);
-    fflush(stdout);
 
     while(*file_content){
         switch(*file_content)
@@ -49,10 +47,7 @@ void get_objects_from_custom_map(void)
             /* from here on, assuming a mob */
             default:
                 mob = mob_summon(*file_content);
-                if(mob){
-                    mob->obj.pos.x = x;
-                    mob->obj.pos.y = y;
-                }
+                if(mob) mob->obj.pos = (pos_t){.x = x, .y = y};
                 else nidebug("Could not summon: [%c]", *file_content);
         }
         if(*file_content != '\n'){

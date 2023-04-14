@@ -6,7 +6,6 @@
 #include "object.h"
 #include "item.h"
 #include "input.h"
-#include "utils.h"
 
 #define ID_PLAYER '@'
 #define ID_THOR 'T'

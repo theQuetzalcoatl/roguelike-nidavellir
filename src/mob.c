@@ -305,7 +305,6 @@ static pos_t get_random_pos(void)
     }
 }
 
-
             /* -------- MOB SUMMONING -------- */
 
 static void summon_player(mob_t *player)

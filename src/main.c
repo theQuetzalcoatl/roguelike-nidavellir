@@ -13,7 +13,6 @@
 #include "input.h"
 #include "display.h"
 #include "debug.h"
-#include "utils.h"
 
 extern void get_objects_from_custom_map(void);
 
@@ -41,7 +40,7 @@ int main(int argnum, char **argv)
 {
     check_terminal_size();
     term_setup();
-    
+
     srand(time(NULL)); /* RNG init */
     debug_init();
 
@@ -52,12 +51,14 @@ int main(int argnum, char **argv)
     mob_t *player = NULL;
     room_t *r = NULL;
 
-    if(argnum == 2 && strstr(*(argv + 1), "--custom") != NULL){
+    bool custom_mode = (argnum == 2 && !strcmp(*(argv + 1), "--custom")) ?  true : false;
+
+    if(custom_mode == true){
         get_objects_from_custom_map();
         player = mob_get_player();
     }
     else{
-        //cutscene_intro();
+        cutscene_intro();
         room_create_rooms();
         r = room_get_rooms();
         for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
@@ -75,8 +76,7 @@ int main(int argnum, char **argv)
     display_runic_line();
     display_player_stats(*player);
 
-    input_code_t input;
-    input_code_t step_to = NO_ARROW;
+    input_code_t input, step_to = NO_ARROW;
 
     draw();
 
@@ -92,7 +92,7 @@ int main(int argnum, char **argv)
             case ARROW_RIGHT:
                 step_to = input;
                 break;
-                
+
             case 'q':
             case 'Q':
                 game_running = false;
@@ -104,21 +104,21 @@ int main(int argnum, char **argv)
 
         for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, step_to);
         /*  temporarily teleporting the player due to the lack of corridors*/
-        if(player->stands_on == ROOM_DOOR && argnum == 1) {
+        if(player->stands_on == ROOM_DOOR && custom_mode == false) {
             int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
             int x = r[num].obj.pos.x + 1;
             int y = r[num].obj.pos.y + 1;
             mob_move_to(player, x, y);
             mob_draw(*player);
         }
-        
+
         display_runic_line();
         display_player_stats(*player);
         draw();
     }
 
     /* CLEAN UP */
-    if(!player->health) cutscene_dead();
+    if(!player->health && custom_mode == false) cutscene_dead();
     free(r);
 
     return 0;

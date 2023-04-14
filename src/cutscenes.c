@@ -1,14 +1,13 @@
 #include "terminal.h"
 #include <unistd.h>
-#include "utils.h"
 #include <stdlib.h>
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 
 void cutscene_intro(void)
 {
-    char runic_text[] = "ᛞᛖᚨᛏᚺ ᛗᚨᛃ ᛒᛖ ᛈᛖᚱᛗᚨᚾᛖᚾᛏ, ᛒᚢᛏ ᚹᚨᛚᚺᚨᛚᛚᚨ ᛁᛊ ᛖᛏᛖᚱᚾᚨᛚ";
-    char latin_text[] = "Death may be permanent, but Valhalla is eternal";
+    char runic_text[] = "ᛏᚺᛖ ᚹᛖᚨᚲ ᚨᚾᛞ ᛏᚺᛖ ᚠᚨᛁᛏᚺᛚᛖᛊᛊ ᚠᛁᚾᛞ ᚾᛟ ᛞᛖᛚᛁᚹᛖᚱᛖᚾᛊᛖ";//"ᛞᛖᚨᛏᚺ ᛗᚨᛃ ᛒᛖ ᛈᛖᚱᛗᚨᚾᛖᚾᛏ, ᛒᚢᛏ ᚹᚨᛚᚺᚨᛚᛚᚨ ᛁᛊ ᛖᛏᛖᚱᚾᚨᛚ";
+    char latin_text[] = "The weak and the faithless find no deliverence";//"Death may be permanent, but Valhalla is eternal";
     uint16_t text_indexes[48] = {}; // this should be the size of 'latin_text' with \0. Could be sizeof(latin_text)-1 but that gets the compiler icky
     uint16_t text_y = TERM_ROWS_NUM/2 - 1;
     uint16_t text_x = TERM_COLS_NUM/2 - sizeof(latin_text)/2;

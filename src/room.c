@@ -2,7 +2,6 @@
 #include "room.h"
 #include "display.h"
 #include "debug.h"
-#include "utils.h"
 
 #define MIN_ROOM_HEIGHT (5u)
 #define MIN_ROOM_WIDTH MIN_ROOM_HEIGHT
@@ -63,19 +62,6 @@ static room_t calculate_one_room(void)
     return r;
 }
 
-/*
-static void hide_room(room_t * const r)
-{
-    term_move_cursor(r->obj.pos.x, r->obj.pos.y);
-    for(uint8_t i = r->obj.pos.y; i < r->obj.pos.y + r->width-1; ++i){
-        for(uint8_t ii = r->obj.pos.x; ii < r->obj.pos.x-1; ++ii){
-            term_move_cursor(ii, i);
-            term_putchar(' ');
-        }
-    }
-    r->obj.is_visible = false;
-}
-*/
 
 static void add_doors(room_t * const room)
 {
@@ -143,11 +129,9 @@ void room_draw(const room_t r)
     for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.obj.pos.y);
     /* sidewalls and floor */
     for(int y = r.obj.pos.y + 1; y < r.height + r.obj.pos.y - 1; ++y){
-        for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x){
-            term_move_cursor(x, y);
-            if(x != r.obj.pos.x && x != r.obj.pos.x + r.width - 1) term_putchar(ROOM_FLOOR); 
-            else term_putchar(VERTICAL_WALL);
-        }
+        term_putchar_xy(VERTICAL_WALL, r.obj.pos.x, y);
+        term_putchar_xy(VERTICAL_WALL, r.obj.pos.x + r.width - 1, y);
+        for(int x = r.obj.pos.x + 1; x < r.width + r.obj.pos.x - 1; ++x) term_putchar_xy(ROOM_FLOOR, x, y);
     }
     /* lower wall */
     for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.obj.pos.y + r.height - 1);
