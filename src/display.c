@@ -10,10 +10,8 @@ void display_runic_line(void)
 
     term_move_cursor(0, RUNIC_LINE_POS);
 
-    printf("%s", runic_string);
-    printf("%s", runic_string);
-    printf("%s", runic_string);
-    printf("%s", runic_string);
+    /* actual characters of the runic line is 41 chars  */
+    for(int n = TERM_COLS_NUM/41; n >= 0; --n) printf("%s", runic_string);
 }
     
 

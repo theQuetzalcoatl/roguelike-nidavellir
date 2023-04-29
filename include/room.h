@@ -35,7 +35,7 @@ typedef struct room_t
 
 extern void room_draw(const room_t r);
 extern uint8_t room_get_num_of_rooms(void);
-extern void room_create_rooms(void);
+extern room_t *room_create_rooms(void);
 extern room_t *room_get_rooms(void);
 
 #define VERTICAL_WALL   '|'

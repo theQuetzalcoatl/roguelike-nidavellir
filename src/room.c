@@ -30,7 +30,7 @@ room_t *room_get_rooms(void)
 }
 
 
-void room_create_rooms(void)
+room_t *room_create_rooms(void)
 {
     uint8_t number_of_rooms = CALC_RAND(MAX_NUM_OF_ROOMS_PER_LEVEL, MIN_NUM_OF_ROOMS_PER_LEVEL);
     rooms = malloc(number_of_rooms*sizeof(room_t));
@@ -43,6 +43,8 @@ void room_create_rooms(void)
     for(int i = 0; i < number_of_rooms; ++i) *(rooms + i) = calculate_one_room();
 
     num_of_rooms = number_of_rooms;
+
+    return rooms;
 }
 
 

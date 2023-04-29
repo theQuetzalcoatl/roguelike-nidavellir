@@ -31,12 +31,9 @@ void term_setup(void)
     s.c_lflag &= ~(ECHO | ICANON);
     //s.c_cc[VTIME] = 0; s.c_cc[VMIN] = 1; IMPLICIT 
     printf("\x1B[?25l"); /* make cursor invisible */
-
     //printf("\e[8;%d;%dt", TERM_ROWS_NUM, TERM_COLS_NUM); /* resize window - 'resize' does the same thing */
     
-    system("temp_PS1=${PS1}");
-    system("PS1=\"\""); /* deleting prompt */
-    system("clear");
+    system("temp_PS1=${PS1}; PS1=\"\"; clear;");
 
     for (uint16_t row = 0; row < TERM_ROWS_NUM; ++row){
         for (uint16_t col = 0; col < TERM_COLS_NUM; ++col) term_putchar_xy(EMPTY_SPACE, col, row);
@@ -50,8 +47,7 @@ void term_restore_original(void)
 {
     tcsetattr(1, TCSANOW, &original_term_settings);
     term_move_cursor(0,0);
-    system("PS1=$temp_PS1");
-    system("clear");
+    system("PS1=$temp_PS1; clear;");
     printf("\x1B[?25h"); /* make cursor visible */
 }
 
