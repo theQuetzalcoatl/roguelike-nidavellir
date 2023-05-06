@@ -12,6 +12,7 @@ static void add_to_list(mob_t *mob);
 
 static mob_t *head = NULL;
 static mob_t *player = NULL;
+
 extern bool game_running;
 
 
@@ -31,12 +32,12 @@ void mob_move_to(mob_t *mob, int16_t x, int16_t y)
 }
 
 
-void mob_move_by(mob_t *mob, int16_t x, int16_t y)
+void mob_move_by(mob_t *mob, int16_t dx, int16_t dy)
 {
     term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
-    mob->stands_on = term_getchar_xy(mob->obj.pos.x + x, mob->obj.pos.y + y);
-    mob->obj.pos.x += x;
-    mob->obj.pos.y += y;
+    mob->stands_on = term_getchar_xy(mob->obj.pos.x + dx, mob->obj.pos.y + dy);
+    mob->obj.pos.x += dx;
+    mob->obj.pos.y += dy;
     //limit(TERM_COLS_NUM, &mob->obj.pos.x, 0); //limit(TERM_ROWS_NUM, &mob->obj.pos.y, 0);
 }
 
@@ -125,7 +126,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
             new_y = mob->obj.pos.y;
             break;
         case NO_ARROW:
-            return; break;
+            return; 
         default:
             nidebug("invalid option for stepping! %s:%d", __FILE__, __LINE__);
     }
@@ -146,7 +147,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
         case ID_DRAUGR:
         case ID_GOBLIN:
             if(mob == player){
-                for(mob_t *hostile_mob = mob_get_mobs()->next; hostile_mob; hostile_mob = hostile_mob->next){
+                for(mob_t *hostile_mob = mob_get_mobs(); hostile_mob; hostile_mob = hostile_mob->next){
                     if(hostile_mob->obj.pos.x == new_x && hostile_mob->obj.pos.y == new_y){
                         nidebug("[%c] health: %i", hostile_mob->symbol, hostile_mob->health);
                         attack(hostile_mob);
