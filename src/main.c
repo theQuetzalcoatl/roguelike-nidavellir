@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <signal.h>
 
 #include "terminal.h"
 #include "cutscenes.h"
@@ -15,6 +16,12 @@
 #include "debug.h"
 
 extern void get_objects_from_custom_map(void);
+
+
+static void handle_ctrl_c(int num)
+{
+    exit(1); // run the 'atexit' functions
+}
 
 
 static void draw(void)
@@ -39,6 +46,7 @@ bool game_running = true;
 int main(int argnum, char **argv)
 {
     check_terminal_size();
+    signal(SIGINT, handle_ctrl_c);
     term_setup();
 
     srand(time(NULL)); /* RNG init */
