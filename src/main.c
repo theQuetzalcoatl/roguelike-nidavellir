@@ -68,7 +68,7 @@ int main(int argnum, char **argv)
         player = mob_get_player();
     }
     else{
-       // cutscene_intro();
+       cutscene_intro();
         r = room_create_rooms();
         for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
 
