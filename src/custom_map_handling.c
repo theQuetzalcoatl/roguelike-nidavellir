@@ -2,6 +2,7 @@
 #include "mob.h"
 #include "debug.h"
 #include "corridor.h"
+#include "item.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -13,6 +14,7 @@
 void get_objects_from_custom_map(void)
 {
     mob_t *mob = NULL;
+    item_t *item = NULL;
     int16_t x = 0, y = 0;
 
     FILE *fp = fopen(CUSTOM_FILE_NAME, "r");
@@ -43,6 +45,14 @@ void get_objects_from_custom_map(void)
             case '\n':
                 ++y;
                 x = 0;
+                break;
+            case ITEM_SYMBOL:
+                item = item_spawn();
+                if(item){
+                    item->obj.pos = (pos_t){.x = x, .y = y};
+                    nidebug("item at: x:%d y:%d", x, y);
+                }
+                else nidebug("Could not summon item.");
                 break;
             /* from here on, assuming a mob */
             default:

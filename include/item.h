@@ -2,6 +2,7 @@
 #define _ITEM_H
 
 #include "object.h"
+#include "mob.h"
 #include <stdint.h>
 
 #define ITEM_SYMBOL '*'
@@ -13,28 +14,31 @@ enum ITEMS
     leather_gauntlet,
     /* WEAPONS */
     /* POTIONS */
+    blue_potion,
     /* MAGIC STUFF */
     /* FOOD & DRINK*/
     mead,
     NUM_OF_ITEMS
 };
 
-
 typedef struct item_t
 {
-    object_t obj;
-    char symbol;
-    uint8_t stand_on;
+  object_t obj;
+  //char symbol;
+  uint8_t stands_on;
+  uint16_t type;
+  void *spec_attr;
+  struct item_t *next;
 }item_t;
 
-
-typedef struct armor
+typedef struct
 {
-    item_t item;
-    uint8_t type;
-    /* stats */
-    uint8_t durability;
-    uint8_t shielding;
-}armor_t;
+  void (*use)(item_t *item);
+  char *color;
+}potion_t;
+
+
+extern item_t *item_spawn(void);
+extern item_t *item_get(void);
 
 #endif /* _ITEM_H */

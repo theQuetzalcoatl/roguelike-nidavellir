@@ -14,8 +14,10 @@
 #include "input.h"
 #include "display.h"
 #include "debug.h"
+#include "item.h"
 
 extern void get_objects_from_custom_map(void);
+bool custom_mode;
 
 
 static void handle_ctrl_c(int num)
@@ -59,7 +61,7 @@ int main(int argnum, char **argv)
     mob_t *player = NULL;
     room_t *r = NULL;
 
-    bool custom_mode = (argnum == 2 && !strcmp(*(argv + 1), "--custom")) ?  true : false;
+    custom_mode = (argnum == 2 && !strcmp(*(argv + 1), "--custom")) ?  true : false;
 
     if(custom_mode == true){
         get_objects_from_custom_map();
@@ -80,6 +82,12 @@ int main(int argnum, char **argv)
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);
     mob_draw(*player);
 
+    item_spawn();
+    item_spawn();
+    item_spawn();
+    item_spawn();
+    item_spawn();
+
     display_runic_line();
     display_player_stats(*player);
 
@@ -88,6 +96,7 @@ int main(int argnum, char **argv)
     draw();
 
     while(game_running){
+        nidebug("p:[%d:%d]", player->obj.pos.x,player->obj.pos.y);
         input = get_keypress();
         step_to = NO_ARROW;
 

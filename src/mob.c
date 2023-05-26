@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "room.h"
 #include "corridor.h"
+#include "item.h"
 
 static void summon_player(mob_t *player);
 static void summon_goblin(mob_t *goblin);
@@ -157,6 +158,19 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
             }
             break;
 
+        case ITEM_SYMBOL:
+            if(mob == player){
+                for(item_t* it = item_get(); it; it = it->next){
+                    if(it->obj.pos.x == new_x && it->obj.pos.y == new_y){
+                        ((potion_t*)it->spec_attr)->use(it);
+                        mob_move_to(player, new_x, new_y);
+                        player->stands_on = ROOM_FLOOR;
+                        break;
+                    }
+                }
+            }
+            break;
+
         default:
             nidebug("Unknown object ahead:[%c] in %s:%d", obj_ahead, __FILE__, __LINE__);
     }
@@ -283,7 +297,7 @@ static pos_t get_random_pos(void)
 {
     const room_t *room;
     uint16_t x, y, selected_room, tries;
-    if(room_get_rooms() == NULL || room_get_num_of_rooms == 0) return (pos_t){.x=0, .y=0};
+    if(room_get_rooms() == NULL || room_get_num_of_rooms() == 0) return (pos_t){.x=0, .y=0};
     else{
         for(tries = 10; tries; --tries){
             selected_room = CALC_RAND(room_get_num_of_rooms()-1, 1); // room[0] is where the player starts, it shall be safe originally, thats why it is [numofroom:1]
