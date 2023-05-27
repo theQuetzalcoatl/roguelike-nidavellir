@@ -68,15 +68,12 @@ int main(int argnum, char **argv)
         player = mob_get_player();
     }
     else{
-       cutscene_intro();
+        cutscene_intro();
         r = room_create_rooms();
         for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
 
+        mob_summon(ID_DRAUGR);
         player = mob_summon(ID_PLAYER);
-        mob_summon(ID_DRAUGR);
-        mob_summon(ID_DRAUGR);
-        mob_summon(ID_GOBLIN);
-        mob_summon(ID_GOBLIN);
     }
 
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);
@@ -96,7 +93,6 @@ int main(int argnum, char **argv)
     draw();
 
     while(game_running){
-        nidebug("p:[%d:%d]", player->obj.pos.x,player->obj.pos.y);
         input = get_keypress();
         step_to = NO_ARROW;
 

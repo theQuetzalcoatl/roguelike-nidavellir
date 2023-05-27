@@ -68,14 +68,17 @@ mob_t *mob_get_player(void)
 static void remove_mob(mob_t *mob)
 {
     mob_t *prev_mob = head;
+    mob_t *search_mob = head;
     term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
-    for(mob_t *search_mob = head->next; search_mob; search_mob = search_mob->next){
+    while(search_mob){
         if(search_mob == mob){
+            if(search_mob == head) head = head->next; /* to be able to get all the remaining mobs after the first is removed */
             prev_mob->next = mob->next;
             free(mob);
             break;
         }
         else prev_mob = search_mob;
+        search_mob = search_mob->next;
     }
 }
 
