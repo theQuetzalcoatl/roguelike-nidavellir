@@ -68,12 +68,13 @@ int main(int argnum, char **argv)
         player = mob_get_player();
     }
     else{
-        cutscene_intro();
+        //cutscene_intro();
         r = room_create_rooms();
         for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
 
+        player = mob_summon(ID_PLAYER); /* player should be summoned first to be updated first, otherwise some mobs be before him, and they see him at a previous point in time */
         mob_summon(ID_DRAUGR);
-        player = mob_summon(ID_PLAYER);
+        mob_summon(ID_DRAUGR);
     }
 
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);

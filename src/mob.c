@@ -281,7 +281,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
         int16_t dy = mob->obj.pos.y - player->obj.pos.y;
 
         if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight.
-            if(is_player_in_eyesight(mob->obj.pos, head->obj.pos)){
+            if(is_player_in_eyesight(mob->obj.pos, player->obj.pos)){
                 if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
                 else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
                 mob_draw(*mob);
