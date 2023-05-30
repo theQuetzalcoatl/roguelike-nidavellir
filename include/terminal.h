@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 typedef struct pos_t
 {
@@ -20,6 +21,7 @@ extern void term_putchar(char c);
 extern void term_putchar_xy(const char c, const uint16_t x, const uint16_t y);
 extern char term_getchar(void);
 extern char term_getchar_xy(const uint16_t x, const uint16_t y);
+extern  bool is_player_in_eyesight(pos_t objp, pos_t playerp);
 
 #define TERM_ROWS_NUM (40u)
 #define TERM_COLS_NUM (160u) 

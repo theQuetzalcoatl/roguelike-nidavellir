@@ -1,5 +1,6 @@
 #include "terminal.h"
 #include "room.h"
+#include "corridor.h"
 #include <termios.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -81,4 +82,45 @@ void term_putchar_xy(const char c, const uint16_t x, const uint16_t y)
 {
     term_move_cursor(x, y);
     term_putchar(c);
+}
+
+
+bool is_player_in_eyesight(pos_t objp, pos_t playerp)
+{
+    char c = 0;
+    int16_t dx = objp.x - playerp.x;
+    int16_t dy = objp.y - playerp.y;
+
+    if( (1*1 + 1*1) >= (dx*dx + dy*dy)) return true;
+
+    if(dx != 0){
+        int16_t m = (objp.y - playerp.y) / (objp.x - playerp.x);
+        int16_t b = objp.y - (dy*objp.x)/dx;
+        
+        if(m <= -1 && m >= 1){
+            int16_t lower_y = (objp.y > playerp.y) ? objp.y : playerp.y;
+            int16_t upper_y = (objp.y > playerp.y) ? playerp.y : objp.y;
+            for(++upper_y; upper_y < lower_y; ++upper_y){ // not to start on the mob itself, takes care of 'next to each other' case
+                c = term_getchar_xy( ((upper_y - b)*dy)/dy, upper_y);
+                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
+            }
+        }
+        else{
+            int16_t right_x = (objp.x > playerp.x) ? objp.x : playerp.x;
+            int16_t left_x  = (objp.x > playerp.x) ? playerp.x : objp.x;
+            for(++left_x; left_x < right_x; ++left_x){ // not to start on the mob itself, takes care of 'next to each other' case
+                c = term_getchar_xy(left_x, (dy*left_x)/dx + b);
+                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
+            }
+        }
+    }
+    else{ /* vertical case */
+        int16_t lower_y = (objp.y > playerp.y) ? objp.y : playerp.y;
+        int16_t upper_y = (objp.y > playerp.y) ? playerp.y : objp.y;
+        for(++upper_y; upper_y < lower_y; ++upper_y){// not to start on the mob itself, takes care of 'next to each other' case
+            c = term_getchar_xy(playerp.x, upper_y);
+            if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
+        }
+    }
+    return true;
 }

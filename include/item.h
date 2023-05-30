@@ -9,22 +9,13 @@
 
 enum ITEMS
 {
-    /* ARMORS */
-    wooden_shield,
-    leather_gauntlet,
-    /* WEAPONS */
-    /* POTIONS */
-    blue_potion,
-    /* MAGIC STUFF */
-    /* FOOD & DRINK*/
-    mead,
+    I_potion,
     NUM_OF_ITEMS
 };
 
 typedef struct item_t
 {
   object_t obj;
-  //char symbol;
   uint8_t stands_on;
   uint16_t type;
   void *spec_attr;
@@ -40,5 +31,7 @@ typedef struct
 
 extern item_t *item_spawn(void);
 extern item_t *item_get(void);
+extern void item_hide(item_t it);
+extern void item_draw(item_t it);
 
 #endif /* _ITEM_H */

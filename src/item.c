@@ -24,7 +24,7 @@ item_t *item_spawn(void)
 
   spawned_item->stands_on = ITEM_SYMBOL;
   spawned_item->stands_on = ROOM_FLOOR;
-  spawned_item->type = blue_potion; // NOTE: change this to random
+  spawned_item->type = I_potion; // NOTE: change this to random
   spawned_item->obj.pos = (pos_t){.x = 0, .y = 0};
 
   if(custom_mode == false){
@@ -37,7 +37,7 @@ item_t *item_spawn(void)
 
       if(term_getchar_xy(random_x, random_y) == ROOM_FLOOR){
         spawned_item->obj.pos = (pos_t){.x=random_x, .y=random_y};
-        term_putchar_xy(ITEM_SYMBOL, random_x, random_y);
+        //term_putchar_xy(ITEM_SYMBOL, random_x, random_y);
         break;
       }
       ++tries;
@@ -56,8 +56,9 @@ item_t *item_spawn(void)
       for(; it->next; it = it->next);
       it->next = spawned_item;
     }
-      spawned_item->next = NULL;
+    spawned_item->next = NULL;
   }
+
 
   /* specify item */
   if(spawned_item != NULL){
@@ -89,7 +90,9 @@ static void destroy_item(item_t *i)
   item_t *search_it = items_head;
   while(search_it){ /* last item's next is always NULL */
     if(search_it == i){
+      if(search_it == items_head) items_head = items_head->next; /* to be able to get all the remaining items after the first is removed */
       prev_it->next = i->next;
+      free(((potion_t*)i->spec_attr)->color);
       free(i->spec_attr);
       free(i); // NOTE: string attribute is still unfreed, memory leak
       break;
@@ -97,6 +100,17 @@ static void destroy_item(item_t *i)
     else prev_it = search_it;
     search_it = search_it->next;
   }
+}
+
+
+void item_draw(item_t it)
+{
+  term_putchar_xy(ITEM_SYMBOL, it.obj.pos.x, it.obj.pos.y);
+}
+
+void item_hide(item_t it)
+{
+  term_putchar_xy(it.stands_on, it.obj.pos.x, it.obj.pos.y);
 }
 
 
