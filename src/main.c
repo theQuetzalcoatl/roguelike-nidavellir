@@ -75,11 +75,15 @@ int main(int argnum, char **argv)
         player = mob_summon(ID_PLAYER); /* player should be summoned first to be updated first, otherwise some mobs be before him, and they see him at a previous point in time */
         mob_summon(ID_DRAUGR);
         mob_summon(ID_DRAUGR);
+        mob_summon(ID_GOBLIN);
+        mob_summon(ID_GOBLIN);
     }
 
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);
-    mob_draw(*player);
 
+    item_spawn();
+    item_spawn();
+    item_spawn();
     item_spawn();
     item_spawn();
     item_spawn();
@@ -90,6 +94,9 @@ int main(int argnum, char **argv)
     display_player_stats(*player);
 
     input_code_t input, step_to = NO_ARROW;
+
+    mob_draw(*player);
+    for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->obj.pos, player->obj.pos) ? item_draw(*it) : item_hide(*it);
 
     draw();
 
@@ -116,6 +123,7 @@ int main(int argnum, char **argv)
         }
 
         for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, step_to);
+        for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->obj.pos, player->obj.pos) ? item_draw(*it) : item_hide(*it);
         /*  temporarily teleporting the player due to the lack of corridors*/
         if(player->stands_on == ROOM_DOOR && custom_mode == false) {
             int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
@@ -123,6 +131,8 @@ int main(int argnum, char **argv)
             int y = r[num].obj.pos.y + 1;
             mob_move_to(player, x, y);
             mob_draw(*player);
+            for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->obj.pos, player->obj.pos) ? item_draw(*it) : item_hide(*it);
+            for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) is_player_in_eyesight(mob->obj.pos, player->obj.pos) ? mob_draw(*mob) : mob_hide(*mob);
         }
 
         display_runic_line();
