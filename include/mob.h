@@ -38,6 +38,7 @@ extern mob_t *mob_summon(const mob_id_t id);
 extern mob_t *mob_get_mobs(void);
 extern void mob_update(mob_t *mob, input_code_t step_to);
 extern void mob_draw(mob_t mob);
+extern void mob_hide(mob_t mob);
 extern void mob_handle_movement(mob_t *mob, input_code_t step_to);
 extern mob_t *mob_get_player(void);
 

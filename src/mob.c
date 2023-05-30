@@ -32,14 +32,12 @@ void mob_move_to(mob_t *mob, int16_t x, int16_t y)
     mob->obj.pos.y = y;
 }
 
-
 void mob_move_by(mob_t *mob, int16_t dx, int16_t dy)
 {
     term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
     mob->stands_on = term_getchar_xy(mob->obj.pos.x + dx, mob->obj.pos.y + dy);
     mob->obj.pos.x += dx;
     mob->obj.pos.y += dy;
-    //limit(TERM_COLS_NUM, &mob->obj.pos.x, 0); //limit(TERM_ROWS_NUM, &mob->obj.pos.y, 0);
 }
 
 void mob_draw(mob_t mob)
@@ -47,23 +45,20 @@ void mob_draw(mob_t mob)
     term_putchar_xy(mob.symbol, mob.obj.pos.x, mob.obj.pos.y);
 }
 
-static void hide_mob(mob_t mob)
+void mob_hide(mob_t mob)
 {
     term_putchar_xy(mob.stands_on, mob.obj.pos.x, mob.obj.pos.y);
 }
-
 
 mob_t *mob_get_mobs(void)
 {
     return head;
 }
 
-
 mob_t *mob_get_player(void)
 {
     return player;
 }
-
 
 static void remove_mob(mob_t *mob)
 {
@@ -231,45 +226,6 @@ static void add_to_list(mob_t *mob)
 }
 
 
-static bool is_player_in_eyesight(pos_t mobp, pos_t playerp)
-{
-    char c = 0;
-    int16_t dx = mobp.x - playerp.x;
-    int16_t dy = mobp.y - playerp.y;
-
-    if(dx != 0){
-        int16_t m = (mobp.y - playerp.y) / (mobp.x - playerp.x);
-        int16_t b = mobp.y - (dy*mobp.x)/dx;
-        
-        if(m <= -1 && m >= 1){
-            int16_t lower_y = (mobp.y > playerp.y) ? mobp.y : playerp.y;
-            int16_t upper_y = (mobp.y > playerp.y) ? playerp.y : mobp.y;
-            for(++upper_y; upper_y < lower_y; ++upper_y){ // not to start on the mob itself, takes care of 'next to each other' case
-                c = term_getchar_xy( ((upper_y - b)*dy)/dy, upper_y);
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
-            }
-        }
-        else{
-            int16_t right_x = (mobp.x > playerp.x) ? mobp.x : playerp.x;
-            int16_t left_x  = (mobp.x > playerp.x) ? playerp.x : mobp.x;
-            for(++left_x; left_x < right_x; ++left_x){ // not to start on the mob itself, takes care of 'next to each other' case
-                c = term_getchar_xy(left_x, (dy*left_x)/dx + b);
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
-            }
-        }
-    }
-    else{ /* vertical case */
-        int16_t lower_y = (mobp.y > playerp.y) ? mobp.y : playerp.y;
-        int16_t upper_y = (mobp.y > playerp.y) ? playerp.y : mobp.y;
-        for(++upper_y; upper_y < lower_y; ++upper_y){// not to start on the mob itself, takes care of 'next to each other' case
-            c = term_getchar_xy(playerp.x, upper_y);
-            if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
-        }
-    }
-    return true;
-}
-
-
 void mob_update(mob_t *mob, input_code_t step_to)
 {
     if(mob == player){
@@ -286,7 +242,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
                 else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
                 mob_draw(*mob);
             }
-            else hide_mob(*mob);
+            else mob_hide(*mob);
         }
         else{
             mob_draw(*mob);
