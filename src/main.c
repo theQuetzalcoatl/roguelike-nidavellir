@@ -60,6 +60,7 @@ int main(int argnum, char **argv)
 
     mob_t *player = NULL;
     room_t *r = NULL;
+    uint64_t turns = 0;
 
     custom_mode = (argnum == 2 && !strcmp(*(argv + 1), "--custom")) ?  true : false;
 
@@ -81,14 +82,7 @@ int main(int argnum, char **argv)
 
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);
 
-    item_spawn();
-    item_spawn();
-    item_spawn();
-    item_spawn();
-    item_spawn();
-    item_spawn();
-    item_spawn();
-    item_spawn();
+    for(int i = 10; i; --i) item_spawn();
 
     display_runic_line();
     display_player_stats(*player);
@@ -117,6 +111,8 @@ int main(int argnum, char **argv)
             case 'Q':
                 game_running = false;
                 break;
+            case '.': /* rest */
+                break;
 
             default:
                 nidebug("Unknown input: %i\n", input);
@@ -124,6 +120,7 @@ int main(int argnum, char **argv)
 
         for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, step_to);
         for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->obj.pos, player->obj.pos) ? item_draw(*it) : item_hide(*it);
+
         /*  temporarily teleporting the player due to the lack of corridors*/
         if(player->stands_on == ROOM_DOOR && custom_mode == false) {
             int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
@@ -137,7 +134,10 @@ int main(int argnum, char **argv)
 
         display_runic_line();
         display_player_stats(*player);
+        display_turns(turns);
         draw();
+
+        ++turns;
     }
 
     /* CLEAN UP */

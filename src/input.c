@@ -11,7 +11,7 @@ input_code_t get_keypress(void)
     input_code_t ch = 'a';
     ch = getchar();  
     
-    if(isalpha(ch)) return ch;
+    if(ch >= 0x20 && ch <= 0xe7) return ch; /* is first char a printable one? */
     else if(ch == KEY_ESCAPE){
         ch = getchar();
         if(ch == 0x5b){

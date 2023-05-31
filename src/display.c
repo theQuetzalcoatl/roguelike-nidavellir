@@ -22,3 +22,9 @@ void display_player_stats(const mob_t player)
     term_move_cursor(6, RUNIC_LINE_POS + 4);
     printf("level: %d    ", player.level);
 }
+
+void display_turns(const uint64_t turns)
+{
+    term_move_cursor(6, RUNIC_LINE_POS + 8);
+    printf("Turns: %ld", turns);
+}
