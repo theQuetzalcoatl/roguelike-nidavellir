@@ -116,6 +116,7 @@ int main(int argnum, char **argv)
 
             default:
                 nidebug("Unknown input: %i\n", input);
+                continue;
         }
 
         for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, step_to);
