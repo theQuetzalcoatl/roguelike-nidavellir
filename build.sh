@@ -14,7 +14,7 @@ function main()
     find ./bin -type f -name "*.o" -exec rm {} \;
 
     for c_file in ${c_files}; do
-        gcc ${warnings} ${optimization} -I "${includes}" ${debug_info} ${debug_lvl} -c ${c_file} &
+        gcc ${warnings} ${optimization} -I "${includes}" -I "${PWD}/tools/" ${debug_info} ${debug_lvl} -c ${c_file} &
     done
 
     wait;
