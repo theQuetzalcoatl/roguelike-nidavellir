@@ -18,6 +18,7 @@
 
 extern void get_objects_from_custom_map(void);
 bool custom_mode;
+bool game_running = true;
 
 
 static void handle_ctrl_c(int num)
@@ -41,8 +42,6 @@ static void check_terminal_size(void)
         exit(1);
     }
 }
-
-bool game_running = true;
 
 
 int main(int argnum, char **argv)
@@ -84,9 +83,8 @@ int main(int argnum, char **argv)
 
     for(int i = 10; i; --i) item_spawn();
 
-    display_runic_line();
-    display_player_stats(*player);
-    display_turns(turns);
+    display_runic_lines();
+    display_player_stats(*player, turns);
 
     input_code_t input, step_to = NO_ARROW;
 
@@ -134,9 +132,7 @@ int main(int argnum, char **argv)
             for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) is_player_in_eyesight(mob->obj.pos, player->obj.pos) ? mob_draw(*mob) : mob_hide(*mob);
         }
 
-        display_runic_line();
-        display_player_stats(*player);
-        display_turns(turns);
+        display_player_stats(*player, turns);
         draw();
 
         ++turns;
