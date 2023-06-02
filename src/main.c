@@ -86,6 +86,7 @@ int main(int argnum, char **argv)
 
     display_runic_line();
     display_player_stats(*player);
+    display_turns(turns);
 
     input_code_t input, step_to = NO_ARROW;
 
