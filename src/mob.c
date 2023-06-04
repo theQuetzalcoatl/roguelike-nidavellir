@@ -19,8 +19,29 @@ extern bool game_running;
 
 void mob_free_mobs(void)
 {
-    mob_t *mob = head;
-    while(mob) mob = mob->next;
+    mob_t *mob = NULL;
+    while(head){
+        mob = head->next;
+        free(head);
+        head = mob;
+    }
+}
+
+static void remove_mob(mob_t *mob)
+{
+    mob_t *prev_mob = head;
+    mob_t *search_mob = head;
+    term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
+    while(search_mob){
+        if(search_mob == mob){
+            if(search_mob == head) head = head->next; /* to be able to get all the remaining mobs after the first is removed */
+            prev_mob->next = mob->next;
+            free(mob);
+            break;
+        }
+        else prev_mob = search_mob;
+        search_mob = search_mob->next;
+    }
 }
 
 
@@ -58,23 +79,6 @@ mob_t *mob_get_mobs(void)
 mob_t *mob_get_player(void)
 {
     return player;
-}
-
-static void remove_mob(mob_t *mob)
-{
-    mob_t *prev_mob = head;
-    mob_t *search_mob = head;
-    term_putchar_xy(mob->stands_on, mob->obj.pos.x, mob->obj.pos.y);
-    while(search_mob){
-        if(search_mob == mob){
-            if(search_mob == head) head = head->next; /* to be able to get all the remaining mobs after the first is removed */
-            prev_mob->next = mob->next;
-            free(mob);
-            break;
-        }
-        else prev_mob = search_mob;
-        search_mob = search_mob->next;
-    }
 }
 
 

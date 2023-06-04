@@ -33,5 +33,6 @@ extern item_t *item_spawn(void);
 extern item_t *item_get(void);
 extern void item_hide(item_t it);
 extern void item_draw(item_t it);
+extern void item_free_items(void);
 
 #endif /* _ITEM_H */
