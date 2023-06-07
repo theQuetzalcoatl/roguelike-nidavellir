@@ -31,34 +31,32 @@ item_t *item_spawn(void)
     room_t *r = room_get_rooms();
     uint8_t random_room = CALC_RAND(room_get_num_of_rooms()-1, 0);
 
-    while(spawned_item->obj.pos.x == 0 && spawned_item->obj.pos.y == 0){
+    while(tries < 4 ){
       uint8_t random_x = CALC_RAND(r[random_room].width-1, 0) + r[random_room].obj.pos.x;
       uint8_t random_y = CALC_RAND(r[random_room].height-1, 0) + r[random_room].obj.pos.y;
 
       if(term_getchar_xy(random_x, random_y) == ROOM_FLOOR){
         spawned_item->obj.pos = (pos_t){.x=random_x, .y=random_y};
-        //term_putchar_xy(ITEM_SYMBOL, random_x, random_y);
         break;
       }
       ++tries;
     }
   }
 
-  if(tries == 3){
+  if(tries > 3){
     free(spawned_item);
     nidebug("Could not find a place for item!\n");
     spawned_item = NULL;
   }
   else{
-    if(items_head == NULL) items_head = spawned_item;
-    else{
+    if(items_head != NULL){
       item_t *it = items_head;
       for(; it->next; it = it->next);
       it->next = spawned_item;
     }
+    else items_head = spawned_item;
     spawned_item->next = NULL;
   }
-
 
   /* specify item */
   if(spawned_item != NULL){
@@ -104,7 +102,7 @@ static void destroy_item(item_t *i)
       prev_it->next = i->next;
       free(((potion_t*)i->spec_attr)->color);
       free(i->spec_attr);
-      free(i); // NOTE: string attribute is still unfreed, memory leak
+      free(i); 
       break;
     }
     else prev_it = search_it;

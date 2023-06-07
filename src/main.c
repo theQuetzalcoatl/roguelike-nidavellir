@@ -18,7 +18,7 @@
 
 extern void get_objects_from_custom_map(void);
 bool custom_mode;
-bool game_running = true;
+bool game_is_running = true;
 
 
 static void handle_ctrl_c(int num)
@@ -61,40 +61,36 @@ int main(int argnum, char **argv)
     mob_t *player = NULL;
     room_t *r = NULL;
     uint64_t turns = 0;
+    input_code_t input, step_to = NO_ARROW;
 
     custom_mode = (argnum == 2 && !strcmp(*(argv + 1), "--custom")) ?  true : false;
 
-    if(custom_mode == true){
-        get_objects_from_custom_map();
-        player = mob_get_player();
-    }
+    if(custom_mode == true) get_objects_from_custom_map();
     else{
-        cutscene_intro();
+        //cutscene_intro();
         r = room_create_rooms();
         for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
 
-        player = mob_summon(ID_PLAYER); /* player should be summoned first to be updated first, otherwise some mobs be before him, and they see him at a previous point in time */
+        mob_summon(ID_PLAYER); /* player should be summoned first to be updated first, otherwise some mobs be before him, and they see him at a previous point in time */
         mob_summon(ID_DRAUGR);
         mob_summon(ID_DRAUGR);
         mob_summon(ID_GOBLIN);
         mob_summon(ID_GOBLIN);
+        for(int i = 10; i; --i) item_spawn();
     }
 
+    player = mob_get_player();
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);
-
-    for(int i = 10; i; --i) item_spawn();
 
     display_runic_lines();
     display_player_stats(*player, turns);
-
-    input_code_t input, step_to = NO_ARROW;
 
     mob_draw(*player);
     for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->obj.pos, player->obj.pos) ? item_draw(*it) : item_hide(*it);
 
     draw();
 
-    while(game_running){
+    while(game_is_running){
         input = get_keypress();
         step_to = NO_ARROW;
 
@@ -109,13 +105,12 @@ int main(int argnum, char **argv)
 
             case 'q':
             case 'Q':
-                game_running = false;
-                break;
+                game_is_running = false;
+                continue;
             case '.': /* rest */
                 break;
 
             default:
-                nidebug("Unknown input: %i\n", input);
                 continue;
         }
 

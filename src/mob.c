@@ -14,7 +14,7 @@ static void add_to_list(mob_t *mob);
 static mob_t *head = NULL;
 static mob_t *player = NULL;
 
-extern bool game_running;
+extern bool game_is_running;
 
 
 void mob_free_mobs(void)
@@ -88,7 +88,7 @@ static void attack(mob_t *attacked_mob)
     attacked_mob->health -= damage;
     if(attacked_mob->health <= 0){
         attacked_mob->health = 0;
-        if(attacked_mob == player) game_running = false;
+        if(attacked_mob == player) game_is_running = false;
         else remove_mob(attacked_mob);
     }
 }
