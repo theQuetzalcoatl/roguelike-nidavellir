@@ -61,7 +61,7 @@ void mob_move_by(mob_t *mob, int16_t dx, int16_t dy)
     mob->obj.pos.y += dy;
 }
 
-void mob_draw(mob_t mob)
+void mob_show(mob_t mob)
 {
     term_putchar_xy(mob.symbol, mob.obj.pos.x, mob.obj.pos.y);
 }
@@ -234,7 +234,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
 {
     if(mob == player){
         mob_handle_movement(mob, step_to);
-        mob_draw(*mob);
+        mob_show(*mob);
     }
     else{
         int16_t dx = mob->obj.pos.x - player->obj.pos.x;
@@ -244,12 +244,12 @@ void mob_update(mob_t *mob, input_code_t step_to)
             if(is_player_in_eyesight(mob->obj.pos, player->obj.pos)){
                 if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
                 else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
-                mob_draw(*mob);
+                mob_show(*mob);
             }
             else mob_hide(*mob);
         }
         else{
-            mob_draw(*mob);
+            mob_show(*mob);
             attack_player();
         }
     }

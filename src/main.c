@@ -85,7 +85,7 @@ int main(int argnum, char **argv)
     display_runic_lines();
     display_player_stats(*player, turns);
 
-    mob_draw(*player);
+    mob_show(*player);
     for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->obj.pos, player->obj.pos) ? item_draw(*it) : item_hide(*it);
 
     draw();
@@ -123,9 +123,9 @@ int main(int argnum, char **argv)
             int x = r[num].obj.pos.x + 1;
             int y = r[num].obj.pos.y + 1;
             mob_move_to(player, x, y);
-            mob_draw(*player);
+            mob_show(*player);
             for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->obj.pos, player->obj.pos) ? item_draw(*it) : item_hide(*it);
-            for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) is_player_in_eyesight(mob->obj.pos, player->obj.pos) ? mob_draw(*mob) : mob_hide(*mob);
+            for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) is_player_in_eyesight(mob->obj.pos, player->obj.pos) ? mob_show(*mob) : mob_hide(*mob);
         }
 
         display_player_stats(*player, turns);
