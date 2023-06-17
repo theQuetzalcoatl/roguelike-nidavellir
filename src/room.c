@@ -52,12 +52,12 @@ static room_t calculate_one_room(void)
 {
     room_t r = {0};
     r.height = CALC_RAND(MAX_ROOM_HEIGHT, MIN_ROOM_HEIGHT);
-    r.obj.pos.x = CALC_RAND(TERM_COLS_NUM, 0);
-    r.obj.pos.y = CALC_RAND(TERM_ROWS_NUM, 0);
+    r.pos.x = CALC_RAND(TERM_COLS_NUM, 0);
+    r.pos.y = CALC_RAND(TERM_ROWS_NUM, 0);
     r.width = CALC_RAND(MAX_ROOM_WIDTH, MIN_ROOM_WIDTH);
 
-    if(r.obj.pos.x + r.width >= (signed int)TERM_COLS_NUM) r.obj.pos.x = TERM_COLS_NUM - r.width - 10;
-    if(r.obj.pos.y + r.height >= (signed int)RUNIC_LINE_POS) r.obj.pos.y = RUNIC_LINE_POS - r.height - 10;
+    if(r.pos.x + r.width >= (signed int)TERM_COLS_NUM) r.pos.x = TERM_COLS_NUM - r.width - 10;
+    if(r.pos.y + r.height >= (signed int)RUNIC_LINE_POS) r.pos.y = RUNIC_LINE_POS - r.height - 10;
 
     add_doors(&r);
 
@@ -79,8 +79,8 @@ static void add_doors(room_t * const room)
             {
                 case up_side:
                     if(!upper_wall_doored){
-                        room->doors[door_num].obj.pos.y = room->obj.pos.y;
-                        room->doors[door_num].obj.pos.x = room->obj.pos.x + CALC_RAND(room->width - 2, 1); // 1 - to avoid x position corner, 2 - to avoid x+width corner also taking into account that drawing starts at x;
+                        room->doors[door_num].pos.y = room->pos.y;
+                        room->doors[door_num].pos.x = room->pos.x + CALC_RAND(room->width - 2, 1); // 1 - to avoid x position corner, 2 - to avoid x+width corner also taking into account that drawing starts at x;
                         room->doors[door_num].side = up_side;
                         upper_wall_doored = true;
                         doored = true;
@@ -89,8 +89,8 @@ static void add_doors(room_t * const room)
 
                 case down_side:
                     if(!lower_wall_doored){
-                        room->doors[door_num].obj.pos.y = room->obj.pos.y + room->height - 1;
-                        room->doors[door_num].obj.pos.x = room->obj.pos.x + CALC_RAND(room->width - 2, 1); // 1 - to avoid x position corner, 2 - to avoid x+width corner also taking into account that drawing starts at x;
+                        room->doors[door_num].pos.y = room->pos.y + room->height - 1;
+                        room->doors[door_num].pos.x = room->pos.x + CALC_RAND(room->width - 2, 1); // 1 - to avoid x position corner, 2 - to avoid x+width corner also taking into account that drawing starts at x;
                         room->doors[door_num].side = down_side;
                         lower_wall_doored = true;
                         doored = true;
@@ -99,8 +99,8 @@ static void add_doors(room_t * const room)
 
                 case left_side:
                     if(!left_wall_doored){
-                        room->doors[door_num].obj.pos.y = room->obj.pos.y + CALC_RAND(room->height - 2, 1); // 1 - to avoid y position corner, 2 - to avoid y+height corner also taking into account that drawing starts at y;
-                        room->doors[door_num].obj.pos.x = room->obj.pos.x;
+                        room->doors[door_num].pos.y = room->pos.y + CALC_RAND(room->height - 2, 1); // 1 - to avoid y position corner, 2 - to avoid y+height corner also taking into account that drawing starts at y;
+                        room->doors[door_num].pos.x = room->pos.x;
                         room->doors[door_num].side = left_side;
                         left_wall_doored = true;
                         doored = true;
@@ -109,8 +109,8 @@ static void add_doors(room_t * const room)
 
                 case right_side:
                     if(!right_wall_doored){
-                        room->doors[door_num].obj.pos.y = room->obj.pos.y + CALC_RAND(room->height - 2, 1); // 1 - to avoid y position corner, 2 - to avoid y+height corner also taking into account that drawing starts at y;
-                        room->doors[door_num].obj.pos.x = room->obj.pos.x + room->width - 1;
+                        room->doors[door_num].pos.y = room->pos.y + CALC_RAND(room->height - 2, 1); // 1 - to avoid y position corner, 2 - to avoid y+height corner also taking into account that drawing starts at y;
+                        room->doors[door_num].pos.x = room->pos.x + room->width - 1;
                         room->doors[door_num].side = right_side;
                         right_wall_doored = true;
                         doored = true;
@@ -128,15 +128,15 @@ static void add_doors(room_t * const room)
 void room_draw(const room_t r)
 {
     /* upper wall */
-    for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.obj.pos.y);
+    for(int x = r.pos.x; x < r.width + r.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.pos.y);
     /* sidewalls and floor */
-    for(int y = r.obj.pos.y + 1; y < r.height + r.obj.pos.y - 1; ++y){
-        term_putchar_xy(VERTICAL_WALL, r.obj.pos.x, y);
-        term_putchar_xy(VERTICAL_WALL, r.obj.pos.x + r.width - 1, y);
-        for(int x = r.obj.pos.x + 1; x < r.width + r.obj.pos.x - 1; ++x) term_putchar_xy(ROOM_FLOOR, x, y);
+    for(int y = r.pos.y + 1; y < r.height + r.pos.y - 1; ++y){
+        term_putchar_xy(VERTICAL_WALL, r.pos.x, y);
+        term_putchar_xy(VERTICAL_WALL, r.pos.x + r.width - 1, y);
+        for(int x = r.pos.x + 1; x < r.width + r.pos.x - 1; ++x) term_putchar_xy(ROOM_FLOOR, x, y);
     }
     /* lower wall */
-    for(int x = r.obj.pos.x; x < r.width + r.obj.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.obj.pos.y + r.height - 1);
+    for(int x = r.pos.x; x < r.width + r.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.pos.y + r.height - 1);
     /* placing doors */
-    for(uint8_t door_num = 0; door_num < r.door_num; ++door_num) term_putchar_xy(ROOM_DOOR, r.doors[door_num].obj.pos.x, r.doors[door_num].obj.pos.y);
+    for(uint8_t door_num = 0; door_num < r.door_num; ++door_num) term_putchar_xy(ROOM_DOOR, r.doors[door_num].pos.x, r.doors[door_num].pos.y);
 }

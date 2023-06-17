@@ -8,7 +8,7 @@
 #include "terminal.h"
 #include "cutscenes.h"
 #include "mob.h"
-#include "object.h"
+
 #include "room.h"
 #include "corridor.h"
 #include "input.h"
@@ -80,13 +80,13 @@ int main(int argnum, char **argv)
     }
 
     player = mob_get_player();
-    for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->obj.pos.x, mob->obj.pos.y);
+    for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->pos.x, mob->pos.y);
 
     display_runic_lines();
     display_player_stats(*player, turns);
 
     mob_show(*player);
-    for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->obj.pos, player->obj.pos) ? item_draw(*it) : item_hide(*it);
+    for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_draw(*it) : item_hide(*it);
 
     draw();
 
@@ -115,17 +115,17 @@ int main(int argnum, char **argv)
         }
 
         for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, step_to);
-        for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->obj.pos, player->obj.pos) ? item_draw(*it) : item_hide(*it);
+        for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_draw(*it) : item_hide(*it);
 
         /*  temporarily teleporting the player due to the lack of corridors*/
         if(player->stands_on == ROOM_DOOR && custom_mode == false) {
             int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
-            int x = r[num].obj.pos.x + 1;
-            int y = r[num].obj.pos.y + 1;
+            int x = r[num].pos.x + 1;
+            int y = r[num].pos.y + 1;
             mob_move_to(player, x, y);
             mob_show(*player);
-            for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->obj.pos, player->obj.pos) ? item_draw(*it) : item_hide(*it);
-            for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) is_player_in_eyesight(mob->obj.pos, player->obj.pos) ? mob_show(*mob) : mob_hide(*mob);
+            for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_draw(*it) : item_hide(*it);
+            for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) is_player_in_eyesight(mob->pos, player->pos) ? mob_show(*mob) : mob_hide(*mob);
         }
 
         display_player_stats(*player, turns);

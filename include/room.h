@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "terminal.h"
-#include "object.h"
+
 #include <stdlib.h>
 
 #define MAX_DOOR_NUM (4u)
@@ -19,14 +19,14 @@ typedef enum
 
 typedef struct
 {
-    object_t obj;
+    pos_t pos;
     side_e side;
     bool is_locked;
 }door_t;
 
 typedef struct room_t
 {
-    object_t obj;
+    pos_t pos;
     door_t doors[MAX_DOOR_NUM];
     int16_t width;  /* [chars] */
     int16_t height; /* [chars] */

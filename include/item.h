@@ -1,8 +1,9 @@
 #ifndef _ITEM_H
 #define _ITEM_H
 
-#include "object.h"
+
 #include "mob.h"
+#include "terminal.h"
 #include <stdint.h>
 
 #define ITEM_SYMBOL '*'
@@ -15,7 +16,7 @@ enum ITEMS
 
 typedef struct item_t
 {
-  object_t obj;
+  pos_t pos;
   uint8_t stands_on;
   uint16_t type;
   void *spec_attr;

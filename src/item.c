@@ -25,18 +25,18 @@ item_t *item_spawn(void)
   spawned_item->stands_on = ITEM_SYMBOL;
   spawned_item->stands_on = ROOM_FLOOR;
   spawned_item->type = I_potion; // NOTE: change this to random
-  spawned_item->obj.pos = (pos_t){.x = 0, .y = 0};
+  spawned_item->pos = (pos_t){.x = 0, .y = 0};
 
   if(custom_mode == false){
     room_t *r = room_get_rooms();
     uint8_t random_room = CALC_RAND(room_get_num_of_rooms()-1, 0);
 
     while(tries < 4 ){
-      uint8_t random_x = CALC_RAND(r[random_room].width-1, 0) + r[random_room].obj.pos.x;
-      uint8_t random_y = CALC_RAND(r[random_room].height-1, 0) + r[random_room].obj.pos.y;
+      uint8_t random_x = CALC_RAND(r[random_room].width-1, 0) + r[random_room].pos.x;
+      uint8_t random_y = CALC_RAND(r[random_room].height-1, 0) + r[random_room].pos.y;
 
       if(term_getchar_xy(random_x, random_y) == ROOM_FLOOR){
-        spawned_item->obj.pos = (pos_t){.x=random_x, .y=random_y};
+        spawned_item->pos = (pos_t){.x=random_x, .y=random_y};
         break;
       }
       ++tries;
@@ -113,12 +113,12 @@ static void destroy_item(item_t *i)
 
 void item_draw(item_t it)
 {
-  term_putchar_xy(ITEM_SYMBOL, it.obj.pos.x, it.obj.pos.y);
+  term_putchar_xy(ITEM_SYMBOL, it.pos.x, it.pos.y);
 }
 
 void item_hide(item_t it)
 {
-  term_putchar_xy(it.stands_on, it.obj.pos.x, it.obj.pos.y);
+  term_putchar_xy(it.stands_on, it.pos.x, it.pos.y);
 }
 
 

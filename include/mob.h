@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "terminal.h"
-#include "object.h"
+
 #include "item.h"
 #include "input.h"
 
@@ -21,7 +21,7 @@ typedef uint16_t mob_id_t;
 
 typedef struct mob_t
 {
-    object_t obj;
+    pos_t pos;
     char symbol;
     uint8_t stands_on;
     int8_t health;
