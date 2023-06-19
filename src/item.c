@@ -111,7 +111,7 @@ static void destroy_item(item_t *i)
 }
 
 
-void item_draw(item_t it)
+void item_show(item_t it)
 {
   term_putchar_xy(ITEM_SYMBOL, it.pos.x, it.pos.y);
 }

@@ -1,5 +1,6 @@
 
 #include "input.h"
+#include "debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -12,19 +13,12 @@ input_code_t get_keypress(void)
     ch = getchar();  
     
     if(isprint(ch)) return ch; /* is first char a printable one? */
-    else if(ch == KEY_ESCAPE){
+    else if(ch == KEY_ESCAPE && getchar() == 0x5b){
         ch = getchar();
-        if(ch == 0x5b){
-            ch = getchar();
-            return ((0x1b5b<<8) + ch);
-        }
-        else{
-            printf("Invalid key combination!\n");
-            exit(1);
-        }
+        return ((0x1b5b<<8) + ch);
     }
     else{
-        printf("Invalid key combination!\n");
-        exit(1);
+        nidebug("Invalid key combination!\n");
+        return 0;
     }
 }

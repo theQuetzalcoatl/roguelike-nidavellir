@@ -27,7 +27,7 @@ static void handle_ctrl_c(int num)
 }
 
 
-static void draw(void)
+void draw(void)
 {
     fflush(stdout);
 }
@@ -67,7 +67,7 @@ int main(int argnum, char **argv)
 
     if(custom_mode == true) get_objects_from_custom_map();
     else{
-        //cutscene_intro();
+        cutscene_intro();
         r = room_create_rooms();
         for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
 
@@ -86,7 +86,7 @@ int main(int argnum, char **argv)
     display_player_stats(*player, turns);
 
     mob_show(*player);
-    for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_draw(*it) : item_hide(*it);
+    for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
     draw();
 
@@ -103,19 +103,21 @@ int main(int argnum, char **argv)
                 step_to = input;
                 break;
 
-            case 'q':
             case 'Q':
                 game_is_running = false;
                 continue;
             case '.': /* rest */
                 break;
+            case '?':
+                display_hotkeys();
+                continue;
 
             default:
                 continue;
         }
 
         for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, step_to);
-        for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_draw(*it) : item_hide(*it);
+        for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
         /*  temporarily teleporting the player due to the lack of corridors*/
         if(player->stands_on == ROOM_DOOR && custom_mode == false) {
@@ -124,7 +126,7 @@ int main(int argnum, char **argv)
             int y = r[num].pos.y + 1;
             mob_move_to(player, x, y);
             mob_show(*player);
-            for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_draw(*it) : item_hide(*it);
+            for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
             for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) is_player_in_eyesight(mob->pos, player->pos) ? mob_show(*mob) : mob_hide(*mob);
         }
 

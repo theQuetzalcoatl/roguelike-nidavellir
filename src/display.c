@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "display.h"
+#include "input.h"
 
 
 void display_runic_lines(void)
@@ -31,4 +32,39 @@ void display_player_stats(const mob_t player, const uint64_t turns)
     printf("level: %d    ", player.level);
     term_move_cursor(6, RUNIC_LINE_POS + 4);
     printf("Turns: %ld", turns);
+}
+
+
+extern void draw(void);
+#include "stdlib.h"
+#include "debug.h"
+
+void display_hotkeys(void)
+{
+    char saved_content[RUNIC_LINE_POS][TERM_COLS_NUM];
+
+    for(uint8_t col = 0; col < TERM_COLS_NUM-2; ++col){
+        for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row){
+            saved_content[row][col] = term_getchar_xy(col, row);
+            term_putchar_xy(' ', col, row);
+        }
+    }
+
+    draw();
+
+    term_move_cursor(0,0);
+    printf("?  Prints this help\n");
+    printf("Q  Quits the game\n");
+    printf(".  Rest for one turn\n");
+
+    term_move_cursor(0, RUNIC_LINE_POS - 1);
+    printf("Press any key to get back...\n");
+   
+    get_keypress();
+
+    for(uint8_t col = 0; col < TERM_COLS_NUM-2; ++col){
+        for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy(saved_content[row][col], col, row);
+    }
+
+    draw();
 }

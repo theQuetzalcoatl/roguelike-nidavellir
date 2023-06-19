@@ -46,7 +46,9 @@ void cutscene_intro(void)
         }
     }
     fflush(stdout); sleep(2);
-    system("clear");
+    for(uint8_t row = 0; row < TERM_ROWS_NUM; ++row){
+        for(uint8_t col = 0; col < TERM_COLS_NUM; ++col) term_putchar_xy(' ', col, row);
+    }
 }
 
 void cutscene_dead(void)
