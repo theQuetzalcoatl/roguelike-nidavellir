@@ -1,6 +1,7 @@
 #include "terminal.h"
 #include "room.h"
 #include "corridor.h"
+#include "item.h"
 #include <termios.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -102,7 +103,7 @@ bool is_player_in_eyesight(pos_t objp, pos_t playerp)
             int16_t upper_y = (objp.y > playerp.y) ? playerp.y : objp.y;
             for(++upper_y; upper_y < lower_y; ++upper_y){ // not to start on the mob itself, takes care of 'next to each other' case
                 c = term_getchar_xy( ((upper_y - b)*dy)/dy, upper_y);
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
+                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL) return false;
             }
         }
         else{
@@ -110,7 +111,7 @@ bool is_player_in_eyesight(pos_t objp, pos_t playerp)
             int16_t left_x  = (objp.x > playerp.x) ? playerp.x : objp.x;
             for(++left_x; left_x < right_x; ++left_x){ // not to start on the mob itself, takes care of 'next to each other' case
                 c = term_getchar_xy(left_x, (dy*left_x)/dx + b);
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
+                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL) return false;
             }
         }
     }
@@ -119,7 +120,7 @@ bool is_player_in_eyesight(pos_t objp, pos_t playerp)
         int16_t upper_y = (objp.y > playerp.y) ? playerp.y : objp.y;
         for(++upper_y; upper_y < lower_y; ++upper_y){// not to start on the mob itself, takes care of 'next to each other' case
             c = term_getchar_xy(playerp.x, upper_y);
-            if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
+            if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL) return false;
         }
     }
     return true;
