@@ -15,6 +15,7 @@ static mob_t *head = NULL;
 static mob_t *player = NULL;
 
 extern bool game_is_running;
+extern void event_log_add(const char *event);
 
 
 void mob_free_mobs(void)
@@ -97,6 +98,7 @@ static void attack(mob_t *attacked_mob)
 static void attack_player(void)
 {
     attack(player);
+    event_log_add("You chopped a piece out of *the mob*");
 }
 
 
@@ -105,6 +107,8 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
     char obj_ahead = 0;
     int16_t new_x = 0;
     int16_t new_y = 0;
+
+    event_log_add("Mob is moving");
 
     switch(step_to)
     {
@@ -167,6 +171,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
                         ((potion_t*)it->spec_attr)->use(it);
                         mob_move_to(player, new_x, new_y);
                         player->stands_on = ROOM_FLOOR;
+                        event_log_add("You picked up an unknown blue potion");
                         break;
                     }
                 }
@@ -251,6 +256,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
         else{
             mob_show(*mob);
             attack_player();
+            event_log_add("*the mob* cut you badly!");
         }
     }
 }

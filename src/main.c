@@ -67,7 +67,7 @@ int main(int argnum, char **argv)
 
     if(custom_mode == true) get_objects_from_custom_map();
     else{
-        cutscene_intro();
+        //cutscene_intro();
         r = room_create_rooms();
         for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
 
@@ -102,14 +102,16 @@ int main(int argnum, char **argv)
             case ARROW_RIGHT:
                 step_to = input;
                 break;
-
             case 'Q':
                 game_is_running = false;
                 continue;
             case '.': /* rest */
                 break;
             case '?':
-                display_hotkeys();
+                display_to_player_window("hotkeys");
+                continue;
+            case 'E':
+                display_to_player_window("events");
                 continue;
 
             default:
