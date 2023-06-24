@@ -68,15 +68,18 @@ void display_to_player_window(const char * const option)
         char **entries = event_get_entries();
         int64_t starting_entry = event_get_entry_num() - 2; // diregarding the last entry and taking 0 index into account
         int64_t current_entry = starting_entry;
+        uint8_t log_lower_border = RUNIC_LINE_POS - 2;
 
         while(1){
             int64_t entry = current_entry;
             term_move_cursor(0,0);
             /* for now, assuming an entry to be shorter than the player window */
-            for(uint64_t printed_events = 0; (printed_events < RUNIC_LINE_POS) && entry >= 0; ++printed_events, --entry ){
-                printf("*   %s\n", entries[entry]);
+            for(uint64_t printed_events = 0; (printed_events < log_lower_border) && entry >= 0; ++printed_events, --entry ){
+                printf("*   %s\n", entries[entry]); /* draw() is not needed because of \n */
             }
-            draw();
+
+            term_move_cursor(0, RUNIC_LINE_POS - 1);
+            printf("Press up/down to scroll, or any other key to get back");
 
             if(starting_entry < RUNIC_LINE_POS){
                 get_keypress();
@@ -89,9 +92,8 @@ void display_to_player_window(const char * const option)
             else break;
 
             for(uint8_t col = 0; col < TERM_COLS_NUM-2; ++col){
-                for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy(' ', col, row);
+                for(uint8_t row = 0; row < log_lower_border; ++row) term_putchar_xy(' ', col, row);
             }
-            draw();
         }
     }
     else{
