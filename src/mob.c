@@ -98,7 +98,6 @@ static void attack(mob_t *attacked_mob)
 static void attack_player(void)
 {
     attack(player);
-    event_log_add("You chopped a piece out of *the mob*");
 }
 
 
@@ -107,8 +106,6 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
     char obj_ahead = 0;
     int16_t new_x = 0;
     int16_t new_y = 0;
-
-    event_log_add("Mob is moving");
 
     switch(step_to)
     {
@@ -158,6 +155,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
                     if(hostile_mob->pos.x == new_x && hostile_mob->pos.y == new_y){
                         nidebug("[%c] health: %i", hostile_mob->symbol, hostile_mob->health);
                         attack(hostile_mob);
+                        event_log_add("You chopped a piece out of *the mob*");
                         break;
                     }
                 }

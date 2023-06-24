@@ -9,6 +9,8 @@ extern char **event_get_entries(void);
 extern uint64_t event_get_entry_num(void);
 extern void draw(void);
 
+#define LOWER_DIVIDING_LINE_X_POS ((TERM_COLS_NUM*30)/100)
+
 
 void display_runic_lines(void)
 {
@@ -19,7 +21,7 @@ void display_runic_lines(void)
     /* actual characters of the runic line is 41 chars  */
     for(int n = TERM_COLS_NUM/41; n >= 0; --n) printf("%s", runic_string);
     for(uint8_t n = 1; n < TERM_ROWS_NUM - RUNIC_LINE_POS; ++n){
-        term_move_cursor(40 - n%2, RUNIC_LINE_POS + n);
+        term_move_cursor(LOWER_DIVIDING_LINE_X_POS - n%2, RUNIC_LINE_POS + n);
         printf("ᚷ");
     }
     for(uint8_t n = 0; n < RUNIC_LINE_POS; ++n){
@@ -70,6 +72,9 @@ void display_to_player_window(const char * const option)
         int64_t current_entry = starting_entry;
         uint8_t log_lower_border = RUNIC_LINE_POS - 2;
 
+        term_move_cursor(0, RUNIC_LINE_POS - 1);
+        printf("Press up/down to scroll, or any other key to get back");
+
         while(1){
             int64_t entry = current_entry;
             term_move_cursor(0,0);
@@ -77,9 +82,6 @@ void display_to_player_window(const char * const option)
             for(uint64_t printed_events = 0; (printed_events < log_lower_border) && entry >= 0; ++printed_events, --entry ){
                 printf("*   %s\n", entries[entry]); /* draw() is not needed because of \n */
             }
-
-            term_move_cursor(0, RUNIC_LINE_POS - 1);
-            printf("Press up/down to scroll, or any other key to get back");
 
             if(starting_entry < RUNIC_LINE_POS){
                 get_keypress();
@@ -103,10 +105,36 @@ void display_to_player_window(const char * const option)
         get_keypress();
     }
 
-
     for(uint8_t col = 0; col < TERM_COLS_NUM-2; ++col){
         for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy(saved_content[row][col], col, row);
     }
 
     draw();
+}
+
+
+void display_recent_events(void)
+{
+    term_move_cursor(LOWER_DIVIDING_LINE_X_POS + 2, RUNIC_LINE_POS + 1);
+    for(uint8_t col = LOWER_DIVIDING_LINE_X_POS + 2; col < TERM_COLS_NUM-2; ++col){
+        for(uint8_t row = RUNIC_LINE_POS + 1; row < TERM_ROWS_NUM; ++row) term_putchar_xy(' ', col, row);
+    }
+
+    term_move_cursor(LOWER_DIVIDING_LINE_X_POS + 1, RUNIC_LINE_POS + 1);
+
+    uint8_t current_line = RUNIC_LINE_POS + 1;
+    char **entries = event_get_entries();
+    uint64_t entry_num = event_get_entry_num();
+    entries = entries + entry_num - 1;
+    uint8_t lines_to_print = (entry_num <= (TERM_ROWS_NUM - RUNIC_LINE_POS - 1)) ? entry_num : TERM_ROWS_NUM - RUNIC_LINE_POS - 1;
+
+    if(entries){
+        while(lines_to_print){
+            printf(*entries);
+            ++current_line;
+            term_move_cursor(LOWER_DIVIDING_LINE_X_POS + 2, current_line);
+            --entries;
+            --lines_to_print;
+        }
+    }
 }

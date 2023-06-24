@@ -130,9 +130,11 @@ int main(int argnum, char **argv)
             mob_show(*player);
             for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
             for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) is_player_in_eyesight(mob->pos, player->pos) ? mob_show(*mob) : mob_hide(*mob);
+            event_log_add("You teleported to a random room!");
         }
 
         display_player_stats(*player, turns);
+        display_recent_events();
         draw();
 
         ++turns;
