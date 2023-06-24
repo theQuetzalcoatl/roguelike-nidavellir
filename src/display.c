@@ -58,6 +58,7 @@ void display_to_player_window(const char * const option)
         printf("?  Prints this help\n");
         printf("Q  Quits the game\n");
         printf(".  Rest for one turn\n");
+        printf("E  Show event log\n");
 
         term_move_cursor(0, RUNIC_LINE_POS - 1);
         printf("Press any key to get back...\n");
