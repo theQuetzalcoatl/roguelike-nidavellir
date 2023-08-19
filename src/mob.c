@@ -18,6 +18,10 @@ extern bool game_is_running;
 extern void event_log_add(const char *event);
 
 
+#define UPPER_EDGE_OF_MAP (-1)
+#define LEFT_EDGE_OF_MAP  (-1)
+
+
 void mob_free_mobs(void)
 {
     mob_t *mob = NULL;
@@ -48,18 +52,22 @@ static void remove_mob(mob_t *mob)
 
 void mob_move_to(mob_t *mob, int16_t x, int16_t y)
 {
-    term_putchar_xy(mob->stands_on, mob->pos.x, mob->pos.y);
-    mob->stands_on = term_getchar_xy(x, y);
-    mob->pos.x = x;
-    mob->pos.y = y;
+    if(x > LEFT_EDGE_OF_MAP && y > UPPER_EDGE_OF_MAP){
+        term_putchar_xy(mob->stands_on, mob->pos.x, mob->pos.y);
+        mob->stands_on = term_getchar_xy(x, y);
+        mob->pos.x = x;
+        mob->pos.y = y;
+    }
 }
 
 void mob_move_by(mob_t *mob, int16_t dx, int16_t dy)
 {
-    term_putchar_xy(mob->stands_on, mob->pos.x, mob->pos.y);
-    mob->stands_on = term_getchar_xy(mob->pos.x + dx, mob->pos.y + dy);
-    mob->pos.x += dx;
-    mob->pos.y += dy;
+    if((dx + mob->pos.x) > LEFT_EDGE_OF_MAP && (dy + mob->pos.y) > UPPER_EDGE_OF_MAP){
+        term_putchar_xy(mob->stands_on, mob->pos.x, mob->pos.y);
+        mob->stands_on = term_getchar_xy(mob->pos.x + dx, mob->pos.y + dy);
+        mob->pos.x += dx;
+        mob->pos.y += dy;
+    }
 }
 
 void mob_show(mob_t mob)
@@ -104,30 +112,30 @@ static void attack_player(void)
 void mob_handle_movement(mob_t *mob, input_code_t step_to)
 {
     char obj_ahead = 0;
-    int16_t new_x = 0;
-    int16_t new_y = 0;
+    int16_t dx = 0;
+    int16_t dy = 0;
 
     switch(step_to)
     {
         case STEP_UP:
             obj_ahead = term_getchar_xy(mob->pos.x, mob->pos.y - 1); 
-            new_x = mob->pos.x;
-            new_y = mob->pos.y - 1;
+            dx = 0;
+            dy = -1;
             break;
         case STEP_LEFT:
             obj_ahead = term_getchar_xy(mob->pos.x - 1, mob->pos.y);
-            new_x = mob->pos.x - 1;
-            new_y = mob->pos.y;
+            dx = -1;
+            dy = 0;
             break;
         case STEP_DOWN:
             obj_ahead = term_getchar_xy(mob->pos.x, mob->pos.y + 1);
-            new_x = mob->pos.x;
-            new_y = mob->pos.y + 1;
+            dx = 0;
+            dy = 1;
             break;
         case STEP_RIGHT:
             obj_ahead = term_getchar_xy(mob->pos.x + 1, mob->pos.y);
-            new_x = mob->pos.x + 1;
-            new_y = mob->pos.y;
+            dx = 1;
+            dy = 0;
             break;
         case NO_ARROW:
             return; 
@@ -140,7 +148,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
         case ROOM_FLOOR:
         case ROOM_DOOR:
         case CORRIDOR_FLOOR:
-            mob_move_to(mob, new_x, new_y);
+            mob_move_by(mob, dx, dy);
             break;
         case VERTICAL_WALL:
         case HORIZONTAL_WALL:
@@ -152,7 +160,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
         case ID_GOBLIN:
             if(mob == player){
                 for(mob_t *hostile_mob = mob_get_mobs(); hostile_mob; hostile_mob = hostile_mob->next){
-                    if(hostile_mob->pos.x == new_x && hostile_mob->pos.y == new_y){
+                    if(hostile_mob->pos.x == (dx + player->pos.x) && hostile_mob->pos.y == (dy + player->pos.y)){
                         nidebug("[%c] health: %i", hostile_mob->symbol, hostile_mob->health);
                         attack(hostile_mob);
                         event_log_add("You chopped a piece out of *the mob*");
@@ -165,9 +173,9 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
         case ITEM_SYMBOL:
             if(mob == player){
                 for(item_t* it = item_get(); it; it = it->next){
-                    if(it->pos.x == new_x && it->pos.y == new_y){
+                    if(it->pos.x == (dx + player->pos.x) && it->pos.y == ((dy + player->pos.y))){
                         ((potion_t*)it->spec_attr)->use(it);
-                        mob_move_to(player, new_x, new_y);
+                        mob_move_by(player, dx, dy);
                         player->stands_on = ROOM_FLOOR;
                         event_log_add("You picked up an unknown blue potion");
                         break;

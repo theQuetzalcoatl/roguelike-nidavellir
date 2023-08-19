@@ -17,6 +17,7 @@
 #include "item.h"
 
 extern void get_objects_from_custom_map(void);
+extern void event_log_add(const char *event);
 bool custom_mode;
 bool game_is_running = true;
 
@@ -106,6 +107,10 @@ int main(int argnum, char **argv)
                 game_is_running = false;
                 continue;
             case '.': /* rest */
+                if(turns % 10 == 0 ){ /* NOTE: refactor */
+                    player->health += 5u;
+                    player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly*/
+                }
                 break;
             case '?':
                 display_to_player_window("hotkeys");
