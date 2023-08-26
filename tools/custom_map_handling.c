@@ -28,7 +28,7 @@ void get_objects_from_custom_map(void)
     fseek(fp, 0, SEEK_SET);
 
     char *file_content = malloc(file_size);
-    char * tmp = file_content;
+    char *tmp = file_content;
     fread(file_content, sizeof(char), file_size - TERM_ZERO, fp);
     file_content[file_size-1] = 0;
 

@@ -26,6 +26,7 @@ typedef struct mob_t
     uint8_t stands_on;
     int8_t health;
     uint8_t level;
+    pos_t last_seen;
     struct mob_t *next;
 }mob_t;
 

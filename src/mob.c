@@ -10,6 +10,7 @@ static void summon_player(mob_t *player);
 static void summon_goblin(mob_t *goblin);
 static void summon_draugr(mob_t *draugr);
 static void add_to_list(mob_t *mob);
+static void move_towards_player_last_seen_pos(mob_t *mob);
 
 static mob_t *head = NULL;
 static mob_t *player = NULL;
@@ -251,18 +252,36 @@ void mob_update(mob_t *mob, input_code_t step_to)
         int16_t dx = mob->pos.x - player->pos.x;
         int16_t dy = mob->pos.y - player->pos.y;
 
-        if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  // sanity check, if mob is within 1 unit radius of player it is definitely in sight.
+        if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  /* Is mob near the player? */
             if(is_player_in_eyesight(mob->pos, player->pos)){
                 if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
                 else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
                 mob_show(*mob);
+                mob->last_seen = player->pos;
             }
-            else mob_hide(*mob);
+            else{
+                move_towards_player_last_seen_pos(mob);
+                mob_hide(*mob);
+            }
         }
         else{
             mob_show(*mob);
             attack_player();
             event_log_add("*the mob* cut you badly!");
+        }
+    }
+}
+
+
+static void move_towards_player_last_seen_pos(mob_t *mob)
+{
+    if(mob->last_seen.x != 0 && mob->last_seen.y != 0){ /* the player was spotted at least once */
+        int16_t dx = mob->pos.x - mob->last_seen.x;
+        int16_t dy = mob->pos.y - mob->last_seen.y;
+
+        if(dx || dy){
+            if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
+            else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
         }
     }
 }
@@ -305,7 +324,7 @@ static void summon_player(mob_t *player)
         if(room_get_rooms() != NULL)
             *player = (mob_t){.pos.x=rooms[0].pos.x+1, .pos.y=rooms[0].pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL};
         else
-            *player = (mob_t){.pos.x=1, .pos.y=1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL};
+            *player = (mob_t){.pos.x=1, .pos.y=1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL, .last_seen = (pos_t){.x=0, .y=0} };
         summoned = true;
     }
     else{
@@ -317,10 +336,10 @@ static void summon_player(mob_t *player)
 
 static void summon_goblin(mob_t *goblin)
 {
-    *goblin = (mob_t){.pos=get_random_pos(), .stands_on=ROOM_FLOOR, .symbol=ID_GOBLIN, .health=15, .level=1, .next = NULL};
+    *goblin = (mob_t){.pos=get_random_pos(), .stands_on=ROOM_FLOOR, .symbol=ID_GOBLIN, .health=15, .level=1, .next = NULL, .last_seen = (pos_t){.x=0, .y=0}};
 }
 
 static void summon_draugr(mob_t *draugr)
 {
-    *draugr = (mob_t){.pos=get_random_pos(), .stands_on=ROOM_FLOOR, .symbol=ID_DRAUGR, .health = 20, .level=10, .next = NULL}; 
+    *draugr = (mob_t){.pos=get_random_pos(), .stands_on=ROOM_FLOOR, .symbol=ID_DRAUGR, .health = 20, .level=10, .next = NULL, .last_seen = (pos_t){.x=0, .y=0}}; 
 }

@@ -87,74 +87,65 @@ void term_putchar_xy(const char c, const uint16_t x, const uint16_t y)
 }
 
 
-#define ROUNDED_DIVISION(a, b) ((((a)<<1)/(b) + 1) >> 1); 
+#define ROUNDED_DIVISION(a, b) ((((a)<<1)/(b) + 1) >> 1)
 
 bool is_player_in_eyesight(pos_t objp, pos_t playerp)
 {
     char c = 0;
-    int16_t dx = objp.x - playerp.x;
-    int16_t dy = objp.y - playerp.y;
+    int16_t dx = playerp.x - objp.x;
+    int16_t dy = playerp.y -  objp.y;
 
     if( (1*1 + 1*1) >= (dx*dx + dy*dy)) return true;
 
     if(dx != 0){
-        int16_t m = ROUNDED_DIVISION(dy, dx); //((dy<<1) / dx) + 1u;
-        int16_t b = objp.y - ROUNDED_DIVISION(dy*objp.x, dx);
+        int16_t m = ROUNDED_DIVISION(dy, dx);
+        int16_t b = playerp.y - ROUNDED_DIVISION(dy*playerp.x, dx);
+    
+        if(m <= -1 || m >= 1){
+            int32_t start_y = playerp.y;
+            int32_t finish_y = objp.y;
+            int32_t x_dir = (playerp.x <= objp.x) ? 1 : -1;
+            int32_t y_dir = (playerp.y >= objp.y) ? -1 : 1;
 
-        nidebug("m:%i, p[%d,%d], m[%d,%d]", m, playerp.x, playerp.y, objp.x, objp.y);
-        
-        if(m <= -1){
-            int16_t lower_y = (objp.y > playerp.y) ? objp.y : playerp.y;
-            int16_t upper_y = (objp.y > playerp.y) ? playerp.y : objp.y;
-            nidebug("ALARMI");
-            for(; upper_y < lower_y - 1; ++upper_y){ // not to start on the mob itself, takes care of 'next to each other' case
-                int16_t start_x = ROUNDED_DIVISION(((upper_y - b)*dx), dy);
-                int16_t finish_x = ROUNDED_DIVISION(((upper_y - b)*dx), dy);
-                nidebug("sx:%i=(%i - %i)%i/%i, fx:%d, next_y:%d", start_x, upper_y, b, dx, dy, finish_x, upper_y+1);
-                for(; start_x*start_x != finish_x*finish_x; --start_x){
-                    c = term_getchar_xy(start_x, upper_y+1);
-                    nidebug("c:%c, [%d,%d]", c, start_x, upper_y + 1);
-                    if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
+            for(; start_y != finish_y; start_y += y_dir){
+                int16_t start_x = ROUNDED_DIVISION(((start_y - b)*dx), dy);
+                int16_t finish_x = ROUNDED_DIVISION(((start_y + y_dir - b)*dx), dy);
+
+                for(; start_x != finish_x; start_x += x_dir){
+                    c = term_getchar_xy(start_x, start_y+y_dir);
+                    if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL){
+                       return (start_x == objp.x && start_y == objp.y) ? true : false;
+                    }
                 }
                 /* cover the start_x = finish_x case as well*/
-                c = term_getchar_xy( start_x, upper_y+1);
-                nidebug("c:%c, [%d,%d]", c, start_x, upper_y + 1);
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR)
-                {
-                    nidebug("\n\n");
-                    return false;
+                c = term_getchar_xy( start_x, start_y);
+                if(c == ID_PLAYER) continue;
+                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL ){
+                    return (start_x == objp.x && start_y == objp.y) ? true : false;
                 }
-            }
-        }
-        else if(m >= 1){
-            int16_t lower_y = (objp.y > playerp.y) ? objp.y : playerp.y;
-            int16_t upper_y = (objp.y > playerp.y) ? playerp.y : objp.y;
-            nidebug("ALARMI");
-            for(; upper_y < lower_y - 1; ++upper_y){ // not to start on the mob itself, takes care of 'next to each other' case
-                int16_t start_x = ROUNDED_DIVISION(((upper_y - b)*dx), dy);
-                int16_t finish_x = ROUNDED_DIVISION(((upper_y - b)*dx), dy);
-                nidebug("sx:%i=(%i - %i)%i/%i, fx:%d, next_y:%d", start_x, upper_y, b, dx, dy, finish_x, upper_y+1);
-                for(; start_x*start_x != finish_x*finish_x; ++start_x){
-                    c = term_getchar_xy(start_x, upper_y+1);
-                    nidebug("c:%c, [%d,%d]", c, start_x, upper_y + 1);
-                    if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
-                }
-                /* cover the start_x = finish_x case as well*/
-                c = term_getchar_xy( start_x, upper_y+1);
-                nidebug("c:%c, [%d,%d]", c, start_x, upper_y + 1);
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR) return false;
             }
         }
         else{
-            int16_t right_x = (objp.x > playerp.x) ? objp.x : playerp.x;
-            int16_t left_x  = (objp.x > playerp.x) ? playerp.x : objp.x;
-            for(++left_x; left_x < right_x; ++left_x){ // not to start on the mob itself, takes care of 'next to each other' case
-                c = term_getchar_xy(left_x, (dy*left_x)/dx + b);
-                nidebug("2 [%d,%d]\n\n", left_x, (dy*left_x)/dx + b);
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL  && c != ' ') 
-                {
-                    nidebug("\n\n");
-                    return false;
+            int32_t start_x = playerp.x;
+            int32_t finish_x = objp.x;
+            int32_t x_dir = (playerp.x <= objp.x) ? 1 : -1;
+            int32_t y_dir = (playerp.y >= objp.y) ? -1 : 1;
+
+            for(; start_x != finish_x; start_x += x_dir){
+                int16_t start_y = ROUNDED_DIVISION((dy*start_x), dx) + b;
+                int16_t finish_y = ROUNDED_DIVISION((dy*(start_x + x_dir)), dx) + b;
+
+                for(; start_y != finish_y; start_y += y_dir){
+                    c = term_getchar_xy(start_x+x_dir, start_y);
+                    if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL){
+                        return (start_x == objp.x && start_y == objp.y) ? true : false;
+                    }
+                }
+                /* cover the start_y = finish_y case as well*/
+                c = term_getchar_xy(start_x, start_y);
+                if(c == ID_PLAYER) continue;
+                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL){
+                    return (start_x == objp.x && start_y == objp.y) ? true : false;
                 }
             }
         }
@@ -164,7 +155,6 @@ bool is_player_in_eyesight(pos_t objp, pos_t playerp)
         int16_t upper_y = (objp.y > playerp.y) ? playerp.y : objp.y;
         for(++upper_y; upper_y < lower_y; ++upper_y){// not to start on the mob itself, takes care of 'next to each other' case
             c = term_getchar_xy(playerp.x, upper_y);
-            nidebug("3 %c", c);
             if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL) return false;
         }
     }
