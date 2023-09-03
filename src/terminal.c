@@ -15,7 +15,7 @@
 typedef struct
 {
     pos_t cursor;
-    char content[TERM_ROWS_NUM][TERM_COLS_NUM];
+    char content[TERMINAL_HEIGHT][TERMINAL_WIDTH];
 }window_t;
 
 static window_t win = {0};
@@ -34,12 +34,12 @@ void term_setup(void)
     s.c_lflag &= ~(ECHO | ICANON);
     //s.c_cc[VTIME] = 0; s.c_cc[VMIN] = 1; IMPLICIT 
     printf("\x1B[?25l"); /* make cursor invisible */
-    //printf("\e[8;%d;%dt", TERM_ROWS_NUM, TERM_COLS_NUM); /* resize window - 'resize' does the same thing */
+    //printf("\e[8;%d;%dt", TERMINAL_HEIGHT, TERMINAL_WIDTH); /* resize window - 'resize' does the same thing */
     
     system("temp_PS1=${PS1}; PS1=\"\"; clear;");
 
-    for (uint16_t row = 0; row < TERM_ROWS_NUM; ++row){
-        for (uint16_t col = 0; col < TERM_COLS_NUM; ++col) term_putchar_xy(EMPTY_SPACE, col, row);
+    for (uint16_t row = 0; row < TERMINAL_HEIGHT; ++row){
+        for (uint16_t col = 0; col < TERMINAL_WIDTH; ++col) term_putchar_xy(EMPTY_SPACE, col, row);
     }
 
     tcsetattr(STDOUT_FILENO, TCSAFLUSH, &s);
@@ -56,7 +56,7 @@ void term_restore_original(void)
 
 void term_move_cursor(const uint16_t x, const uint16_t y)
 {
-    if(x < TERM_COLS_NUM && y < TERM_ROWS_NUM){
+    if(x < TERMINAL_WIDTH && y < TERMINAL_HEIGHT){
         printf("\x1B[%u;%uH", y + 1, x + 1); /* terminal is 1 based, not 0 */
         win.cursor.x = x;
         win.cursor.y = y;

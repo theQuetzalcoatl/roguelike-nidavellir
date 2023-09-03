@@ -38,8 +38,8 @@ static void check_terminal_size(void)
     struct winsize ws = {0};
     ioctl(0, TIOCGWINSZ, &ws);
 
-    if(ws.ws_col < TERM_COLS_NUM || ws.ws_row < TERM_ROWS_NUM){
-        printf("Terminal window is currently %dx%d. Make it at least %dx%d large and try again!\n", ws.ws_col, ws.ws_row, TERM_COLS_NUM, TERM_ROWS_NUM);
+    if(ws.ws_col < TERMINAL_WIDTH || ws.ws_row < TERMINAL_HEIGHT){
+        printf("Terminal window is currently %dx%d. Make it at least %dx%d large and try again!\n", ws.ws_col, ws.ws_row, TERMINAL_WIDTH, TERMINAL_HEIGHT);
         exit(1);
     }
 }
@@ -125,18 +125,6 @@ int main(int argnum, char **argv)
 
         for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, step_to);
         for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
-
-        /*  temporarily teleporting the player due to the lack of corridors*/
-        if(player->stands_on == ROOM_DOOR && custom_mode == false) {
-            int num = CALC_RAND(room_get_num_of_rooms() -1, 0);
-            int x = r[num].pos.x + 1;
-            int y = r[num].pos.y + 1;
-            mob_move_to(player, x, y);
-            mob_show(*player);
-            for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
-            for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) is_player_in_eyesight(mob->pos, player->pos) ? mob_show(*mob) : mob_hide(*mob);
-            event_log_add("You teleported to a random room!");
-        }
 
         display_player_stats(*player, turns);
         display_recent_events();

@@ -23,7 +23,7 @@ extern char term_getchar(void);
 extern char term_getchar_xy(const uint16_t x, const uint16_t y);
 extern  bool is_player_in_eyesight(pos_t objp, pos_t playerp);
 
-#define TERM_ROWS_NUM (40u)
-#define TERM_COLS_NUM (160u) 
+#define TERMINAL_HEIGHT (40u)
+#define TERMINAL_WIDTH (160u) 
 
 #endif /* _TERMINAL_ */ 

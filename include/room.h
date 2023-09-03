@@ -9,28 +9,22 @@
 #define MAX_DOOR_NUM (4u)
 #define MIN_DOOR_NUM (1u)
 
-typedef enum
-{
-    up_side,
-    down_side,
-    left_side,
-    right_side
-}side_e;
-
 typedef struct
 {
     pos_t pos;
-    side_e side;
     bool is_locked;
 }door_t;
 
 typedef struct room_t
 {
     pos_t pos;
-    door_t doors[MAX_DOOR_NUM];
+    door_t upper_door;
+    door_t lower_door;
+    door_t left_door;
+    door_t right_door;
     int16_t width;  /* [chars] */
     int16_t height; /* [chars] */
-    uint8_t door_num;
+    uint8_t in_cell;
 }room_t;
 
 extern void room_draw(const room_t r);

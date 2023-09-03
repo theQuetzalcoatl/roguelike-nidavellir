@@ -1,21 +1,35 @@
 #include <stdlib.h>
+#include <math.h>
 #include "room.h"
 #include "display.h"
+#include "cutscenes.h"
+#include "corridor.h"
+#include "terminal.h"
 #include "debug.h"
 
 #define MIN_ROOM_HEIGHT (5u)
-#define MIN_ROOM_WIDTH MIN_ROOM_HEIGHT
-#define MAX_ROOM_HEIGHT (15u)
-#define MAX_ROOM_WIDTH MAX_ROOM_HEIGHT
+#define MIN_ROOM_WIDTH  (5u)
 
-#define MAX_NUM_OF_ROOMS_PER_LEVEL (5u)
+#define MAX_NUM_OF_ROOMS_PER_LEVEL (9u)
 #define MIN_NUM_OF_ROOMS_PER_LEVEL (3u)
+#define BORDER (1u)
+#define CELL_BELOW (3u)
+#define CELL_ABOVE (-3)
+#define CELL_ON_THE_LEFT (-1)
+#define CELL_ON_THE_RIGHT (1u)
 
-static void add_doors(room_t * const room);
-static room_t calculate_one_room(void);
+#define HORIZONTAL (1u)
+#define VERTICAL   (2u)
 
 static uint8_t num_of_rooms = 0;
 static room_t *rooms = NULL;
+
+
+typedef struct
+{
+    pos_t pos;
+    room_t *room;
+}cell_t;
 
 
 uint8_t room_get_num_of_rooms(void)
@@ -30,6 +44,48 @@ room_t *room_get_rooms(void)
 }
 
 
+static void make_corridor(pos_t starting, const pos_t ending, const uint8_t initial_orientation)
+{
+    int8_t y_dir = (starting.y > ending.y) ? -1 : 1;
+    int8_t x_dir = (starting.x > ending.x) ? -1 : 1;
+
+    if(initial_orientation == VERTICAL){
+        uint8_t dy = abs(starting.y - ending.y);
+        uint8_t turn_at = CALC_RAND(dy - 1, 1);
+
+        for(int i = turn_at; i; --i, starting.y += y_dir) term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
+        while(starting.x != ending.x){
+            term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
+            starting.x += x_dir;
+        }
+        while(starting.y != ending.y){
+            term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
+            starting.y += y_dir;
+        }
+        term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
+    }
+    else if(initial_orientation == HORIZONTAL){
+        uint8_t dx = abs(starting.x - ending.x);
+        uint8_t turn_at = CALC_RAND(dx - 1 , 1);
+
+        for(int i = turn_at; i; --i, starting.x += x_dir) term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
+        while(starting.y != ending.y){
+            term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
+            starting.y += y_dir;
+        }
+        while(starting.x != ending.x){
+            term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
+            starting.x += x_dir;
+        }
+        term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
+    }
+    else{
+        nidebug("Invalid initial orientation received during corridor making!");
+        exit(1);
+    }
+}
+
+
 room_t *room_create_rooms(void)
 {
     uint8_t number_of_rooms = CALC_RAND(MAX_NUM_OF_ROOMS_PER_LEVEL, MIN_NUM_OF_ROOMS_PER_LEVEL);
@@ -40,88 +96,112 @@ room_t *room_create_rooms(void)
         exit(1);
     }
 
-    for(int i = 0; i < number_of_rooms; ++i) *(rooms + i) = calculate_one_room();
+    // 3x3 grid with borders
+    uint8_t cell_width = TERMINAL_WIDTH/3;
+    uint8_t cell_height = RUNIC_LINE_POS/3;
+    cell_t window_cell[MAX_NUM_OF_ROOMS_PER_LEVEL] = {
+        [0] = {.pos.x = 0*cell_width + BORDER, .pos.y = 0*cell_height + BORDER, .room=NULL}, [1] = {.pos.x = 1*cell_width + BORDER, .pos.y = 0*cell_height + BORDER, .room=NULL}, [2] = {.pos.x = 2*cell_width + BORDER, .pos.y = 0*cell_height + BORDER, .room=NULL},
+        [3] = {.pos.x = 0*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL}, [4] = {.pos.x = 1*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL}, [5] = {.pos.x = 2*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL},
+        [6] = {.pos.x = 0*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}, [7] = {.pos.x = 1*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}, [8] = {.pos.x = 2*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}
+                                                    };
+
+    uint16_t mixed_cell_numbers[MAX_NUM_OF_ROOMS_PER_LEVEL] = {0,1,2,3,4,5,6,7,8};
+    stir_elements_randomly(sizeof(mixed_cell_numbers)/sizeof(mixed_cell_numbers[0]), mixed_cell_numbers);
+
+    /* place rooms */
+    for(uint8_t n = 0; n < number_of_rooms; ++n){
+        (rooms + n)->pos = window_cell[mixed_cell_numbers[n]].pos;
+
+        window_cell[mixed_cell_numbers[n]].room = rooms + n;
+        (rooms + n)->in_cell = mixed_cell_numbers[n];
+
+        uint64_t x = CALC_RAND((cell_width - 2*BORDER) - MIN_ROOM_WIDTH, 0);
+        rooms[n].pos.x += x;
+        uint64_t y = CALC_RAND((cell_height - 2*BORDER) - MIN_ROOM_HEIGHT, 0);
+        rooms[n].pos.y += y;
+
+        uint64_t available_width = (cell_width - 2*BORDER) - x;
+        uint64_t available_height = (cell_height - 2*BORDER) - y;
+
+        rooms[n].width = CALC_RAND(available_width, MIN_ROOM_WIDTH);
+        rooms[n].height = CALC_RAND(available_height, MIN_ROOM_HEIGHT);
+    }
+
+    /* door+corridor generation */
+    for(uint8_t n = 0; n < number_of_rooms; ++n){
+        int8_t room_cell = (rooms + n)->in_cell;
+        int8_t other_cell = room_cell + CELL_ABOVE;
+
+        if((other_cell) >= 0){
+            room_t *other_room = window_cell[other_cell].room;
+            if(other_room != NULL && other_room->lower_door.pos.x == 0 && other_room->lower_door.pos.y == 0){
+                pos_t starting = {.y = rooms[n].pos.y-1, .x = CALC_RAND(rooms[n].width - 2, 1) + rooms[n].pos.x};
+                pos_t ending = {.y = other_room->pos.y + other_room->height, .x = CALC_RAND(other_room->width - 2, 1) + other_room->pos.x};
+
+                make_corridor(starting, ending, VERTICAL);
+
+                rooms[n].upper_door.pos = (pos_t){.y = starting.y + 1, .x = starting.x};
+                nidebug("(1)\nstart[%d:%d]\nend[%d:%d]\ndoor[%d:%d]\n", starting.x, starting.y, ending.x, ending.y, rooms[n].upper_door.pos.x, rooms[n].upper_door.pos.y);
+
+                other_room->lower_door.pos = (pos_t){.y = ending.y - 1, .x = ending.x};
+            }
+        }
+
+        other_cell = room_cell + CELL_BELOW;
+
+        if((other_cell) <= 8){
+            room_t *other_room = window_cell[other_cell].room;
+            if(other_room != NULL && other_room->upper_door.pos.x == 0 && other_room->upper_door.pos.y == 0){
+                pos_t starting = {.y = rooms[n].pos.y + rooms[n].height, .x = CALC_RAND(rooms[n].width - 2, 1) + rooms[n].pos.x};
+                pos_t ending = {.y = other_room->pos.y-1, .x = CALC_RAND(other_room->width - 2, 1) + other_room->pos.x};
+
+                make_corridor(starting, ending, VERTICAL);
+
+                rooms[n].lower_door.pos = (pos_t){.y = starting.y - 1, .x = starting.x};
+                nidebug("(2)\nstart[%d:%d]\nend[%d:%d]\ndoor[%d:%d]\n", starting.x, starting.y, ending.x, ending.y, rooms[n].lower_door.pos.x, rooms[n].lower_door.pos.y);
+
+                other_room->upper_door.pos = (pos_t){.y = ending.y + 1, .x = ending.x};
+            }
+        }
+
+        other_cell = room_cell + CELL_ON_THE_LEFT;
+
+        if((other_cell) != 2 && (other_cell) != 5 && (other_cell) >= 0){
+            room_t *other_room = window_cell[other_cell].room;
+            if(other_room != NULL && other_room->right_door.pos.x == 0 && other_room->right_door.pos.y == 0){
+                pos_t starting = {.y = rooms[n].pos.y + CALC_RAND(rooms[n].height - 2, 1), .x = rooms[n].pos.x - 1};
+                pos_t ending = {.y = other_room->pos.y + CALC_RAND(other_room->height - 2, 1), .x = other_room->pos.x + other_room->width}; /* +1 is incorporated in width addition to x pos */
+
+                make_corridor(starting, ending, HORIZONTAL);
+
+                rooms[n].left_door.pos = (pos_t){.y = starting.y, .x = starting.x + 1};
+                nidebug("(3)\nstart[%d:%d]\nend[%d:%d]\ndoor[%d:%d]\n", starting.x, starting.y, ending.x, ending.y, rooms[n].left_door.pos.x, rooms[n].left_door.pos.y);
+
+                other_room->right_door.pos = (pos_t){.y = ending.y, .x = ending.x - 1};
+            }
+        }
+
+        other_cell = room_cell + CELL_ON_THE_RIGHT;
+
+        if((other_cell) != 6 && (other_cell) != 3 && (other_cell) <= 8){
+            room_t *other_room = window_cell[other_cell].room;
+            if(other_room != NULL && other_room->left_door.pos.x == 0 && other_room->left_door.pos.y == 0){
+                pos_t starting = {.y = rooms[n].pos.y + CALC_RAND(rooms[n].height - 2, 1), .x = rooms[n].pos.x + rooms[n].width}; /* +1 is incorporated in width addition to x pos */
+                pos_t ending = {.y = other_room->pos.y + CALC_RAND(other_room->height - 2, 1), .x = other_room->pos.x - 1};
+
+                make_corridor(starting, ending, HORIZONTAL);
+
+                rooms[n].right_door.pos = (pos_t){.y = starting.y, .x = starting.x - 1};
+                nidebug("(4)\nstart[%d:%d]\nend[%d:%d]\ndoor[%d:%d]\n", starting.x, starting.y, ending.x, ending.y, rooms[n].right_door.pos.x, rooms[n].right_door.pos.y);
+
+                other_room->left_door.pos = (pos_t){.y = ending.y, .x = ending.x + 1};
+            }
+        }
+    }
 
     num_of_rooms = number_of_rooms;
 
     return rooms;
-}
-
-
-static room_t calculate_one_room(void)
-{
-    room_t r = {0};
-    r.height = CALC_RAND(MAX_ROOM_HEIGHT, MIN_ROOM_HEIGHT);
-    r.pos.x = CALC_RAND(TERM_COLS_NUM, 0);
-    r.pos.y = CALC_RAND(TERM_ROWS_NUM, 0);
-    r.width = CALC_RAND(MAX_ROOM_WIDTH, MIN_ROOM_WIDTH);
-
-    if(r.pos.x + r.width >= (signed int)TERM_COLS_NUM) r.pos.x = TERM_COLS_NUM - r.width - 10;
-    if(r.pos.y + r.height >= (signed int)RUNIC_LINE_POS) r.pos.y = RUNIC_LINE_POS - r.height - 10;
-
-    add_doors(&r);
-
-    return r;
-}
-
-
-static void add_doors(room_t * const room)
-{
-    bool upper_wall_doored, lower_wall_doored, left_wall_doored, right_wall_doored;
-    upper_wall_doored = lower_wall_doored = left_wall_doored = right_wall_doored = false;
-    bool doored = false;
-    room->door_num = CALC_RAND(MAX_DOOR_NUM, MIN_DOOR_NUM);
-
-    for(uint8_t door_num = 0; door_num < room->door_num; ++door_num){
-        uint8_t room_side = rand()%4; // a room has 4 sides
-        while(!doored){
-            switch(room_side)
-            {
-                case up_side:
-                    if(!upper_wall_doored){
-                        room->doors[door_num].pos.y = room->pos.y;
-                        room->doors[door_num].pos.x = room->pos.x + CALC_RAND(room->width - 2, 1); // 1 - to avoid x position corner, 2 - to avoid x+width corner also taking into account that drawing starts at x;
-                        room->doors[door_num].side = up_side;
-                        upper_wall_doored = true;
-                        doored = true;
-                    }
-                    break;
-
-                case down_side:
-                    if(!lower_wall_doored){
-                        room->doors[door_num].pos.y = room->pos.y + room->height - 1;
-                        room->doors[door_num].pos.x = room->pos.x + CALC_RAND(room->width - 2, 1); // 1 - to avoid x position corner, 2 - to avoid x+width corner also taking into account that drawing starts at x;
-                        room->doors[door_num].side = down_side;
-                        lower_wall_doored = true;
-                        doored = true;
-                    }
-                    break;
-
-                case left_side:
-                    if(!left_wall_doored){
-                        room->doors[door_num].pos.y = room->pos.y + CALC_RAND(room->height - 2, 1); // 1 - to avoid y position corner, 2 - to avoid y+height corner also taking into account that drawing starts at y;
-                        room->doors[door_num].pos.x = room->pos.x;
-                        room->doors[door_num].side = left_side;
-                        left_wall_doored = true;
-                        doored = true;
-                    }
-                    break;
-
-                case right_side:
-                    if(!right_wall_doored){
-                        room->doors[door_num].pos.y = room->pos.y + CALC_RAND(room->height - 2, 1); // 1 - to avoid y position corner, 2 - to avoid y+height corner also taking into account that drawing starts at y;
-                        room->doors[door_num].pos.x = room->pos.x + room->width - 1;
-                        room->doors[door_num].side = right_side;
-                        right_wall_doored = true;
-                        doored = true;
-                    }
-                    break;
-            }
-            room_side = (room_side + 1) % MAX_DOOR_NUM;
-        }
-        doored = false;
-        room->doors[door_num].is_locked = false;
-    }
 }
 
 
@@ -138,5 +218,8 @@ void room_draw(const room_t r)
     /* lower wall */
     for(int x = r.pos.x; x < r.width + r.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.pos.y + r.height - 1);
     /* placing doors */
-    for(uint8_t door_num = 0; door_num < r.door_num; ++door_num) term_putchar_xy(ROOM_DOOR, r.doors[door_num].pos.x, r.doors[door_num].pos.y);
+    if(r.upper_door.pos.x != 0 && r.upper_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.upper_door.pos.x, r.upper_door.pos.y);
+    if(r.lower_door.pos.x != 0 && r.lower_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.lower_door.pos.x, r.lower_door.pos.y);
+    if(r.left_door.pos.x != 0 && r.left_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.left_door.pos.x, r.left_door.pos.y);
+    if(r.right_door.pos.x != 0 && r.right_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.right_door.pos.x, r.right_door.pos.y);
 }
