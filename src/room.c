@@ -51,7 +51,7 @@ static void make_corridor(pos_t starting, const pos_t ending, const uint8_t init
 
     if(initial_orientation == VERTICAL){
         uint8_t dy = abs(starting.y - ending.y);
-        uint8_t turn_at = CALC_RAND(dy - 1, 1);
+        uint8_t turn_at = (dy > 1 ) ? CALC_RAND(dy - 1, 1) : 1;
 
         for(int i = turn_at; i; --i, starting.y += y_dir) term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
         while(starting.x != ending.x){
@@ -66,7 +66,7 @@ static void make_corridor(pos_t starting, const pos_t ending, const uint8_t init
     }
     else if(initial_orientation == HORIZONTAL){
         uint8_t dx = abs(starting.x - ending.x);
-        uint8_t turn_at = CALC_RAND(dx - 1 , 1);
+        uint8_t turn_at = (dx > 1) ? CALC_RAND(dx - 1 , 1) : 1;
 
         for(int i = turn_at; i; --i, starting.x += x_dir) term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
         while(starting.y != ending.y){
@@ -141,8 +141,6 @@ room_t *room_create_rooms(void)
                 make_corridor(starting, ending, VERTICAL);
 
                 rooms[n].upper_door.pos = (pos_t){.y = starting.y + 1, .x = starting.x};
-                nidebug("(1)\nstart[%d:%d]\nend[%d:%d]\ndoor[%d:%d]\n", starting.x, starting.y, ending.x, ending.y, rooms[n].upper_door.pos.x, rooms[n].upper_door.pos.y);
-
                 other_room->lower_door.pos = (pos_t){.y = ending.y - 1, .x = ending.x};
             }
         }
@@ -158,8 +156,6 @@ room_t *room_create_rooms(void)
                 make_corridor(starting, ending, VERTICAL);
 
                 rooms[n].lower_door.pos = (pos_t){.y = starting.y - 1, .x = starting.x};
-                nidebug("(2)\nstart[%d:%d]\nend[%d:%d]\ndoor[%d:%d]\n", starting.x, starting.y, ending.x, ending.y, rooms[n].lower_door.pos.x, rooms[n].lower_door.pos.y);
-
                 other_room->upper_door.pos = (pos_t){.y = ending.y + 1, .x = ending.x};
             }
         }
@@ -175,8 +171,6 @@ room_t *room_create_rooms(void)
                 make_corridor(starting, ending, HORIZONTAL);
 
                 rooms[n].left_door.pos = (pos_t){.y = starting.y, .x = starting.x + 1};
-                nidebug("(3)\nstart[%d:%d]\nend[%d:%d]\ndoor[%d:%d]\n", starting.x, starting.y, ending.x, ending.y, rooms[n].left_door.pos.x, rooms[n].left_door.pos.y);
-
                 other_room->right_door.pos = (pos_t){.y = ending.y, .x = ending.x - 1};
             }
         }
@@ -192,8 +186,6 @@ room_t *room_create_rooms(void)
                 make_corridor(starting, ending, HORIZONTAL);
 
                 rooms[n].right_door.pos = (pos_t){.y = starting.y, .x = starting.x - 1};
-                nidebug("(4)\nstart[%d:%d]\nend[%d:%d]\ndoor[%d:%d]\n", starting.x, starting.y, ending.x, ending.y, rooms[n].right_door.pos.x, rooms[n].right_door.pos.y);
-
                 other_room->left_door.pos = (pos_t){.y = ending.y, .x = ending.x + 1};
             }
         }
