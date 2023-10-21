@@ -72,7 +72,7 @@ void display_to_player_window(const char * const option)
         uint8_t log_lower_border = RUNIC_LINE_POS - 2;
 
         term_move_cursor(0, RUNIC_LINE_POS - 1);
-        printf("Press up/down to scroll, or any other key to get back");
+        printf("Press up/down to scroll, or any other key to face your fate!");
 
         while(1){
             int64_t entry = current_entry;

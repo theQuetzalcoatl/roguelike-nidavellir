@@ -24,6 +24,9 @@
 static uint8_t num_of_rooms = 0;
 static room_t *rooms = NULL;
 
+static uint8_t num_of_corridors = 0;
+static corridor_t *corridors = NULL;
+
 
 typedef struct
 {
@@ -32,57 +35,103 @@ typedef struct
 }cell_t;
 
 
-uint8_t room_get_num_of_rooms(void)
-{
-    return num_of_rooms;
+uint8_t room_get_num_of_rooms(void) { return num_of_rooms; }
+
+room_t *room_get_rooms(void) { return rooms; }
+
+uint8_t room_get_num_of_corridors(void) { return num_of_corridors; }
+
+corridor_t *room_get_corridors(void) { return corridors; }
+
+
+corridor_t *room_find_corridor(const pos_t player)
+{ /* NOTE: store last successful hit for faster execution */
+    corridor_t *c = room_get_corridors();
+
+    /* is player in the square created by the two endpoints? */
+    /* NOTE: what if two corridors cross each other? */
+    for(int8_t n = room_get_num_of_corridors() - 1; n >= 0; --n){
+        pos_t upper_left = (pos_t){.x = (c[n].line[0].p1.x > c[n].line[2].p2.x) ? c[n].line[2].p2.x : c[n].line[0].p1.x,
+                                   .y = (c[n].line[0].p1.y > c[n].line[2].p2.y) ? c[n].line[2].p2.y : c[n].line[0].p1.y};
+        pos_t lower_right = (pos_t){.x = (c[n].line[0].p1.x < c[n].line[2].p2.x) ? c[n].line[2].p2.x : c[n].line[0].p1.x,
+                                   .y = (c[n].line[0].p1.y < c[n].line[2].p2.y) ? c[n].line[2].p2.y : c[n].line[0].p1.y};
+
+        if(player.x >= upper_left.x && player.x <= lower_right.x &&
+            player.y >= upper_left.y && player.y <= lower_right.y) return &c[n];
+    }
+    return NULL;
 }
 
-
-room_t *room_get_rooms(void)
+void room_draw_corridor_piece(const corridor_t *c, const pos_t player)
 {
-    return rooms;
-}
+    int8_t on_line = 2;
 
+    for(; on_line >= 0; --on_line){
+        pos_t p = c->line[on_line].p1;
+        if(c->line[on_line].is_vertical){
+            for(; p.y != c->line[on_line].p2.y + c->line[on_line].direction; p.y += c->line[on_line].direction){
+                if(3*3 >= ((p.x - player.x)*(p.x - player.x) + (p.y - player.y)*(p.y - player.y))) term_putchar_xy(CORRIDOR_FLOOR, p.x, p.y); /* place corridor of distance is smaller than or equal to 3 */
+            }
+        }
+        else{
+            for(; p.x != c->line[on_line].p2.x + c->line[on_line].direction; p.x += c->line[on_line].direction){
+                if(3*3 >= ((p.x - player.x)*(p.x - player.x) + (p.y - player.y)*(p.y - player.y))) term_putchar_xy(CORRIDOR_FLOOR, p.x, p.y); /* place corridor of distance is smaller than or equal to 3 */
+            }
+        }
+    }
+}
 
 static void make_corridor(pos_t starting, const pos_t ending, const uint8_t initial_orientation)
 {
+    corridors = realloc(corridors, (num_of_corridors + 1)*(sizeof(corridor_t)));
+    if(!corridors){
+        nidebug("Could not allocate memory for another corridor! Corridor num:%d", num_of_corridors);
+        exit(1);
+    }
+    else ++num_of_corridors;
+
     int8_t y_dir = (starting.y > ending.y) ? -1 : 1;
     int8_t x_dir = (starting.x > ending.x) ? -1 : 1;
+    corridor_t newest_corridor = {0};
+
+    newest_corridor.line[0].p1 = starting;
+    newest_corridor.line[2].p2 = ending;
 
     if(initial_orientation == VERTICAL){
         uint8_t dy = abs(starting.y - ending.y);
         uint8_t turn_at = (dy > 1 ) ? CALC_RAND(dy - 1, 1) : 1;
 
-        for(int i = turn_at; i; --i, starting.y += y_dir) term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
-        while(starting.x != ending.x){
-            term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
-            starting.x += x_dir;
-        }
-        while(starting.y != ending.y){
-            term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
-            starting.y += y_dir;
-        }
-        term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
+        newest_corridor.line[0].is_vertical = newest_corridor.line[2].is_vertical = true;
+        newest_corridor.line[1].is_vertical = false;
+
+        newest_corridor.line[0].direction = newest_corridor.line[2].direction = y_dir;
+        newest_corridor.line[1].direction = x_dir;
+
+        newest_corridor.line[0].p2 = (pos_t){.x = starting.x, .y = starting.y + turn_at*y_dir};
+        newest_corridor.line[1].p1 = newest_corridor.line[0].p2;
+        newest_corridor.line[1].p2 = (pos_t){.x = ending.x, .y = newest_corridor.line[0].p2.y};
+        newest_corridor.line[2].p1 = newest_corridor.line[1].p2;
     }
     else if(initial_orientation == HORIZONTAL){
         uint8_t dx = abs(starting.x - ending.x);
         uint8_t turn_at = (dx > 1) ? CALC_RAND(dx - 1 , 1) : 1;
 
-        for(int i = turn_at; i; --i, starting.x += x_dir) term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
-        while(starting.y != ending.y){
-            term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
-            starting.y += y_dir;
-        }
-        while(starting.x != ending.x){
-            term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
-            starting.x += x_dir;
-        }
-        term_putchar_xy(CORRIDOR_FLOOR, starting.x, starting.y);
+        newest_corridor.line[0].is_vertical = newest_corridor.line[2].is_vertical = false;
+        newest_corridor.line[1].is_vertical = true;
+
+        newest_corridor.line[0].direction = newest_corridor.line[2].direction = x_dir;
+        newest_corridor.line[1].direction = y_dir;
+
+        newest_corridor.line[0].p2 = (pos_t){.x = starting.x + turn_at*x_dir, .y = starting.y};
+        newest_corridor.line[1].p1 = newest_corridor.line[0].p2;
+        newest_corridor.line[1].p2 = (pos_t){.x = newest_corridor.line[0].p2.x, .y = ending.y};
+        newest_corridor.line[2].p1 = newest_corridor.line[1].p2;
     }
     else{
         nidebug("Invalid initial orientation received during corridor making!");
         exit(1);
     }
+    corridors[num_of_corridors - 1] = newest_corridor;
 }
 
 
@@ -192,26 +241,46 @@ room_t *room_create_rooms(void)
     }
 
     num_of_rooms = number_of_rooms;
-
     return rooms;
 }
 
 
-void room_draw(const room_t r)
+room_t *room_find(const pos_t p)
 {
-    /* upper wall */
-    for(int x = r.pos.x; x < r.width + r.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.pos.y);
-    /* sidewalls and floor */
-    for(int y = r.pos.y + 1; y < r.height + r.pos.y - 1; ++y){
-        term_putchar_xy(VERTICAL_WALL, r.pos.x, y);
-        term_putchar_xy(VERTICAL_WALL, r.pos.x + r.width - 1, y);
-        for(int x = r.pos.x + 1; x < r.width + r.pos.x - 1; ++x) term_putchar_xy(ROOM_FLOOR, x, y);
+    room_t *r = room_get_rooms();
+    int8_t n = room_get_num_of_rooms() - 1;
+
+    while(n){ /* 0 not included because that's the room where the player starts, therefore already drawn */
+        if((r + n)->left_door.pos.x == p.x && (r + n)->left_door.pos.y == p.y) break;
+        else if((r + n)->right_door.pos.x == p.x && (r + n)->right_door.pos.y == p.y) break;
+        else if((r + n)->lower_door.pos.x == p.x && (r + n)->lower_door.pos.y == p.y) break; 
+        else if((r + n)->upper_door.pos.x == p.x && (r + n)->upper_door.pos.y == p.y) break;
+        --n;
     }
-    /* lower wall */
-    for(int x = r.pos.x; x < r.width + r.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.pos.y + r.height - 1);
-    /* placing doors */
-    if(r.upper_door.pos.x != 0 && r.upper_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.upper_door.pos.x, r.upper_door.pos.y);
-    if(r.lower_door.pos.x != 0 && r.lower_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.lower_door.pos.x, r.lower_door.pos.y);
-    if(r.left_door.pos.x != 0 && r.left_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.left_door.pos.x, r.left_door.pos.y);
-    if(r.right_door.pos.x != 0 && r.right_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.right_door.pos.x, r.right_door.pos.y);
+    return n ? r + n : NULL;
+}
+
+
+uint8_t room_draw(const room_t r)
+{
+    if(HORIZONTAL_WALL != term_getchar_xy(r.pos.x, r.pos.y)){ /* is it already drawn?  */
+        /* upper wall */
+        for(int x = r.pos.x; x < r.width + r.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.pos.y);
+        /* sidewalls and floor */
+        for(int y = r.pos.y + 1; y < r.height + r.pos.y - 1; ++y){
+            term_putchar_xy(VERTICAL_WALL, r.pos.x, y);
+            term_putchar_xy(VERTICAL_WALL, r.pos.x + r.width - 1, y);
+            for(int x = r.pos.x + 1; x < r.width + r.pos.x - 1; ++x) term_putchar_xy(ROOM_FLOOR, x, y);
+        }
+        /* lower wall */
+        for(int x = r.pos.x; x < r.width + r.pos.x; ++x) term_putchar_xy(HORIZONTAL_WALL, x, r.pos.y + r.height - 1);
+        /* placing doors */
+        if(r.upper_door.pos.x != 0 && r.upper_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.upper_door.pos.x, r.upper_door.pos.y);
+        if(r.lower_door.pos.x != 0 && r.lower_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.lower_door.pos.x, r.lower_door.pos.y);
+        if(r.left_door.pos.x != 0 && r.left_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.left_door.pos.x, r.left_door.pos.y);
+        if(r.right_door.pos.x != 0 && r.right_door.pos.y != 0) term_putchar_xy(ROOM_DOOR, r.right_door.pos.x, r.right_door.pos.y);
+
+        return 0;
+    }
+    else return ALREADY_DRAWN;
 }

@@ -18,6 +18,7 @@
 
 extern void get_objects_from_custom_map(void);
 extern void event_log_add(const char *event);
+extern uint64_t event_get_entry_num(void);
 bool custom_mode;
 bool game_is_running = true;
 
@@ -63,6 +64,7 @@ int main(int argnum, char **argv)
     room_t *r = NULL;
     uint64_t turns = 0;
     input_code_t input, step_to = NO_ARROW;
+    uint64_t prev_event_num = 0;
 
     custom_mode = (argnum == 2 && !strcmp(*(argv + 1), "--custom")) ?  true : false;
 
@@ -70,9 +72,9 @@ int main(int argnum, char **argv)
     else{
         //cutscene_intro();
         r = room_create_rooms();
-        for(uint8_t n = 0; n < room_get_num_of_rooms(); ++n) room_draw(r[n]);
+        room_draw(r[0]);
 
-        mob_summon(ID_PLAYER); /* player should be summoned first to be updated first, otherwise some mobs be before him, and they see him at a previous point in time */
+        mob_summon(ID_PLAYER); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
         mob_summon(ID_DRAUGR);
         mob_summon(ID_DRAUGR);
         mob_summon(ID_GOBLIN);
@@ -81,8 +83,6 @@ int main(int argnum, char **argv)
     }
 
     player = mob_get_player();
-    for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_move_to(mob, mob->pos.x, mob->pos.y);
-
     display_runic_lines();
     display_player_stats(*player, turns);
 
@@ -90,6 +90,8 @@ int main(int argnum, char **argv)
     for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
     draw();
+
+    /* let the game begin... */
 
     while(game_is_running){
         input = get_keypress();
@@ -127,7 +129,11 @@ int main(int argnum, char **argv)
         for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
         display_player_stats(*player, turns);
-        display_recent_events();
+        if(prev_event_num < event_get_entry_num()){
+            prev_event_num = event_get_entry_num();
+            display_recent_events(); 
+        } 
+
         draw();
 
         ++turns;
@@ -136,6 +142,7 @@ int main(int argnum, char **argv)
     /* CLEAN UP */
     if(!player->health && custom_mode == false) cutscene_dead();
     free(r);
+    free(room_get_corridors());
 
     return 0;
 }

@@ -23,7 +23,6 @@ item_t *item_spawn(void)
   }
 
   spawned_item->stands_on = ITEM_SYMBOL;
-  spawned_item->stands_on = ROOM_FLOOR;
   spawned_item->type = I_potion; // NOTE: change this to random
   spawned_item->pos = (pos_t){.x = 0, .y = 0};
 
@@ -31,17 +30,23 @@ item_t *item_spawn(void)
     room_t *r = room_get_rooms();
     uint8_t random_room = CALC_RAND(room_get_num_of_rooms()-1, 0);
 
+    spawned_item->stands_on = random_room != 0 ? EMPTY_SPACE: ROOM_FLOOR; /* there can be item in the starting room, which is already drawn */
     while(tries < 4 ){
-      uint8_t random_x = CALC_RAND(r[random_room].width-1, 0) + r[random_room].pos.x;
-      uint8_t random_y = CALC_RAND(r[random_room].height-1, 0) + r[random_room].pos.y;
+      uint8_t random_x = CALC_RAND(r[random_room].width-2, 1) + r[random_room].pos.x;
+      uint8_t random_y = CALC_RAND(r[random_room].height-2, 1) + r[random_room].pos.y;
 
-      if(term_getchar_xy(random_x, random_y) == ROOM_FLOOR){
-        spawned_item->pos = (pos_t){.x=random_x, .y=random_y};
-        break;
-      }
-      ++tries;
+      if(items_head == NULL) break;
+      for(item_t *i = item_get(); i; i = i->next){
+        if(i->pos.x != random_x || i->pos.y != random_y){
+          spawned_item->pos = (pos_t){.x=random_x, .y=random_y};
+          goto found_place;
+        }
+        else ++tries;
+      };
     }
   }
+
+found_place:
 
   if(tries > 3){
     free(spawned_item);

@@ -11,7 +11,7 @@ function main()
 
 		mkdir ./bin &> /dev/null;
 
-    find ./bin -type f -name "*.o" -exec rm {} \;
+    find ./bin -type f -name "*.o" -delete;
 
     for c_file in ${c_files}; do
         gcc ${warnings} ${optimization} -I "${includes}" -I "${PWD}/tools/" ${debug_info} ${debug_lvl} -c ${c_file} &
@@ -23,7 +23,7 @@ function main()
 
     gcc -o ${game_name} ${obj_files};
 
-    find . -name "*.o" -exec mv --force {} ./bin &> /dev/null \;
+    find . -name "*.o" -delete ;
 }
 
 main;
