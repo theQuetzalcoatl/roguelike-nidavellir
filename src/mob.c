@@ -150,7 +150,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
         case CORRIDOR_FLOOR:
             if(mob != player) mob_move_by(mob, dx, dy);
             else{
-                corridor_t *c = room_find_corridor(player->pos);
+                corridor_t *c = room_find_corridor_with_player(player->pos);
                 if(c) room_draw_corridor_piece(c, player->pos);
                  mob_move_by(mob, dx, dy);
             }
@@ -212,7 +212,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
 
     if(mob == player && player->stands_on == ROOM_DOOR){
         pos_t new_pos = (pos_t){.x = player->pos.x + dx, .y = player->pos.y + dy}; /* *2 is necessary because when we *would* arrive at a door we also want to check further for corridor as well */
-        corridor_t *c = room_find_corridor(new_pos);
+        corridor_t *c = room_find_corridor_with_player(new_pos);
         if(c) room_draw_corridor_piece(c, new_pos);
     }
 }
@@ -372,5 +372,5 @@ static void summon_goblin(mob_t *goblin)
 
 static void summon_draugr(mob_t *draugr)
 {
-    *draugr = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_DRAUGR, .health = 20, .level=10, .next = NULL, .last_seen = (pos_t){.x=0, .y=0}}; 
+    *draugr = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_DRAUGR, .health=20, .level=10, .next = NULL, .last_seen = (pos_t){.x=0, .y=0}}; 
 }

@@ -25,6 +25,7 @@ bool game_is_running = true;
 
 static void handle_ctrl_c(int num)
 {
+    num = num; // avoid warning
     exit(1); // run the 'atexit' functions
 }
 

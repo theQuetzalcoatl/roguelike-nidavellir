@@ -31,7 +31,7 @@ typedef struct corridor_t
 {
     struct
     {
-        pos_t p1, p2;
+        pos_t start, end;
         bool is_vertical;
         int8_t direction;
     }line[3]; /* max 2 turns = 3 lines max */
@@ -44,7 +44,7 @@ extern room_t *room_get_rooms(void);
 extern room_t *room_find(const pos_t p);
 extern uint8_t room_get_num_of_corridors(void);
 extern corridor_t *room_get_corridors(void);
-extern corridor_t *room_find_corridor(const pos_t player);
+extern corridor_t *room_find_corridor_with_player(const pos_t player);
 extern void room_draw_corridor_piece(const corridor_t *c, const pos_t player);
 
 #define VERTICAL_WALL   '|'
