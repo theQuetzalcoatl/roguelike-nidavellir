@@ -1,6 +1,6 @@
 #ifndef CORRIDOR_H
 #define CORRIDOR_H
 
-#define CORRIDOR_FLOOR '#'
+#define CORRIDOR '#'
 
 #endif /* CORRIDOR_H */

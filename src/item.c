@@ -24,7 +24,7 @@ item_t *item_spawn(void)
 
   spawned_item->stands_on = ITEM_SYMBOL;
   spawned_item->type = I_potion; // NOTE: change this to random
-  spawned_item->pos = (pos_t){.x = 0, .y = 0};
+  spawned_item->pos = (point_t){.x = 0, .y = 0};
 
   if(custom_mode == false){
     room_t *r = room_get_rooms();
@@ -38,7 +38,7 @@ item_t *item_spawn(void)
       if(items_head == NULL) break;
       for(item_t *i = item_get(); i; i = i->next){
         if(i->pos.x != random_x || i->pos.y != random_y){
-          spawned_item->pos = (pos_t){.x=random_x, .y=random_y};
+          spawned_item->pos = (point_t){.x=random_x, .y=random_y};
           goto found_place;
         }
         else ++tries;

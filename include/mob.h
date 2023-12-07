@@ -21,12 +21,12 @@ typedef uint16_t mob_id_t;
 
 typedef struct mob_t
 {
-    pos_t pos;
+    point_t pos;
     char symbol;
     uint8_t stands_on;
     int8_t health;
     uint8_t level;
-    pos_t last_seen;
+    point_t last_seen;
     struct mob_t *next;
 }mob_t;
 

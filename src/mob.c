@@ -10,7 +10,7 @@ static void summon_player(mob_t *player);
 static void summon_goblin(mob_t *goblin);
 static void summon_draugr(mob_t *draugr);
 static void add_to_list(mob_t *mob);
-static void move_towards_player_last_seen_pos(mob_t *mob);
+static void move_towards_last_seen_pos(mob_t *mob);
 
 static mob_t *head = NULL;
 static mob_t *player = NULL;
@@ -142,40 +142,39 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
     switch(obj_ahead)
     {
         case ROOM_FLOOR:
-            mob_move_by(mob, dx, dy);
-            break;
         case ROOM_DOOR:
             mob_move_by(mob, dx, dy);
             break;
-        case CORRIDOR_FLOOR:
-            if(mob != player) mob_move_by(mob, dx, dy);
-            else{
-                corridor_t *c = room_find_corridor_with_player(player->pos);
-                if(c) room_draw_corridor_piece(c, player->pos);
-                 mob_move_by(mob, dx, dy);
+        case CORRIDOR:
+            if(mob == player){
+                corridor_t *c = room_find_corridor_with_player(mob->pos);
+                if(c) room_draw_corridor_piece(c, mob->pos);
             }
+            mob_move_by(mob, dx, dy);
             break;
         case VERTICAL_WALL:
         case HORIZONTAL_WALL:
             break;
         case EMPTY_SPACE:
-            room_t *r = room_find((pos_t){.y=mob->pos.y + dy, .x=mob->pos.x + dx});
-            if(r){
-                if(ALREADY_DRAWN != room_draw(*r)){
-                    pos_t upper_left_corner = (pos_t){.x=r->pos.x, .y=r->pos.y};
-                    pos_t lower_right_corner = (pos_t){.x=r->pos.x + r->width - 1, .y=r->pos.y + r->height - 1};
-                    for(mob_t *m = mob_get_mobs(); m; m = m->next){
-                        if(m->pos.x > upper_left_corner.x && m->pos.x < lower_right_corner.x &&
-                            m->pos.y > upper_left_corner.y && m->pos.y < lower_right_corner.y) m->stands_on = ROOM_FLOOR;
+            if(mob->stands_on == CORRIDOR){
+                room_t *r = room_find((point_t){.y=mob->pos.y + dy, .x=mob->pos.x + dx});
+                if(r){
+                    if(ALREADY_DRAWN != room_draw(*r)){
+                        point_t upper_left_corner = (point_t){.x=r->pos.x, .y=r->pos.y};
+                        point_t lower_right_corner = (point_t){.x=r->pos.x + r->width - 1, .y=r->pos.y + r->height - 1};
+                        for(mob_t *m = mob_get_mobs(); m; m = m->next){
+                            if(m->pos.x > upper_left_corner.x && m->pos.x < lower_right_corner.x &&
+                                m->pos.y > upper_left_corner.y && m->pos.y < lower_right_corner.y) m->stands_on = ROOM_FLOOR;
+                        }
+                        for(item_t *i = item_get(); i; i = i->next){
+                            if(i->pos.x > upper_left_corner.x && i->pos.x < lower_right_corner.x &&
+                                i->pos.y > upper_left_corner.y && i->pos.y < lower_right_corner.y) i->stands_on = ROOM_FLOOR;
+                        } 
                     }
-                    for(item_t *i = item_get(); i; i = i->next){
-                        if(i->pos.x > upper_left_corner.x && i->pos.x < lower_right_corner.x &&
-                            i->pos.y > upper_left_corner.y && i->pos.y < lower_right_corner.y) i->stands_on = ROOM_FLOOR;
-                    } 
+                    mob_move_by(mob, dx, dy);
                 }
-                mob_move_by(mob, dx, dy);
+                else nidebug("Could not find room to enter/draw!");
             }
-            else nidebug("Could not find room to enter/draw!");
             break;
 
         case ID_DRAUGR:
@@ -211,7 +210,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
     }
 
     if(mob == player && player->stands_on == ROOM_DOOR){
-        pos_t new_pos = (pos_t){.x = player->pos.x + dx, .y = player->pos.y + dy}; /* *2 is necessary because when we *would* arrive at a door we also want to check further for corridor as well */
+        point_t new_pos = (point_t){.x = player->pos.x + dx, .y = player->pos.y + dy}; /* *2 is necessary because when we *would* arrive at a door we also want to check further for corridor as well */
         corridor_t *c = room_find_corridor_with_player(new_pos);
         if(c) room_draw_corridor_piece(c, new_pos);
     }
@@ -220,8 +219,6 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
 
 mob_t *mob_summon(const mob_id_t id)
 {
-    static bool first_summon = true;
-
     mob_t *summoned_creature = malloc(sizeof(mob_t));
     if(summoned_creature == NULL){
         nidebug("Could not summon creature in %s:%d", __FILE__, __LINE__);
@@ -249,9 +246,8 @@ mob_t *mob_summon(const mob_id_t id)
             return NULL;
     }
 
-    if(summoned_creature != NULL && first_summon == false) add_to_list(summoned_creature);
+    if(summoned_creature != NULL && head) add_to_list(summoned_creature);
     else{
-        first_summon = false;
         head = summoned_creature;
         head->next = NULL;
     }
@@ -276,18 +272,18 @@ void mob_update(mob_t *mob, input_code_t step_to)
         mob_show(*mob);
     }
     else{
-        int16_t dx = mob->pos.x - player->pos.x;
-        int16_t dy = mob->pos.y - player->pos.y;
+        int32_t dx = mob->pos.x - player->pos.x;
+        int32_t dy = mob->pos.y - player->pos.y;
 
         if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  /* Is mob near the player? */
-            if(is_player_in_eyesight(mob->pos, player->pos)){
+            if(is_obejct_in_eyesight(mob->pos, player->pos)){
                 if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
                 else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
                 mob_show(*mob);
                 mob->last_seen = player->pos;
             }
             else{
-                move_towards_player_last_seen_pos(mob);
+                move_towards_last_seen_pos(mob);
                 mob_hide(*mob);
             }
         }
@@ -300,7 +296,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
 }
 
 
-static void move_towards_player_last_seen_pos(mob_t *mob)
+static void move_towards_last_seen_pos(mob_t *mob)
 {
     if(mob->last_seen.x != 0 && mob->last_seen.y != 0){ /* the player was spotted at least once */
         int16_t dx = mob->pos.x - mob->last_seen.x;
@@ -314,12 +310,12 @@ static void move_towards_player_last_seen_pos(mob_t *mob)
 }
 
 
-static pos_t get_random_pos(void)
+static point_t get_random_pos(void)
 {
     const room_t *room;
     uint16_t selected_room, tries;
-    pos_t mobp;
-    if(room_get_rooms() == NULL || room_get_num_of_rooms() == 0) return (pos_t){.x=0, .y=0};
+    point_t mobp;
+    if(room_get_rooms() == NULL || room_get_num_of_rooms() == 0) return (point_t){.x=0, .y=0};
     else{
         for(tries = 10; tries; --tries){
             selected_room = CALC_RAND(room_get_num_of_rooms()-1, 1); // room[0] is where the player starts, it shall be safe originally, thats why it is [numofroom:1]
@@ -355,7 +351,7 @@ static void summon_player(mob_t *player)
         if(room_get_rooms() != NULL)
             *player = (mob_t){.pos.x=rooms[0].pos.x+1, .pos.y=rooms[0].pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL};
         else
-            *player = (mob_t){.pos.x=1, .pos.y=1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL, .last_seen = (pos_t){.x=0, .y=0} };
+            *player = (mob_t){.pos.x=1, .pos.y=1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL, .last_seen = (point_t){.x=0, .y=0} };
         summoned = true;
     }
     else{
@@ -367,10 +363,10 @@ static void summon_player(mob_t *player)
 
 static void summon_goblin(mob_t *goblin)
 {
-    *goblin = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_GOBLIN, .health=15, .level=1, .next = NULL, .last_seen = (pos_t){.x=0, .y=0}};
+    *goblin = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_GOBLIN, .health=15, .level=1, .next = NULL, .last_seen = (point_t){.x=0, .y=0}};
 }
 
 static void summon_draugr(mob_t *draugr)
 {
-    *draugr = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_DRAUGR, .health=20, .level=10, .next = NULL, .last_seen = (pos_t){.x=0, .y=0}}; 
+    *draugr = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_DRAUGR, .health=20, .level=10, .next = NULL, .last_seen = (point_t){.x=0, .y=0}}; 
 }

@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-typedef struct pos_t
+typedef struct point_t
 {
     int16_t x;
     int16_t y;
-}pos_t;
+}point_t;
 
 #define CALC_RAND(max, min) (rand()%(max - min + 1) + min) // [max:min]
 
@@ -21,7 +21,7 @@ extern void term_putchar(char c);
 extern void term_putchar_xy(const char c, const uint16_t x, const uint16_t y);
 extern char term_getchar(void);
 extern char term_getchar_xy(const uint16_t x, const uint16_t y);
-extern  bool is_player_in_eyesight(pos_t objp, pos_t playerp);
+extern  bool is_obejct_in_eyesight(point_t objp, point_t playerp);
 
 #define TERMINAL_HEIGHT (40u)
 #define TERMINAL_WIDTH (160u) 

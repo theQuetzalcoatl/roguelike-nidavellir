@@ -14,7 +14,7 @@
 
 typedef struct
 {
-    pos_t cursor;
+    point_t cursor;
     char content[TERMINAL_HEIGHT][TERMINAL_WIDTH];
 }window_t;
 
@@ -34,8 +34,6 @@ void term_setup(void)
     s.c_lflag &= ~(ECHO | ICANON);
     //s.c_cc[VTIME] = 0; s.c_cc[VMIN] = 1; IMPLICIT 
     printf("\x1B[?25l"); /* make cursor invisible */
-    //printf("\e[8;%d;%dt", TERMINAL_HEIGHT, TERMINAL_WIDTH); /* resize window - 'resize' does the same thing */
-    
     system("temp_PS1=${PS1}; PS1=\"\"; clear;");
 
     for (uint16_t row = 0; row < TERMINAL_HEIGHT; ++row){
@@ -89,7 +87,7 @@ void term_putchar_xy(const char c, const uint16_t x, const uint16_t y)
 
 #define ROUNDED_DIVISION(a, b) ((((a)<<1)/(b) + 1) >> 1)
 
-bool is_player_in_eyesight(pos_t objp, pos_t playerp)
+bool is_obejct_in_eyesight(point_t objp, point_t playerp)
 {
     char c = 0;
     int16_t dx = playerp.x - objp.x;
@@ -113,14 +111,14 @@ bool is_player_in_eyesight(pos_t objp, pos_t playerp)
 
                 for(; start_x != finish_x; start_x += x_dir){
                     c = term_getchar_xy(start_x, start_y+y_dir);
-                    if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL){
+                    if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL){
                        return (start_x == objp.x && start_y == objp.y) ? true : false;
                     }
                 }
                 /* cover the start_x = finish_x case as well*/
                 c = term_getchar_xy( start_x, start_y);
                 if(c == ID_PLAYER) continue;
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL ){
+                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL ){
                     return (start_x == objp.x && start_y == objp.y) ? true : false;
                 }
             }
@@ -137,14 +135,14 @@ bool is_player_in_eyesight(pos_t objp, pos_t playerp)
 
                 for(; start_y != finish_y; start_y += y_dir){
                     c = term_getchar_xy(start_x+x_dir, start_y);
-                    if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL){
+                    if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL){
                         return (start_x == objp.x && start_y == objp.y) ? true : false;
                     }
                 }
                 /* cover the start_y = finish_y case as well*/
                 c = term_getchar_xy(start_x, start_y);
                 if(c == ID_PLAYER) continue;
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL){
+                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL){
                     return (start_x == objp.x && start_y == objp.y) ? true : false;
                 }
             }
@@ -155,7 +153,7 @@ bool is_player_in_eyesight(pos_t objp, pos_t playerp)
         int16_t upper_y = (objp.y > playerp.y) ? playerp.y : objp.y;
         for(++upper_y; upper_y < lower_y; ++upper_y){// not to start on the mob itself, takes care of 'next to each other' case
             c = term_getchar_xy(playerp.x, upper_y);
-            if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR_FLOOR && c != ITEM_SYMBOL) return false;
+            if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
         }
     }
 

@@ -25,7 +25,7 @@ bool game_is_running = true;
 
 static void handle_ctrl_c(int num)
 {
-    num = num; // avoid warning
+    num = num; // avoid  compiler warning
     exit(1); // run the 'atexit' functions
 }
 
@@ -56,15 +56,13 @@ int main(int argnum, char **argv)
     srand(time(NULL)); /* RNG init */
     debug_init();
 
-    atexit(term_restore_original);
-    atexit(debug_deinit);
-    atexit(mob_free_mobs);
-    atexit(item_free_items);
+    void (*exit_funcs[])(void) = {term_restore_original, debug_deinit, mob_free_mobs, item_free_items};
+    for(int i = 0; i < sizeof(exit_funcs)/sizeof(exit_funcs[0]); ++i) atexit(exit_funcs[i]);
 
     mob_t *player = NULL;
     room_t *r = NULL;
     uint64_t turns = 0;
-    input_code_t input, step_to = NO_ARROW;
+    input_code_t input = NO_ARROW;
     uint64_t prev_event_num = 0;
 
     custom_mode = (argnum == 2 && !strcmp(*(argv + 1), "--custom")) ?  true : false;
@@ -88,7 +86,7 @@ int main(int argnum, char **argv)
     display_player_stats(*player, turns);
 
     mob_show(*player);
-    for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
+    for(item_t *it = item_get(); it; it = it->next) is_obejct_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
     draw();
 
@@ -96,7 +94,6 @@ int main(int argnum, char **argv)
 
     while(game_is_running){
         input = get_keypress();
-        step_to = NO_ARROW;
 
         switch(input)
         {
@@ -104,7 +101,6 @@ int main(int argnum, char **argv)
             case ARROW_LEFT:
             case ARROW_DOWN:
             case ARROW_RIGHT:
-                step_to = input;
                 break;
             case 'Q':
                 game_is_running = false;
@@ -126,8 +122,8 @@ int main(int argnum, char **argv)
                 continue;
         }
 
-        for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, step_to);
-        for(item_t *it = item_get(); it; it = it->next) is_player_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
+        for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, input);
+        for(item_t *it = item_get(); it; it = it->next) is_obejct_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
         display_player_stats(*player, turns);
         if(prev_event_num < event_get_entry_num()){

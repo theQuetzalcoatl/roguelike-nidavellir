@@ -16,7 +16,7 @@ enum ITEMS
 
 typedef struct item_t
 {
-  pos_t pos;
+  point_t pos;
   uint8_t stands_on;
   uint16_t type;
   void *spec_attr;

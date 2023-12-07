@@ -39,7 +39,7 @@ void get_objects_from_custom_map(void)
             case ROOM_FLOOR:
             case VERTICAL_WALL:
             case HORIZONTAL_WALL:
-            case CORRIDOR_FLOOR:
+            case CORRIDOR:
             case EMPTY_SPACE:
                 break;
             case '\n':
@@ -49,7 +49,7 @@ void get_objects_from_custom_map(void)
             case ITEM_SYMBOL:
                 item = item_spawn();
                 if(item){
-                    item->pos = (pos_t){.x = x, .y = y};
+                    item->pos = (point_t){.x = x, .y = y};
                     nidebug("item at: x:%d y:%d", x, y);
                 }
                 else nidebug("Could not summon item.");
@@ -57,7 +57,7 @@ void get_objects_from_custom_map(void)
             /* from here on, assuming a mob */
             default:
                 mob = mob_summon(*file_content);
-                if(mob) mob->pos = (pos_t){.x = x, .y = y};
+                if(mob) mob->pos = (point_t){.x = x, .y = y};
                 else nidebug("Could not summon: [%c]", *file_content);
         }
         if(*file_content != '\n'){

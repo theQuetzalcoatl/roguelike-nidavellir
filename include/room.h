@@ -11,13 +11,13 @@
 
 typedef struct
 {
-    pos_t pos;
+    point_t pos;
     bool is_locked;
 }door_t;
 
 typedef struct room_t
 {
-    pos_t pos;
+    point_t pos;
     door_t upper_door;
     door_t lower_door;
     door_t left_door;
@@ -31,7 +31,7 @@ typedef struct corridor_t
 {
     struct
     {
-        pos_t start, end;
+        point_t start, end;
         bool is_vertical;
         int8_t direction;
     }line[3]; /* max 2 turns = 3 lines max */
@@ -41,11 +41,11 @@ extern uint8_t room_draw(const room_t r);
 extern uint8_t room_get_num_of_rooms(void);
 extern room_t *room_create_rooms(void);
 extern room_t *room_get_rooms(void);
-extern room_t *room_find(const pos_t p);
+extern room_t *room_find(const point_t p);
 extern uint8_t room_get_num_of_corridors(void);
 extern corridor_t *room_get_corridors(void);
-extern corridor_t *room_find_corridor_with_player(const pos_t player);
-extern void room_draw_corridor_piece(const corridor_t *c, const pos_t player);
+extern corridor_t *room_find_corridor_with_player(const point_t player);
+extern void room_draw_corridor_piece(const corridor_t *c, const point_t player);
 
 #define VERTICAL_WALL   '|'
 #define HORIZONTAL_WALL '='
