@@ -69,7 +69,7 @@ int main(int argnum, char **argv)
 
     if(custom_mode == true) get_objects_from_custom_map();
     else{
-        //cutscene_intro();
+        cutscene_intro();
         r = room_create_rooms();
         room_draw(r[0]);
 
@@ -89,6 +89,7 @@ int main(int argnum, char **argv)
     for(item_t *it = item_get(); it; it = it->next) is_obejct_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
     draw();
+    fflush(stdin);
 
     /* let the game begin... */
 

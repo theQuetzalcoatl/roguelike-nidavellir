@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 
@@ -25,6 +26,10 @@ void cutscene_intro(void)
     uint16_t text_indexes[100] = {0}; // this should be the size of 'latin_text' with \0. Could be sizeof(latin_text)-1 but that gets the compiler icky
     uint16_t text_y = TERMINAL_HEIGHT/2 - 1;
     uint16_t text_x = TERMINAL_WIDTH/2 - sizeof(latin_havamal_16[0])/2;
+    char dummy;
+
+    fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL) | O_NONBLOCK); /* set input to non-blocking to be able to skip cutscene */
+    fflush(stdin);
 
     for(uint8_t line = 0; sizeof(latin_havamal_16)/sizeof(latin_havamal_16[0]) > line; ++line){
         term_move_cursor(text_x, text_y + line);
@@ -42,9 +47,15 @@ void cutscene_intro(void)
             term_putchar_xy(latin_havamal_16[line][text_indexes[c]], text_x+text_indexes[c], text_y);
             system("sleep 0.05s");
             fflush(stdout);
+            if(read(STDIN_FILENO, &dummy, sizeof(dummy)) != -1) goto end_intro; /* skip cutscene if there is anything in the input buffer */
         }
     }
+
     fflush(stdout); sleep(2);
+
+end_intro:
+    fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL) & ~O_NONBLOCK);
+
     for(uint8_t row = 0; row < TERMINAL_HEIGHT; ++row){
         for(uint8_t col = 0; col < TERMINAL_WIDTH; ++col) term_putchar_xy(' ', col, row);
     }
