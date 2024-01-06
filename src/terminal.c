@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 
 
 #pragma GCC diagnostic ignored "-Wunused-result"
@@ -89,73 +90,73 @@ void term_putchar_xy(const char c, const uint16_t x, const uint16_t y)
 
 bool is_obejct_in_eyesight(point_t objp, point_t playerp)
 {
-    char c = 0;
-    int16_t dx = playerp.x - objp.x;
-    int16_t dy = playerp.y -  objp.y;
+  char c = 0;
+  int64_t accumulator = 0;
+  int64_t dx = playerp.x - objp.x;
+  int64_t dy = playerp.y - objp.y;
 
-    if( (1*1 + 1*1) >= (dx*dx + dy*dy)) return true;
+  if( (1*1 + 1*1) > (dx*dx + dy*dy) ) return true;
 
-    if(dx != 0){
-        int16_t m = ROUNDED_DIVISION(dy, dx);
-        int16_t b = playerp.y - ROUNDED_DIVISION(dy*playerp.x, dx);
-    
-        if(m <= -1 || m >= 1){
-            int32_t start_y = playerp.y;
-            int32_t finish_y = objp.y;
-            int32_t x_dir = (playerp.x <= objp.x) ? 1 : -1;
-            int32_t y_dir = (playerp.y >= objp.y) ? -1 : 1;
+  if(abs(dx) >= abs(dy)){ /* mostly horizontal */
+    point_t P1 = (playerp.x <= objp.x) ? playerp : objp;
+    point_t P2 = (playerp.x >= objp.x) ? playerp : objp;
+    dx = P2.x - P1.x; /* defenitely positive */
+    dy = P1.y - P2.y;
 
-            for(; start_y != finish_y; start_y += y_dir){
-                int16_t start_x = ROUNDED_DIVISION(((start_y - b)*dx), dy);
-                int16_t finish_x = ROUNDED_DIVISION(((start_y + y_dir - b)*dx), dy);
-
-                for(; start_x != finish_x; start_x += x_dir){
-                    c = term_getchar_xy(start_x, start_y+y_dir);
-                    if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL){
-                       return (start_x == objp.x && start_y == objp.y) ? true : false;
-                    }
-                }
-                /* cover the start_x = finish_x case as well*/
-                c = term_getchar_xy( start_x, start_y);
-                if(c == ID_PLAYER) continue;
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL ){
-                    return (start_x == objp.x && start_y == objp.y) ? true : false;
-                }
-            }
+    if(dy >= 0){ /* bottomleft -> topright */
+      for(; P1.x < P2.x; ++P1.x){
+        c = term_getchar_xy(P1.x, P1.y);
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
+        accumulator += dy;
+        if(accumulator > dx){
+            --P1.y;
+            accumulator -= dx;
         }
-        else{
-            int32_t start_x = playerp.x;
-            int32_t finish_x = objp.x;
-            int32_t x_dir = (playerp.x <= objp.x) ? 1 : -1;
-            int32_t y_dir = (playerp.y >= objp.y) ? -1 : 1;
-
-            for(; start_x != finish_x; start_x += x_dir){
-                int16_t start_y = ROUNDED_DIVISION((dy*start_x), dx) + b;
-                int16_t finish_y = ROUNDED_DIVISION((dy*(start_x + x_dir)), dx) + b;
-
-                for(; start_y != finish_y; start_y += y_dir){
-                    c = term_getchar_xy(start_x+x_dir, start_y);
-                    if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL){
-                        return (start_x == objp.x && start_y == objp.y) ? true : false;
-                    }
-                }
-                /* cover the start_y = finish_y case as well*/
-                c = term_getchar_xy(start_x, start_y);
-                if(c == ID_PLAYER) continue;
-                if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL){
-                    return (start_x == objp.x && start_y == objp.y) ? true : false;
-                }
-            }
-        }
+      }
     }
-    else{ /* vertical case */
-        int16_t lower_y = (objp.y > playerp.y) ? objp.y : playerp.y;
-        int16_t upper_y = (objp.y > playerp.y) ? playerp.y : objp.y;
-        for(++upper_y; upper_y < lower_y; ++upper_y){// not to start on the mob itself, takes care of 'next to each other' case
-            c = term_getchar_xy(playerp.x, upper_y);
-            if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
+    else{ /* topleft -> bottomright */
+      dy = -1*dy; /* dx is positive, for the math to check out, it should be turned into one as well */
+      for(; P1.x < P2.x; ++P1.x){
+        c = term_getchar_xy(P1.x, P1.y);
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
+        accumulator += dy;
+        if(accumulator > dx){
+            ++P1.y;
+            accumulator -= dx;
         }
+      }
     }
+  }
+  else{ /* mostly vertical */
+    point_t P1 = (playerp.y <= objp.y) ? playerp : objp;
+    point_t P2 = (playerp.y >= objp.y) ? playerp : objp;
+    dx = P1.x - P2.x;
+    dy = P2.y - P1.y; /* defenitely positive */
 
-    return true;
+    if(dx >= 0){ /* topright -> bottomleft */
+      for(; P1.y < P2.y; ++P1.y){
+        c = term_getchar_xy(P1.x, P1.y);
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
+        accumulator += dy;
+        if(accumulator > dx){
+            --P1.x;
+            accumulator -= dx;
+        }
+      }
+    }
+    else{ /* topleft -> bottomright */
+      dx = -1*dx; /* dy is positive, for the math to check out, it should be turned into one as well */
+      for(; P1.y < P2.y; ++P1.y){
+        c = term_getchar_xy(P1.x, P1.y);
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
+        accumulator += dy;
+        if(accumulator > dx){
+            ++P1.x;
+            accumulator -= dx;
+        }
+      }
+    }
+  }
+
+  return true;
 }
