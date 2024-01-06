@@ -19,7 +19,6 @@
 extern void get_objects_from_custom_map(void);
 extern void event_log_add(const char *event);
 extern uint64_t event_get_entry_num(void);
-bool custom_mode;
 bool game_is_running = true;
 
 
@@ -65,21 +64,16 @@ int main(int argnum, char **argv)
     input_code_t input = NO_ARROW;
     uint64_t prev_event_num = 0;
 
-    custom_mode = (argnum == 2 && !strcmp(*(argv + 1), "--custom")) ?  true : false;
+    cutscene_intro();
+    r = room_create_rooms();
+    room_draw(r[0]);
 
-    if(custom_mode == true) get_objects_from_custom_map();
-    else{
-        cutscene_intro();
-        r = room_create_rooms();
-        room_draw(r[0]);
-
-        mob_summon(ID_PLAYER); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
-        mob_summon(ID_DRAUGR);
-        mob_summon(ID_DRAUGR);
-        mob_summon(ID_GOBLIN);
-        mob_summon(ID_GOBLIN);
-        for(int i = 10; i; --i) item_spawn();
-    }
+    mob_summon(ID_PLAYER); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
+    mob_summon(ID_DRAUGR);
+    mob_summon(ID_DRAUGR);
+    mob_summon(ID_GOBLIN);
+    mob_summon(ID_GOBLIN);
+    for(int i = 10; i; --i) item_spawn();
 
     player = mob_get_player();
     display_runic_lines();
@@ -138,7 +132,7 @@ int main(int argnum, char **argv)
     }
 
     /* CLEAN UP */
-    if(!player->health && custom_mode == false) cutscene_dead();
+    if(!player->health) cutscene_dead();
     free(r);
     free(room_get_corridors());
 
