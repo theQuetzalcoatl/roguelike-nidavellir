@@ -10,8 +10,8 @@
 
 enum ITEMS
 {
-    I_potion,
-    NUM_OF_ITEMS
+  I_potion,
+  NUM_OF_ITEMS
 };
 
 typedef struct item_t

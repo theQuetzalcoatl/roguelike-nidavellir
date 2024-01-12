@@ -88,6 +88,23 @@ void term_putchar_xy(const char c, const uint16_t x, const uint16_t y)
 
 #define ROUNDED_DIVISION(a, b) ((((a)<<1)/(b) + 1) >> 1)
 
+/*
+Explanation:
+  floating math:
+    deltaY = dY/dX   // deltaY = dY/dX*deltaX (deltaX being 1)
+    x1 -> x2 loop:
+      plot_pixel(x,y)
+      y += dY/dX
+  integer math:
+    same as floating, but the denominators are the same, so they are discarded.
+    x1 -> x2 loop:
+      plot_pixel(x,y)
+      accumulator = accumulator + deltaY   // acc/deltaX = acc/deltaX + deltaY/deltaX --> accumulate "fractions"
+      if accumulator >= deltaX            //  acc/deltaX >= 1 --> when a "fraction" becomes more than 1, "reset" the accumulator
+        ++y
+        accumulator -= deltaX
+*/
+
 bool is_obejct_in_eyesight(point_t objp, point_t playerp)
 {
   char c = 0;
@@ -108,7 +125,7 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
         c = term_getchar_xy(P1.x, P1.y);
         if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
         accumulator += dy;
-        if(accumulator > dx){
+        if(accumulator >= dx){
             --P1.y;
             accumulator -= dx;
         }
@@ -120,7 +137,7 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
         c = term_getchar_xy(P1.x, P1.y);
         if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
         accumulator += dy;
-        if(accumulator > dx){
+        if(accumulator >= dx){
             ++P1.y;
             accumulator -= dx;
         }
@@ -133,27 +150,33 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
     dx = P1.x - P2.x;
     dy = P2.y - P1.y; /* defenitely positive */
 
-    if(dx >= 0){ /* topright -> bottomleft */
+    if(dx > 0){ /* topright -> bottomleft */
       for(; P1.y < P2.y; ++P1.y){
         c = term_getchar_xy(P1.x, P1.y);
         if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
-        accumulator += dy;
-        if(accumulator > dx){
+        accumulator += dx;
+        if(accumulator >= dy){
             --P1.x;
-            accumulator -= dx;
+            accumulator -= dy;
         }
       }
     }
-    else{ /* topleft -> bottomright */
+    else if(dx < 0){ /* topleft -> bottomright */
       dx = -1*dx; /* dy is positive, for the math to check out, it should be turned into one as well */
       for(; P1.y < P2.y; ++P1.y){
         c = term_getchar_xy(P1.x, P1.y);
         if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
-        accumulator += dy;
-        if(accumulator > dx){
+        accumulator += dx;
+        if(accumulator >= dy){
             ++P1.x;
-            accumulator -= dx;
+            accumulator -= dy;
         }
+      }
+    }
+    else{ /* vertical case */
+      for(; P1.y < P2.y; ++P1.y){
+        c = term_getchar_xy(P1.x, P1.y);
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
       }
     }
   }

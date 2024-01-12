@@ -11,30 +11,30 @@
 
 typedef struct
 {
-    point_t pos;
-    bool is_locked;
+  point_t pos;
+  bool is_locked;
 }door_t;
 
 typedef struct room_t
 {
-    point_t pos;
-    door_t upper_door;
-    door_t lower_door;
-    door_t left_door;
-    door_t right_door;
-    int16_t width;  /* [chars] */
-    int16_t height; /* [chars] */
-    uint8_t in_cell;
+  point_t pos;
+  door_t upper_door;
+  door_t lower_door;
+  door_t left_door;
+  door_t right_door;
+  int16_t width;  /* [chars] */
+  int16_t height; /* [chars] */
+  uint8_t in_cell;
 }room_t;
 
 typedef struct corridor_t
 {
-    struct
-    {
-        point_t start, end;
-        bool is_vertical;
-        int8_t direction;
-    }line[3]; /* max 2 turns = 3 lines max */
+  struct
+  {
+    point_t start, end;
+    bool is_vertical;
+    int8_t direction;
+  }line[3]; /* max 2 turns = 3 lines max */
 }corridor_t;
 
 extern uint8_t room_draw(const room_t r);

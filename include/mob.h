@@ -21,13 +21,13 @@ typedef uint16_t mob_id_t;
 
 typedef struct mob_t
 {
-    point_t pos;
-    char symbol;
-    uint8_t stands_on;
-    int8_t health;
-    uint8_t level;
-    point_t last_seen;
-    struct mob_t *next;
+  point_t pos;
+  char symbol;
+  uint8_t stands_on;
+  int8_t health;
+  uint8_t level;
+  point_t last_seen;
+  struct mob_t *next;
 }mob_t;
 
 #define PLAYER_MAX_HEALTH (100u)

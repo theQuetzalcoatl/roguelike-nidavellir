@@ -81,9 +81,9 @@ void item_free_items(void)
 {
   item_t *item = NULL;
   while(items_head){
-      item = items_head->next;
-      free(items_head);
-      items_head = item;
+    item = items_head->next;
+    free(items_head);
+    items_head = item;
   }
 }
 

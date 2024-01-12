@@ -7,8 +7,8 @@
 
 typedef struct point_t
 {
-    int16_t x;
-    int16_t y;
+  int16_t x;
+  int16_t y;
 }point_t;
 
 #define CALC_RAND(max, min) (rand()%(max - min + 1) + min) // [max:min]
