@@ -46,7 +46,7 @@ static void check_terminal_size(void)
 }
 
 
-int main(int argnum, char **argv)
+int main(void)
 {
   check_terminal_size();
   signal(SIGINT, handle_ctrl_c);
@@ -60,9 +60,8 @@ int main(int argnum, char **argv)
 
   mob_t *player = NULL;
   room_t *r = NULL;
-  uint64_t turns = 0;
+  uint64_t turns = 0, prev_event_num = 0;
   input_code_t input = NO_ARROW;
-  uint64_t prev_event_num = 0;
 
   cutscene_intro();
   r = room_create_rooms();

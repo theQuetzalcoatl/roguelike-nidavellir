@@ -134,7 +134,8 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
       dy = 0;
       break;
     case NO_ARROW:
-      return; 
+    case '.':
+      return;
     default:
       nidebug("invalid option for stepping! %s:%d", __FILE__, __LINE__);
   }

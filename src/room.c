@@ -8,7 +8,9 @@
 #include "debug.h"
 
 #define MIN_ROOM_HEIGHT (5u)
+#define MAX_ROOM_HEIGHT (7u)
 #define MIN_ROOM_WIDTH  (5u)
+#define MAX_ROOM_WIDTH  (18u)
 
 #define MAX_ROOMS_PER_LEVEL (9u)
 #define MIN_ROOMS_PER_LEVEL (3u)
@@ -152,22 +154,15 @@ room_t *room_create_rooms(void)
 
   /* place rooms in cells */
   for(uint8_t n = 0; n < num_of_rooms; ++n){
-    (rooms + n)->pos = window_cell[random_cell_indexes[n]].pos;
+    rooms[n].pos = window_cell[random_cell_indexes[n]].pos; /* init room from cell's pos(upperleft corner) */
+    rooms[n].width = CALC_RAND(MAX_ROOM_WIDTH, MIN_ROOM_WIDTH);
+    rooms[n].height = CALC_RAND(MAX_ROOM_HEIGHT, MIN_ROOM_HEIGHT);
+
+    rooms[n].pos.x += CALC_RAND(cell_width - rooms[n].width - BORDER , 0);
+    rooms[n].pos.y += CALC_RAND(cell_height - rooms[n].height - BORDER, 0);
 
     window_cell[random_cell_indexes[n]].room = rooms + n;
-    (rooms + n)->in_cell = random_cell_indexes[n];
-
-    /* offset room within the cell */
-    uint64_t x = CALC_RAND((cell_width - 2*BORDER) - MIN_ROOM_WIDTH, 0);
-    rooms[n].pos.x += x;
-    uint64_t y = CALC_RAND((cell_height - 2*BORDER) - MIN_ROOM_HEIGHT, 0);
-    rooms[n].pos.y += y;
-
-    uint64_t available_width = (cell_width - 2*BORDER) - x;
-    uint64_t available_height = (cell_height - 2*BORDER) - y;
-
-    rooms[n].width = CALC_RAND(available_width, MIN_ROOM_WIDTH);
-    rooms[n].height = CALC_RAND(available_height, MIN_ROOM_HEIGHT);
+    rooms[n].in_cell = random_cell_indexes[n];
   }
 
   /* door+corridor generation */
