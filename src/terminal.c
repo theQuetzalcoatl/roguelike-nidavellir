@@ -120,6 +120,7 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
     dx = P2.x - P1.x; /* defenitely positive */
     dy = P1.y - P2.y;
 
+    ++P1.x; /* incementing the starting Y to avoid checking self */
     if(dy >= 0){ /* bottomleft -> topright */
       for(; P1.x < P2.x; ++P1.x){
         c = term_getchar_xy(P1.x, P1.y);
@@ -150,6 +151,7 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
     dx = P1.x - P2.x;
     dy = P2.y - P1.y; /* defenitely positive */
 
+    ++P1.y;
     if(dx > 0){ /* topright -> bottomleft */
       for(; P1.y < P2.y; ++P1.y){
         c = term_getchar_xy(P1.x, P1.y);
