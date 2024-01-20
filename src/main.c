@@ -62,6 +62,7 @@ int main(void)
   room_t *r = NULL;
   uint64_t turns = 0, prev_event_num = 0;
   input_code_t input = NO_ARROW;
+  bool stats_displayed = false;
 
   cutscene_intro();
   r = room_create_rooms();
@@ -89,6 +90,13 @@ int main(void)
   while(game_is_running){
     input = get_keypress();
 
+    if(stats_displayed == true){
+      for (uint16_t row = 0; row < RUNIC_LINE_POS; ++row){
+        for (uint16_t col = 0; col < TERMINAL_WIDTH - 2; ++col) term_putchar_xy(term_getchar_xy(col, row), col, row);
+      }
+      stats_displayed = false;
+    }
+
     switch(input)
     {
       case ARROW_UP:
@@ -110,6 +118,10 @@ int main(void)
         continue;
       case 'E':
         display_to_player_window("events");
+        continue;
+      case 'D':
+        debug_display_object_stats(room_get_rooms(), item_get(), mob_get_mobs());
+        stats_displayed = true;
         continue;
 
       default:

@@ -24,27 +24,26 @@ void cutscene_intro(void)
           "even if spears spare him."
       };
   uint16_t text_indexes[100] = {0}; // this should be the size of 'latin_text' with \0. Could be sizeof(latin_text)-1 but that gets the compiler icky
-  uint16_t text_y = TERMINAL_HEIGHT/2 - 1;
-  uint16_t text_x = TERMINAL_WIDTH/2 - sizeof(latin_havamal_16[0])/2;
+  point_t text = {.y = TERMINAL_HEIGHT/2 - 1, .x = TERMINAL_WIDTH/2 - sizeof(latin_havamal_16[0])/2};
   char dummy;
 
   fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL) | O_NONBLOCK); /* set input to non-blocking to be able to skip cutscene */
   fflush(stdin);
 
   for(uint8_t line = 0; sizeof(latin_havamal_16)/sizeof(latin_havamal_16[0]) > line; ++line){
-    term_move_cursor(text_x, text_y + line);
+    term_move_cursor(text.x, text.y + line);
     printf("%s", runic_havamal_16[line]);
   }
   fflush(stdout); sleep(1);
 
   for(uint8_t line = 0; sizeof(latin_havamal_16)/sizeof(latin_havamal_16[0]) > line; ++line){
-    text_y = TERMINAL_HEIGHT/2 - 1 + line;
+    text.y = TERMINAL_HEIGHT/2 - 1 + line;
     for(int i = 0; latin_havamal_16[line][i]; ++i) text_indexes[i] = i;
     /* Durstenfeld's in-place shuffle*/
     stir_elements_randomly(strlen(latin_havamal_16[line]), text_indexes);
 
     for(uint16_t c = 0; c < strlen(latin_havamal_16[line]); ++c){
-      term_putchar_xy(latin_havamal_16[line][text_indexes[c]], text_x+text_indexes[c], text_y);
+      term_putchar_xy(latin_havamal_16[line][text_indexes[c]], text.x+text_indexes[c], text.y);
       system("sleep 0.05s");
       fflush(stdout);
       if(read(STDIN_FILENO, &dummy, sizeof(dummy)) != -1) goto end_intro; /* skip cutscene if there is anything in the input buffer */
@@ -66,20 +65,19 @@ void cutscene_dead(void)
   char runic_text[] = "ᚾᛟ ᚹᚨᛚᚺᚨᛚᛚᚨ ᛏᚺᛁᛊ ᛏᛁᛗᛖ";
   char latin_text[] = "No Valhalla this time";
   uint16_t text_indexes[22] = {}; // this should be the size of 'intro_text' with \0. Could be sizeof(intro_text)-1 but that gets the compiler icky
-  uint16_t text_y = TERMINAL_HEIGHT/2 - 1;
-  uint16_t text_x = TERMINAL_WIDTH/2 - sizeof(latin_text)/2;
+  point_t text = {.y = TERMINAL_HEIGHT/2 - 1, .x = TERMINAL_WIDTH/2 - sizeof(latin_text[0])/2};
 
   system("clear");
 
   for(int i = 0; latin_text[i]; ++i) text_indexes[i] = i;
   stir_elements_randomly(strlen(latin_text), text_indexes);
 
-  term_move_cursor(text_x, text_y);
+  term_move_cursor(text.x, text.y);
   printf("%s", runic_text);
   fflush(stdout); sleep(1);
 
   for(uint16_t i = 0; i < sizeof(latin_text); ++i){
-    term_putchar_xy(latin_text[text_indexes[i]], text_x+text_indexes[i], text_y);
+    term_putchar_xy(latin_text[text_indexes[i]], text.x+text_indexes[i], text.y);
     system("sleep 0.05s");
     fflush(stdout);
   }
