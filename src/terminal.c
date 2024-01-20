@@ -105,18 +105,18 @@ Explanation:
         accumulator -= deltaX
 */
 
-bool is_obejct_in_eyesight(point_t objp, point_t playerp)
+bool is_obejct_in_eyesight(point_t obj1, point_t obj2)
 {
   char c = 0;
   int64_t accumulator = 0;
-  int64_t dx = playerp.x - objp.x;
-  int64_t dy = playerp.y - objp.y;
+  int64_t dx = obj2.x - obj1.x;
+  int64_t dy = obj2.y - obj1.y;
 
   if( (1*1 + 1*1) > (dx*dx + dy*dy) ) return true;
 
   if(abs(dx) >= abs(dy)){ /* mostly horizontal */
-    point_t P1 = (playerp.x <= objp.x) ? playerp : objp;
-    point_t P2 = (playerp.x >= objp.x) ? playerp : objp;
+    point_t P1 = (obj2.x <= obj1.x) ? obj2 : obj1;
+    point_t P2 = (obj2.x >= obj1.x) ? obj2 : obj1;
     dx = P2.x - P1.x; /* defenitely positive */
     dy = P1.y - P2.y;
 
@@ -124,7 +124,7 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
     if(dy >= 0){ /* bottomleft -> topright */
       for(; P1.x < P2.x; ++P1.x){
         c = term_getchar_xy(P1.x, P1.y);
-        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
         accumulator += dy;
         if(accumulator >= dx){
             --P1.y;
@@ -136,7 +136,7 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
       dy = -1*dy; /* dx is positive, for the math to check out, it should be turned into one as well */
       for(; P1.x < P2.x; ++P1.x){
         c = term_getchar_xy(P1.x, P1.y);
-        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
         accumulator += dy;
         if(accumulator >= dx){
             ++P1.y;
@@ -146,8 +146,8 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
     }
   }
   else{ /* mostly vertical */
-    point_t P1 = (playerp.y <= objp.y) ? playerp : objp;
-    point_t P2 = (playerp.y >= objp.y) ? playerp : objp;
+    point_t P1 = (obj2.y <= obj1.y) ? obj2 : obj1;
+    point_t P2 = (obj2.y >= obj1.y) ? obj2 : obj1;
     dx = P1.x - P2.x;
     dy = P2.y - P1.y; /* defenitely positive */
 
@@ -155,7 +155,7 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
     if(dx > 0){ /* topright -> bottomleft */
       for(; P1.y < P2.y; ++P1.y){
         c = term_getchar_xy(P1.x, P1.y);
-        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
         accumulator += dx;
         if(accumulator >= dy){
             --P1.x;
@@ -167,7 +167,7 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
       dx = -1*dx; /* dy is positive, for the math to check out, it should be turned into one as well */
       for(; P1.y < P2.y; ++P1.y){
         c = term_getchar_xy(P1.x, P1.y);
-        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
         accumulator += dx;
         if(accumulator >= dy){
             ++P1.x;
@@ -178,7 +178,7 @@ bool is_obejct_in_eyesight(point_t objp, point_t playerp)
     else{ /* vertical case */
       for(; P1.y < P2.y; ++P1.y){
         c = term_getchar_xy(P1.x, P1.y);
-        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL && c != ID_PLAYER) return false;
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
       }
     }
   }
