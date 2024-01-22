@@ -21,7 +21,7 @@ extern void term_putchar(char c);
 extern void term_putchar_xy(const char c, const uint16_t x, const uint16_t y);
 extern char term_getchar(void);
 extern char term_getchar_xy(const uint16_t x, const uint16_t y);
-extern  bool is_obejct_in_eyesight(point_t obj1, point_t obj2);
+extern  bool is_obejct_in_eyesight(const point_t obj1, const point_t obj2);
 
 #define TERMINAL_HEIGHT (40u)
 #define TERMINAL_WIDTH (160u) 

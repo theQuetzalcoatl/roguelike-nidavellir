@@ -105,7 +105,7 @@ Explanation:
         accumulator -= deltaX
 */
 
-bool is_obejct_in_eyesight(point_t obj1, point_t obj2)
+bool is_obejct_in_eyesight(const point_t obj1, const point_t obj2)
 {
   char c = 0;
   int64_t accumulator = 0;
@@ -120,28 +120,28 @@ bool is_obejct_in_eyesight(point_t obj1, point_t obj2)
     dx = P2.x - P1.x; /* defenitely positive */
     dy = P1.y - P2.y;
 
-    ++P1.x; /* incementing the starting Y to avoid checking self */
+    ++P1.x; /* incrementing the starting Y to avoid checking self */
     if(dy >= 0){ /* bottomleft -> topright */
       for(; P1.x < P2.x; ++P1.x){
-        c = term_getchar_xy(P1.x, P1.y);
-        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
         accumulator += dy;
-        if(accumulator >= dx){
+        if(accumulator >= dx/2){ // essentially rounding 0.5 to 1, because without the division by 2, a dy=1 objects will always see each other
             --P1.y;
             accumulator -= dx;
         }
+        c = term_getchar_xy(P1.x, P1.y);
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
       }
     }
     else{ /* topleft -> bottomright */
       dy = -1*dy; /* dx is positive, for the math to check out, it should be turned into one as well */
       for(; P1.x < P2.x; ++P1.x){
-        c = term_getchar_xy(P1.x, P1.y);
-        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
         accumulator += dy;
-        if(accumulator >= dx){
+        if(accumulator >= dx/2){
             ++P1.y;
             accumulator -= dx;
         }
+        c = term_getchar_xy(P1.x, P1.y);
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
       }
     }
   }
@@ -154,25 +154,25 @@ bool is_obejct_in_eyesight(point_t obj1, point_t obj2)
     ++P1.y;
     if(dx > 0){ /* topright -> bottomleft */
       for(; P1.y < P2.y; ++P1.y){
-        c = term_getchar_xy(P1.x, P1.y);
-        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
         accumulator += dx;
-        if(accumulator >= dy){
+        if(accumulator >= dy/2){
             --P1.x;
             accumulator -= dy;
         }
+        c = term_getchar_xy(P1.x, P1.y);
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
       }
     }
     else if(dx < 0){ /* topleft -> bottomright */
       dx = -1*dx; /* dy is positive, for the math to check out, it should be turned into one as well */
       for(; P1.y < P2.y; ++P1.y){
-        c = term_getchar_xy(P1.x, P1.y);
-        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
         accumulator += dx;
-        if(accumulator >= dy){
+        if(accumulator >= dy/2){
             ++P1.x;
             accumulator -= dy;
         }
+        c = term_getchar_xy(P1.x, P1.y);
+        if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;
       }
     }
     else{ /* vertical case */

@@ -34,7 +34,7 @@ void nidebug(const char *s, ...)
 
     time( &rawtime );
     timeinfo = localtime( &rawtime );
-    fprintf(fp, "\n[  :%d:%d] ", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+    fprintf(fp, "\n[%d:%d:%d] ", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
     va_start(args, s);
     vfprintf(fp, s, args);
     fflush(fp); // live debug file update
@@ -43,9 +43,11 @@ void nidebug(const char *s, ...)
 
 void debug_display_object_stats(const room_t *r, const item_t *i, const mob_t *m)
 {
-  for(int i = room_get_num_of_rooms() - 1; i >= 0; --i){
-    term_move_cursor(r[i].pos.x, r[i].pos.y - 1);
-    printf("<%i:%i>", r[i].pos.x, r[i].pos.y);
+	if(r){
+		for(int i = room_get_num_of_rooms() - 1; i >= 0; --i){
+	    term_move_cursor(r[i].pos.x, r[i].pos.y - 1);
+	    printf("<%i:%i>", r[i].pos.x, r[i].pos.y);
+		}
   }
 
   for(; i; i = i->next){
