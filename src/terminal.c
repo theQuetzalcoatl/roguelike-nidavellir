@@ -114,7 +114,7 @@ bool is_obejct_in_eyesight(const point_t obj1, const point_t obj2)
 
   if( (1*1 + 1*1) > (dx*dx + dy*dy) ) return true;
 
-  if(abs(dx) >= abs(dy)){ /* mostly horizontal */
+  if(labs(dx) >= labs(dy)){ /* mostly horizontal */
     point_t P1 = (obj2.x <= obj1.x) ? obj2 : obj1;
     point_t P2 = (obj2.x >= obj1.x) ? obj2 : obj1;
     dx = P2.x - P1.x; /* defenitely positive */
@@ -124,9 +124,9 @@ bool is_obejct_in_eyesight(const point_t obj1, const point_t obj2)
     if(dy >= 0){ /* bottomleft -> topright */
       for(; P1.x < P2.x; ++P1.x){
         accumulator += dy;
-        if(accumulator >= dx/2){ // essentially rounding 0.5 to 1, because without the division by 2, a dy=1 objects will always see each other
+        if(accumulator >= dx/2){ // essentially rounding 0.5 progress to 1, because without the division by 2, a dy=1 objects will always see each other
             --P1.y;
-            accumulator -= dx;
+            accumulator -= dx; /* this should also be dx/2, but for some reason with small odd numbers, we end up missing our target, I don't know why it is working */
         }
         c = term_getchar_xy(P1.x, P1.y);
         if(c != ROOM_DOOR && c != ROOM_FLOOR && c != CORRIDOR && c != ITEM_SYMBOL) return false;

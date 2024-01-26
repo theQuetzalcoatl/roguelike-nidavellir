@@ -2,28 +2,24 @@
 
 function main()
 {
-    local warnings="-Wall -Wextra";
-    local optimization="-O0";
-    local debug_lvl="-g3";
+  local debug=1;
+
     local game_name="nidavellir";
     local includes="$PWD/include/";
     local c_files=$(find -name "*.c");
 
-		mkdir ./bin &> /dev/null;
+    local copts='-funsigned-char';
 
-    find ./bin -type f -name "*.o" -delete;
+    if [[ debug -eq 1 ]]; then
+      local debug_lvl="-g3";
+      local warnings="-Wall -Wextra -Wmissing-include-dirs -Wdouble-promotion -Wignored-qualifiers -Wswitch-default -Wuninitialized";
+      local optimization="-O0";
+      #local aux='-aux-info aux.txt';
 
-    for c_file in ${c_files}; do
-        gcc ${warnings} ${optimization} -I "${includes}" -I "${PWD}/tools/" ${debug_info} ${debug_lvl} -c ${c_file} &
-    done
+      local debug_opts="${debug_lvl} ${warnings} ${optimization} ${aux}";
+     fi
 
-    wait;
-
-    local obj_files=$(find . -name "*.o");
-
-    gcc -o ${game_name} ${obj_files};
-
-    find . -name "*.o" -delete ;
+    gcc ${debug_opts} -pedantic -I "${includes}" -I "${PWD}/tools/" ${copts} ${c_files} --output ${game_name} ;
 }
 
 main;

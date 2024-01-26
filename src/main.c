@@ -56,7 +56,7 @@ int main(void)
   debug_init();
 
   void (*exit_funcs[])(void) = {term_restore_original, debug_deinit, mob_free_mobs, item_free_items};
-  for(int i = 0; i < sizeof(exit_funcs)/sizeof(exit_funcs[0]); ++i) atexit(exit_funcs[i]);
+  for(uint32_t i = 0; i < sizeof(exit_funcs)/sizeof(exit_funcs[0]); ++i) atexit(exit_funcs[i]);
 
   mob_t *player = NULL;
   room_t *r = NULL;
@@ -68,11 +68,9 @@ int main(void)
   r = room_create_rooms();
   room_draw(r[0]);
 
-  mob_summon(ID_PLAYER); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
-  mob_summon(ID_DRAUGR);
-  mob_summon(ID_DRAUGR);
-  mob_summon(ID_GOBLIN);
-  mob_summon(ID_GOBLIN);
+  /*int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN};
+  for(uint32_t i = 0; i < sizeof(summoned_mobs)/sizeof(summoned_mobs[0]); ++i) mob_summon(summoned_mobs[i]);*/ /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
+  mob_summon(ID_PLAYER);
   for(int i = 10; i; --i) item_spawn();
 
   player = mob_get_player();
