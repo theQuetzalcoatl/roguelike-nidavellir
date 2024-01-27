@@ -31,7 +31,7 @@ typedef struct
 
 
 extern item_t *item_spawn(void);
-extern item_t *item_get(void);
+extern item_t *item_get_list(void);
 extern void item_hide(item_t it);
 extern void item_show(item_t it);
 extern void item_free_items(void);

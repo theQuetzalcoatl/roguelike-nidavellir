@@ -77,7 +77,7 @@ int main(void)
   display_player_stats(*player, turns);
 
   mob_show(*player);
-  for(item_t *it = item_get(); it; it = it->next) is_obejct_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
+  for(item_t *it = item_get_list(); it; it = it->next) is_obejct_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
   draw();
   fflush(stdin);
@@ -117,7 +117,7 @@ int main(void)
         display_to_player_window("events");
         continue;
       case 'D':
-        debug_display_object_stats(room_get_rooms(), item_get(), mob_get_mobs());
+        debug_display_object_stats(room_get_rooms(), item_get_list(), mob_get_mobs());
         stats_displayed = true;
         continue;
 
@@ -126,7 +126,7 @@ int main(void)
     }
 
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, input);
-    for(item_t *it = item_get(); it; it = it->next) is_obejct_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
+    for(item_t *it = item_get_list(); it; it = it->next) is_obejct_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
     display_player_stats(*player, turns);
     if(prev_event_num < event_get_entry_num()){

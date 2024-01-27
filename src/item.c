@@ -33,7 +33,7 @@ item_t *item_spawn(void)
     uint8_t random_y = CALC_RAND(r[random_room].height-2, 1) + r[random_room].pos.y;
 
     if(items_head == NULL) items_head = spawned_item;
-    for(item_t *i = item_get(); i; i = i->next){
+    for(item_t *i = item_get_list(); i; i = i->next){
       if(i->pos.x != random_x || i->pos.y != random_y){
         spawned_item->pos = (point_t){.x=random_x, .y=random_y};
         goto found_place;
@@ -83,27 +83,24 @@ void item_free_items(void)
 }
 
 
-item_t *item_get(void)
+item_t *item_get_list(void)
 {
   return items_head;
 }
 
 static void destroy_item(item_t *i)
 {
-  item_t *prev_it = items_head;
   item_t *search_it = items_head;
-  while(search_it){ /* last item's next is always NULL */
-    if(search_it == i){
-      if(search_it == items_head) items_head = items_head->next; /* to be able to get all the remaining items after the first is removed */
-      prev_it->next = i->next;
-      free(((potion_t*)i->spec_attr)->color);
-      free(i->spec_attr);
-      free(i); 
-      break;
-    }
-    else prev_it = search_it;
-    search_it = search_it->next;
+
+  if(i == search_it) items_head = items_head->next;
+  else{
+    while(search_it->next != i) search_it = search_it->next;
+    search_it->next = i->next;
   }
+  term_putchar_xy(i->stands_on, i->pos.x, i->pos.y);
+  free(((potion_t*)i->spec_attr)->color);
+  free(i->spec_attr);
+  free(i);
 }
 
 

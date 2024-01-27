@@ -36,19 +36,15 @@ void mob_free_mobs(void)
 
 static void remove_mob(mob_t *mob)
 {
-  mob_t *prev_mob = head;
   mob_t *search_mob = head;
-  term_putchar_xy(mob->stands_on, mob->pos.x, mob->pos.y);
-  while(search_mob){
-    if(search_mob == mob){
-      if(search_mob == head) head = head->next; /* to be able to get all the remaining mobs after the first is removed */
-      prev_mob->next = mob->next;
-      free(mob);
-      break;
-    }
-    else prev_mob = search_mob;
-    search_mob = search_mob->next;
+  
+  if(mob == search_mob) head = head->next;
+  else{
+    while(search_mob->next != mob) search_mob = search_mob->next;
+    search_mob->next = mob->next;
   }
+  term_putchar_xy(mob->stands_on, mob->pos.x, mob->pos.y);
+  free(mob);
 }
 
 
@@ -167,7 +163,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
               if(m->pos.x > upper_left_corner.x && m->pos.x < lower_right_corner.x &&
                 m->pos.y > upper_left_corner.y && m->pos.y < lower_right_corner.y) m->stands_on = ROOM_FLOOR;
             }
-            for(item_t *i = item_get(); i; i = i->next){
+            for(item_t *i = item_get_list(); i; i = i->next){
               if(i->pos.x > upper_left_corner.x && i->pos.x < lower_right_corner.x &&
                 i->pos.y > upper_left_corner.y && i->pos.y < lower_right_corner.y) i->stands_on = ROOM_FLOOR;
             } 
@@ -194,11 +190,10 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
 
     case ITEM_SYMBOL:
       if(mob == player){
-        for(item_t* it = item_get(); it; it = it->next){
+        for(item_t* it = item_get_list(); it; it = it->next){
           if(it->pos.x == (dx + player->pos.x) && it->pos.y == ((dy + player->pos.y))){
             ((potion_t*)it->spec_attr)->use(it);
             mob_move_by(player, dx, dy);
-            player->stands_on = ROOM_FLOOR;
             event_log_add("You picked up an unknown blue potion");
             break;
           }
