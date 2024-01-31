@@ -123,6 +123,6 @@ static void health_up_by_10(item_t *item)
 {
   mob_t *player =  mob_get_player();
   player->health += 10u;
-  player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly*/
+  player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly */
   destroy_item(item);
 }

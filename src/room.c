@@ -45,7 +45,20 @@ corridor_t *room_get_corridors(void) { return corridors; }
 
 
 corridor_t *room_find_corridor_with_player(const point_t player)
-{ /* NOTE: store last successful hit for faster execution */
+{ /* NOTE: refactor!!! */
+  static corridor_t *last_found = NULL;
+
+  {
+    if(last_found){
+      point_t upper_left = (point_t){.x = (last_found->line[0].start.x > last_found->line[2].end.x) ? last_found->line[2].end.x : last_found->line[0].start.x,
+                                  .y = (last_found->line[0].start.y > last_found->line[2].end.y) ? last_found->line[2].end.y : last_found->line[0].start.y};
+      point_t lower_right = (point_t){.x = (last_found->line[0].start.x < last_found->line[2].end.x) ? last_found->line[2].end.x : last_found->line[0].start.x,
+                                  .y = (last_found->line[0].start.y < last_found->line[2].end.y) ? last_found->line[2].end.y : last_found->line[0].start.y};
+      if(player.x >= upper_left.x && player.x <= lower_right.x &&
+          player.y >= upper_left.y && player.y <= lower_right.y) return last_found;
+    }
+  }
+
   corridor_t *c = room_get_corridors();
 
   /* NOTE: what if two corridors cross each other? */
@@ -57,23 +70,45 @@ corridor_t *room_find_corridor_with_player(const point_t player)
                                 .y = (c[n].line[0].start.y < c[n].line[2].end.y) ? c[n].line[2].end.y : c[n].line[0].start.y};
 
     if(player.x >= upper_left.x && player.x <= lower_right.x &&
-        player.y >= upper_left.y && player.y <= lower_right.y) return &c[n];
+        player.y >= upper_left.y && player.y <= lower_right.y){
+          last_found = &c[n];
+          return &c[n];
+    }
   }
   return NULL;
 }
 
+extern bool testing;
+
 void room_draw_corridor_piece(const corridor_t *c, const point_t player)
 {
+  if(testing) nidebug("[FOSCOR] ------------------------");
   for(int8_t checked_line = 2; checked_line >= 0; --checked_line){
     point_t point = c->line[checked_line].start;
     if(c->line[checked_line].is_vertical){
+      if(testing) nidebug("[FOSCOR] V");
       for(; point.y != c->line[checked_line].end.y + c->line[checked_line].direction; point.y += c->line[checked_line].direction){
-        if(3*3 >= ((point.x - player.x)*(point.x - player.x) + (point.y - player.y)*(point.y - player.y))) term_putchar_xy(CORRIDOR, point.x, point.y); /* place corridor of distance is smaller than or equal to 3 */
+        if(3*3 >= ((point.x - player.x)*(point.x - player.x) + (point.y - player.y)*(point.y - player.y))) {
+         if(testing) nidebug("[FOSCOR] placing: line:%d(%d;%d)", checked_line, point.x, point.y);
+          term_putchar_xy(CORRIDOR, point.x, point.y); /* place corridor if distance is smaller than or equal to 3 */
+        }
+        if(testing){
+          term_move_cursor(point.x, point.y);
+          printf("T");
+        } 
       }
     }
     else{
+      if(testing) nidebug("[FOSCOR] H");
       for(; point.x != c->line[checked_line].end.x + c->line[checked_line].direction; point.x += c->line[checked_line].direction){
-        if(3*3 >= ((point.x - player.x)*(point.x - player.x) + (point.y - player.y)*(point.y - player.y))) term_putchar_xy(CORRIDOR, point.x, point.y); /* place corridor of distance is smaller than or equal to 3 */
+        if(3*3 >= ((point.x - player.x)*(point.x - player.x) + (point.y - player.y)*(point.y - player.y))) {
+          if(testing) nidebug("[FOSCOR] placing: line:%d(%d;%d)", checked_line, point.x, point.y);
+          term_putchar_xy(CORRIDOR, point.x, point.y); /* place corridor if distance is smaller than or equal to 3 */
+        }
+        if(testing){
+          term_move_cursor(point.x, point.y);
+          printf("T");
+        } 
       }
     }
   }

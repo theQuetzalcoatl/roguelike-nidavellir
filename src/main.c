@@ -46,8 +46,16 @@ static void check_terminal_size(void)
 }
 
 
+bool testing = false;
+
 int main(void)
 {
+  mob_t *player = NULL;
+  room_t *r = NULL;
+  uint64_t turns = 0, prev_event_num = 0;
+  input_code_t input = NO_ARROW;
+  bool stats_displayed = false;
+
   check_terminal_size();
   signal(SIGINT, handle_ctrl_c);
   term_setup();
@@ -58,17 +66,11 @@ int main(void)
   void (*exit_funcs[])(void) = {term_restore_original, debug_deinit, mob_free_mobs, item_free_items};
   for(uint32_t i = 0; i < sizeof(exit_funcs)/sizeof(exit_funcs[0]); ++i) atexit(exit_funcs[i]);
 
-  mob_t *player = NULL;
-  room_t *r = NULL;
-  uint64_t turns = 0, prev_event_num = 0;
-  input_code_t input = NO_ARROW;
-  bool stats_displayed = false;
-
   cutscene_intro();
   r = room_create_rooms();
   room_draw(r[0]);
 
-  int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN};
+  int summoned_mobs[] = {ID_PLAYER};//, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN};
   for(uint32_t i = 0; i < sizeof(summoned_mobs)/sizeof(summoned_mobs[0]); ++i) mob_summon(summoned_mobs[i]); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
   for(int i = 10; i; --i) item_spawn();
 
@@ -79,6 +81,14 @@ int main(void)
   mob_show(*player);
   for(item_t *it = item_get_list(); it; it = it->next) is_obejct_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
+  /*DEBUG*/
+  nidebug("[FOSCOR] main ----------------------");
+  for(int i = 0; i < room_get_num_of_corridors(); ++i){
+    nidebug("[FOSCOR] main %p\n\t\t\tstart:(%i;%i) end:(%i;%i) %d | %i", room_get_corridors() + i, room_get_corridors()[i].line[0].start.x, room_get_corridors()[i].line[0].start.y, room_get_corridors()[i].line[0].end.x, room_get_corridors()[i].line[0].end.y, room_get_corridors()[i].line[0].is_vertical, room_get_corridors()[i].line[0].direction);
+    nidebug("[FOSCOR] \tstart:(%i;%i) end:(%i;%i) %d | %i", room_get_corridors()[i].line[1].start.x, room_get_corridors()[i].line[1].start.y, room_get_corridors()[i].line[1].end.x, room_get_corridors()[i].line[1].end.y, room_get_corridors()[i].line[1].is_vertical, room_get_corridors()[i].line[1].direction);
+    nidebug("[FOSCOR] \tstart:(%i;%i) end:(%i;%i) %d | %i\n", room_get_corridors()[i].line[2].start.x, room_get_corridors()[i].line[2].start.y, room_get_corridors()[i].line[2].end.x, room_get_corridors()[i].line[2].end.y, room_get_corridors()[i].line[2].is_vertical, room_get_corridors()[i].line[2].direction);
+  }
+
   draw();
   fflush(stdin);
 
@@ -87,7 +97,7 @@ int main(void)
   while(game_is_running){
     input = get_keypress();
 
-    if(stats_displayed == true){
+    if(1){//tats_displayed == true){
       for (uint16_t row = 0; row < RUNIC_LINE_POS; ++row){
         for (uint16_t col = 0; col < TERMINAL_WIDTH - 2; ++col) term_putchar_xy(term_getchar_xy(col, row), col, row);
       }
@@ -107,7 +117,7 @@ int main(void)
       case '.': /* rest */
         if(turns % 10 == 0 ){ /* NOTE: refactor */
           player->health += 5u;
-          player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly*/
+          player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly */
         }
         break;
       case '?':
@@ -119,6 +129,9 @@ int main(void)
       case 'D':
         debug_display_object_stats(room_get_rooms(), item_get_list(), mob_get_mobs());
         stats_displayed = true;
+        continue;
+      case 't':
+        testing = !testing;
         continue;
 
       default:

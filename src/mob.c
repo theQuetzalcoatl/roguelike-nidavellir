@@ -170,7 +170,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
           }
           mob_move_by(mob, dx, dy);
         }
-        else nidebug("Could not find room to enter/draw!");
+        //else nidebug("Could not find room to enter/draw!");
       }
       break;
 
