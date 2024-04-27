@@ -47,7 +47,7 @@ void term_setup(void)
 
 void term_restore_original(void)
 {
-    tcsetattr(1, TCSANOW, &original_term_settings);
+    tcsetattr(STDOUT_FILENO, TCSANOW, &original_term_settings);
     term_move_cursor(0,0);
     system("PS1=$temp_PS1; clear;");
     printf("\x1B[?25h"); /* make cursor visible */

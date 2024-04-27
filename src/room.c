@@ -48,15 +48,13 @@ corridor_t *room_find_corridor_with_player(const point_t player)
 { /* NOTE: refactor!!! */
   static corridor_t *last_found = NULL;
 
-  {
-    if(last_found){
-      point_t upper_left = (point_t){.x = (last_found->line[0].start.x > last_found->line[2].end.x) ? last_found->line[2].end.x : last_found->line[0].start.x,
-                                  .y = (last_found->line[0].start.y > last_found->line[2].end.y) ? last_found->line[2].end.y : last_found->line[0].start.y};
-      point_t lower_right = (point_t){.x = (last_found->line[0].start.x < last_found->line[2].end.x) ? last_found->line[2].end.x : last_found->line[0].start.x,
-                                  .y = (last_found->line[0].start.y < last_found->line[2].end.y) ? last_found->line[2].end.y : last_found->line[0].start.y};
-      if(player.x >= upper_left.x && player.x <= lower_right.x &&
-          player.y >= upper_left.y && player.y <= lower_right.y) return last_found;
-    }
+  if(last_found){
+    point_t upper_left = (point_t){.x = (last_found->line[0].start.x > last_found->line[2].end.x) ? last_found->line[2].end.x : last_found->line[0].start.x,
+                                .y = (last_found->line[0].start.y > last_found->line[2].end.y) ? last_found->line[2].end.y : last_found->line[0].start.y};
+    point_t lower_right = (point_t){.x = (last_found->line[0].start.x < last_found->line[2].end.x) ? last_found->line[2].end.x : last_found->line[0].start.x,
+                                .y = (last_found->line[0].start.y < last_found->line[2].end.y) ? last_found->line[2].end.y : last_found->line[0].start.y};
+    if(player.x >= upper_left.x && player.x <= lower_right.x &&
+        player.y >= upper_left.y && player.y <= lower_right.y) return last_found;
   }
 
   corridor_t *c = room_get_corridors();
@@ -78,37 +76,23 @@ corridor_t *room_find_corridor_with_player(const point_t player)
   return NULL;
 }
 
-extern bool testing;
 
 void room_draw_corridor_piece(const corridor_t *c, const point_t player)
 {
-  if(testing) nidebug("[FOSCOR] ------------------------");
   for(int8_t checked_line = 2; checked_line >= 0; --checked_line){
     point_t point = c->line[checked_line].start;
     if(c->line[checked_line].is_vertical){
-      if(testing) nidebug("[FOSCOR] V");
       for(; point.y != c->line[checked_line].end.y + c->line[checked_line].direction; point.y += c->line[checked_line].direction){
         if(3*3 >= ((point.x - player.x)*(point.x - player.x) + (point.y - player.y)*(point.y - player.y))) {
-         if(testing) nidebug("[FOSCOR] placing: line:%d(%d;%d)", checked_line, point.x, point.y);
           term_putchar_xy(CORRIDOR, point.x, point.y); /* place corridor if distance is smaller than or equal to 3 */
         }
-        if(testing){
-          term_move_cursor(point.x, point.y);
-          printf("T");
-        } 
       }
     }
     else{
-      if(testing) nidebug("[FOSCOR] H");
       for(; point.x != c->line[checked_line].end.x + c->line[checked_line].direction; point.x += c->line[checked_line].direction){
         if(3*3 >= ((point.x - player.x)*(point.x - player.x) + (point.y - player.y)*(point.y - player.y))) {
-          if(testing) nidebug("[FOSCOR] placing: line:%d(%d;%d)", checked_line, point.x, point.y);
           term_putchar_xy(CORRIDOR, point.x, point.y); /* place corridor if distance is smaller than or equal to 3 */
         }
-        if(testing){
-          term_move_cursor(point.x, point.y);
-          printf("T");
-        } 
       }
     }
   }
@@ -122,7 +106,6 @@ static void make_corridor(const point_t starting, const point_t ending, const ui
     exit(1);
   }
   else ++num_of_corridors;
-
 
   int8_t y_dir = (starting.y > ending.y) ? -1 : 1;
   int8_t x_dir = (starting.x > ending.x) ? -1 : 1;
@@ -183,6 +166,18 @@ room_t *room_create_rooms(void)
       [3] = {.pos.x = 0*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL}, [4] = {.pos.x = 1*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL}, [5] = {.pos.x = 2*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL},
       [6] = {.pos.x = 0*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}, [7] = {.pos.x = 1*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}, [8] = {.pos.x = 2*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}
                                                   };
+  /* DEBUG  - draws the cells' outline */
+  /*for(int i = 3; i; --i){
+    int x = window_cell[3-i].pos.x - 1;
+    for(int row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy('8', x, row);
+  }
+  for(int row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy('8', TERMINAL_WIDTH-3, row);
+
+  for(int i = 0; i < 7; i += 3){
+    int y = window_cell[i].pos.y - 1;
+    for(int x = 0; x < TERMINAL_WIDTH - 3; ++x) term_putchar_xy('~', x, y);
+  }
+  for(int x = 0; x < TERMINAL_WIDTH - 3; ++x) term_putchar_xy('~', x, RUNIC_LINE_POS - 1);*/
 
   uint16_t random_cell_indexes[MAX_ROOMS_PER_LEVEL] = {0,1,2,3,4,5,6,7,8};
   stir_elements_randomly(sizeof(random_cell_indexes)/sizeof(random_cell_indexes[0]), random_cell_indexes);

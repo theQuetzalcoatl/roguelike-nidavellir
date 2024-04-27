@@ -64,7 +64,7 @@ void cutscene_dead(void)
 {
   char runic_text[] = "ᚾᛟ ᚹᚨᛚᚺᚨᛚᛚᚨ ᛏᚺᛁᛊ ᛏᛁᛗᛖ";
   char latin_text[] = "No Valhalla this time";
-  uint16_t text_indexes[22]; // this should be the size of 'intro_text' with \0. Could be sizeof(intro_text)-1 but that gets the compiler icky
+  uint16_t text_indexes[22]; // this should be the size of 'runic_text' with \0. Could be sizeof(intro_text)-1 but that gets the compiler icky
   point_t text = {.y = TERMINAL_HEIGHT/2 - 1, .x = TERMINAL_WIDTH/2 - sizeof(latin_text[0])/2};
 
   system("clear");
@@ -76,7 +76,7 @@ void cutscene_dead(void)
   printf("%s", runic_text);
   fflush(stdout); sleep(1);
 
-  for(uint16_t i = 0; i < sizeof(latin_text); ++i){
+  for(uint16_t i = 0; i < strlen(latin_text); ++i){
     term_putchar_xy(latin_text[text_indexes[i]], text.x+text_indexes[i], text.y);
     system("sleep 0.05s");
     fflush(stdout);

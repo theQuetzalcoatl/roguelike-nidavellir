@@ -46,17 +46,17 @@ void debug_display_object_stats(const room_t *r, const item_t *i, const mob_t *m
 	if(r){
 		for(int i = room_get_num_of_rooms() - 1; i >= 0; --i){
 	    term_move_cursor(r[i].pos.x, r[i].pos.y - 1);
-	    printf("<%i:%i>", r[i].pos.x, r[i].pos.y);
+	    printf("R%i:%iR", r[i].pos.x, r[i].pos.y);
 		}
   }
 
   for(; i; i = i->next){
     term_move_cursor(i->pos.x, i->pos.y - 1);
-    printf("{%i:%i}", i->pos.x, i->pos.y);
+    printf("i%i:%ii", i->pos.x, i->pos.y);
   }
 
   for(; m; m = m->next){
     term_move_cursor(m->pos.x, m->pos.y - 1);
-    printf("(%i:%i)", m->pos.x, m->pos.y);
+    printf("M%i:%iM", m->pos.x, m->pos.y);
   }
 }
