@@ -72,14 +72,14 @@ int main(void)
 
   int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN,ID_DRAUGR};
   for(uint32_t i = 0; i < sizeof(summoned_mobs)/sizeof(summoned_mobs[0]); ++i) mob_summon(summoned_mobs[i]); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
-  for(int i = 10; i; --i) item_spawn();
+  for(int i = 20; i; --i) item_spawn();
 
   player = mob_get_player();
   display_runic_lines();
   display_player_stats(*player, turns);
 
   mob_show(*player);
-  for(item_t *it = item_get_list(); it; it = it->next) is_obejct_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
+  for(item_t *it = item_get_list(); it; it = it->next) is_object_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
   draw();
   fflush(stdin);
@@ -123,12 +123,17 @@ int main(void)
         debug_display_object_stats(room_get_rooms(), item_get_list(), mob_get_mobs());
         stats_displayed = true;
         continue;
+			case 'i':
+				mob_show_player_inventory();
+				continue;
       default:
         continue;
     }
 
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, input);
-    for(item_t *it = item_get_list(); it; it = it->next) is_obejct_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
+    for(item_t *it = item_get_list(); it; it = it->next) is_object_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
+		mob_show(*player); /* NOTE: needs to be done, when the player is out of inv. space and approaches an item, the drawing sequence
+													is not the best, resulting in the player disappearing. it temporarily fixes it */
 
     display_player_stats(*player, turns);
     if(prev_event_num < event_get_entry_num()){
@@ -143,11 +148,8 @@ int main(void)
 
   /* CLEAN UP */
   if(!player->health) cutscene_dead();
-  puts("1");
   free(r);
-  puts("2");
   free(room_get_corridors());
-  puts("3");
 
   return 0;
 }

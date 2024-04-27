@@ -1,10 +1,12 @@
 #include <stdlib.h>
+#include <string.h>
 #include "terminal.h"
 #include "mob.h"
 #include "debug.h"
 #include "room.h"
 #include "corridor.h"
 #include "item.h"
+#include "display.h"
 
 static void summon_player(mob_t *player);
 static void summon_goblin(mob_t *goblin);
@@ -17,7 +19,7 @@ static mob_t *player = NULL;
 
 extern bool game_is_running;
 extern void event_log_add(const char *event);
-
+extern void draw(void);
 
 #define UPPER_EDGE_OF_MAP (-1)
 #define LEFT_EDGE_OF_MAP  (-1)
@@ -100,6 +102,53 @@ static void attack_player(void)
   attack(player);
 }
 
+
+static bool place_into_inventory(mob_t *m, item_t *i)
+{
+	for(int slot = 0; slot < INVENTORY_SIZE; ++slot){
+		if(m->inventory[slot] == INV_EMPTY){
+			m->inventory[slot] = i;
+			item_hide(*i);
+			i->pos.x = 0;
+			i->pos.y = 0; /* NOTE: change it to a define UNKONW place or something */
+			return true;
+		}
+	}
+	return false;
+}
+
+
+void mob_show_player_inventory(void)
+{
+  char saved_content[RUNIC_LINE_POS][TERMINAL_WIDTH];
+
+  for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){
+    for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row){
+      saved_content[row][col] = term_getchar_xy(col, row);
+      term_putchar_xy(' ', col, row);
+    }
+  }
+
+  draw();
+  term_move_cursor(0,0);
+
+	mob_t *p = mob_get_player();
+
+	for(int slot = 0; slot < INVENTORY_SIZE; ++slot){
+		if(p->inventory[slot] != INV_EMPTY) printf(" - %i\n", p->inventory[slot]->type);
+		else printf(" - empty\n");
+	}
+
+  term_move_cursor(0, RUNIC_LINE_POS - 1);
+  printf("Press any key to get back...\n");
+  get_keypress();
+	
+  for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){
+    for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy(saved_content[row][col], col, row);
+  }
+
+  draw();
+}
 
 void mob_handle_movement(mob_t *mob, input_code_t step_to)
 {
@@ -192,9 +241,9 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
       if(mob == player){
         for(item_t* it = item_get_list(); it; it = it->next){
           if(it->pos.x == (dx + player->pos.x) && it->pos.y == ((dy + player->pos.y))){
-            ((potion_t*)it->spec_attr)->use(it);
+            //((potion_t*)it->spec_attr)->use(it);
+						if(place_into_inventory(player, it)) event_log_add("You picked up an unknown blue potion");
             mob_move_by(player, dx, dy);
-            event_log_add("You picked up an unknown blue potion");
             break;
           }
         }
@@ -246,6 +295,8 @@ mob_t *mob_summon(const mob_id_t id)
     head->next = NULL;
   }
 
+	memset(&summoned_creature->inventory, (int)NULL, INVENTORY_WIDTH*INVENTORY_HEIGHT);
+
   return summoned_creature;
 }
 
@@ -270,7 +321,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
     int32_t dy = mob->pos.y - player->pos.y;
 
     if( (1*1 + 1*1) < (dx*dx + dy*dy) ){  /* Is mob near the player? */
-      if(is_obejct_in_eyesight(mob->pos, player->pos)){
+      if(is_object_in_eyesight(mob->pos, player->pos)){
         if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
         else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
         mob_show(*mob);

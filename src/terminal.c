@@ -105,7 +105,7 @@ Explanation:
         accumulator -= deltaX
 */
 
-bool is_obejct_in_eyesight(const point_t obj1, const point_t obj2)
+bool is_object_in_eyesight(const point_t obj1, const point_t obj2)
 {
   char c = 0;
   int64_t accumulator = 0;

@@ -16,6 +16,11 @@
 #define ID_WITCH 'W'
 #define ID_MIMIR 'M'
 
+#define INVENTORY_WIDTH  (3u)
+#define INVENTORY_HEIGHT (3u)
+#define INVENTORY_SIZE (INVENTORY_WIDTH*INVENTORY_HEIGHT)
+#define INV_EMPTY (NULL)
+
 
 typedef uint16_t mob_id_t;
 
@@ -27,6 +32,7 @@ typedef struct mob_t
   int8_t health;
   uint8_t level;
   point_t last_seen;
+	struct item_t *inventory[INVENTORY_HEIGHT*INVENTORY_WIDTH]; /* NOTE: compiler doesn't accetp simple item_t, fix it */
   struct mob_t *next;
 }mob_t;
 
@@ -42,5 +48,6 @@ extern void mob_show(mob_t mob);
 extern void mob_hide(mob_t mob);
 extern void mob_handle_movement(mob_t *mob, input_code_t step_to);
 extern mob_t *mob_get_player(void);
+extern void mob_show_player_inventory(void);
 
 #endif /* _CREATURE_ */
