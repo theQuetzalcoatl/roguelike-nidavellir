@@ -48,6 +48,6 @@ extern void mob_show(mob_t mob);
 extern void mob_hide(mob_t mob);
 extern void mob_handle_movement(mob_t *mob, input_code_t step_to);
 extern mob_t *mob_get_player(void);
-extern void mob_show_player_inventory(void);
+extern bool mob_open_player_inventory(void);
 
 #endif /* _CREATURE_ */

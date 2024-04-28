@@ -109,6 +109,7 @@ static bool place_into_inventory(mob_t *m, item_t *i)
 		if(m->inventory[slot] == INV_EMPTY){
 			m->inventory[slot] = i;
 			item_hide(*i);
+			i->stands_on = EMPTY_SPACE; /* (0;0) is definitely empty space */ 
 			i->pos.x = 0;
 			i->pos.y = 0; /* NOTE: change it to a define UNKONW place or something */
 			return true;
@@ -118,9 +119,11 @@ static bool place_into_inventory(mob_t *m, item_t *i)
 }
 
 
-void mob_show_player_inventory(void)
+bool mob_open_player_inventory(void)
 {
   char saved_content[RUNIC_LINE_POS][TERMINAL_WIDTH];
+	input_code_t key = 0;
+	bool action_happend = false;
 
   for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){
     for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row){
@@ -135,19 +138,30 @@ void mob_show_player_inventory(void)
 	mob_t *p = mob_get_player();
 
 	for(int slot = 0; slot < INVENTORY_SIZE; ++slot){
-		if(p->inventory[slot] != INV_EMPTY) printf(" - %i\n", p->inventory[slot]->type);
-		else printf(" - empty\n");
+		if(p->inventory[slot] != INV_EMPTY) printf(" %d %i\n", slot, p->inventory[slot]->type);
+		else printf(" %d empty\n", slot);
 	}
 
   term_move_cursor(0, RUNIC_LINE_POS - 1);
-  printf("Press any key to get back...\n");
-  get_keypress();
+  printf("Press 0-8 to choose an item, any other key to get back...\n");
+	key = get_keypress() - '0';
+
+	if(key >= 0 && key <= 8){
+		if(p->inventory[key] != INV_EMPTY){
+			((potion_t*)p->inventory[key]->spec_attr)->use(p->inventory[key]);
+			p->inventory[key] = INV_EMPTY;
+		}
+		else event_log_add("You found nothing in your backpack.");
+		action_happend = true;
+	}
+
 	
   for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){
     for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy(saved_content[row][col], col, row);
   }
 
   draw();
+	return action_happend;
 }
 
 void mob_handle_movement(mob_t *mob, input_code_t step_to)

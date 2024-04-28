@@ -34,7 +34,7 @@ void draw(void)
   fflush(stdout);
 }
 
-static void check_terminal_size(void)
+static void check_window_size(void)
 {
   struct winsize ws = {0};
   ioctl(0, TIOCGWINSZ, &ws);
@@ -56,7 +56,7 @@ int main(void)
   bool stats_displayed = false;
   uint64_t rested_turns = 0;
 
-  check_terminal_size();
+  check_window_size();
   signal(SIGINT, handle_ctrl_c);
   term_setup();
 
@@ -124,8 +124,9 @@ int main(void)
         stats_displayed = true;
         continue;
 			case 'i':
-				mob_show_player_inventory();
-				continue;
+				bool action_happend = mob_open_player_inventory();
+				if(action_happend) break;
+				else continue;
       default:
         continue;
     }
