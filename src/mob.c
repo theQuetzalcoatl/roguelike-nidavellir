@@ -105,7 +105,7 @@ static void attack_player(void)
 
 static bool place_into_inventory(mob_t *m, item_t *i)
 {
-	for(int slot = 0; slot < INVENTORY_SIZE; ++slot){
+	for(uint8_t slot = 0; slot < INVENTORY_SIZE; ++slot){
 		if(m->inventory[slot] == INV_EMPTY){
 			m->inventory[slot] = i;
 			item_hide(*i);
@@ -121,15 +121,10 @@ static bool place_into_inventory(mob_t *m, item_t *i)
 
 bool mob_open_player_inventory(void)
 {
-  char saved_content[RUNIC_LINE_POS][TERMINAL_WIDTH];
-	input_code_t key = 0;
-	bool action_happend = false;
-
-  for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){
-    for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row){
-      saved_content[row][col] = term_getchar_xy(col, row);
-      term_putchar_xy(' ', col, row);
-    }
+	bool action_happened = false;
+  for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row){
+  	term_move_cursor(0, row);
+    for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col) printf(" ");
   }
 
   draw();
@@ -137,31 +132,30 @@ bool mob_open_player_inventory(void)
 
 	mob_t *p = mob_get_player();
 
-	for(int slot = 0; slot < INVENTORY_SIZE; ++slot){
+	for(uint8_t slot = 0; slot < INVENTORY_SIZE; ++slot){
 		if(p->inventory[slot] != INV_EMPTY) printf(" %d %i\n", slot, p->inventory[slot]->type);
 		else printf(" %d empty\n", slot);
 	}
 
   term_move_cursor(0, RUNIC_LINE_POS - 1);
   printf("Press 0-8 to choose an item, any other key to get back...\n");
-	key = get_keypress() - '0';
+	input_code_t key = get_keypress() - '0';
 
-	if(key >= 0 && key <= 8){
+  if(key < INVENTORY_SIZE){
 		if(p->inventory[key] != INV_EMPTY){
 			((potion_t*)p->inventory[key]->spec_attr)->use(p->inventory[key]);
 			p->inventory[key] = INV_EMPTY;
 		}
 		else event_log_add("You found nothing in your backpack.");
-		action_happend = true;
+		action_happened = true;
 	}
 
-	
   for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){
-    for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy(saved_content[row][col], col, row);
+    for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy(term_getchar_xy(col, row), col, row);
   }
 
   draw();
-	return action_happend;
+	return action_happened;
 }
 
 void mob_handle_movement(mob_t *mob, input_code_t step_to)
@@ -309,7 +303,7 @@ mob_t *mob_summon(const mob_id_t id)
     head->next = NULL;
   }
 
-	memset(&summoned_creature->inventory, (int)NULL, INVENTORY_WIDTH*INVENTORY_HEIGHT);
+	memset(&summoned_creature->inventory, (int)NULL, INVENTORY_WIDTH*INVENTORY_HEIGHT*sizeof(summoned_creature->inventory[0]));
 
   return summoned_creature;
 }

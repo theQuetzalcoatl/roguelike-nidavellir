@@ -44,13 +44,9 @@ void display_player_stats(const mob_t player, const uint64_t turns)
 
 void display_to_player_window(const char * const option)
 {
-  char saved_content[RUNIC_LINE_POS][TERMINAL_WIDTH];
-
-  for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){
-    for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row){
-      saved_content[row][col] = term_getchar_xy(col, row);
-      term_putchar_xy(' ', col, row);
-    }
+  for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) { /* NOTE: extract this and the reverse below to its own function(?) used two times */ 
+		term_move_cursor(0, row);
+  	for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col) printf(" ");
   }
 
   draw();
@@ -61,6 +57,7 @@ void display_to_player_window(const char * const option)
     printf("Q  Quits the game\n");
     printf(".  Rest for one turn\n");
     printf("E  Show event log\n");
+    printf("i  Open your inventory\n");
 
     term_move_cursor(0, RUNIC_LINE_POS - 1);
     printf("Press any key to get back...\n");
@@ -91,10 +88,6 @@ void display_to_player_window(const char * const option)
       if(key == ARROW_DOWN) current_entry = current_entry - 1*(current_entry > 0);
       else if(key == ARROW_UP) current_entry = current_entry + 1*(current_entry < event_get_entry_num() - 1);
       else break;
-
-      for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){
-        for(uint8_t row = 0; row < log_lower_border; ++row) term_putchar_xy(' ', col, row);
-      }
     }
   }
   else{
@@ -105,7 +98,7 @@ void display_to_player_window(const char * const option)
   }
 
   for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){
-    for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy(saved_content[row][col], col, row);
+    for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy(term_getchar_xy(col, row), col, row);
   }
 
   draw();
