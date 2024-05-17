@@ -22,9 +22,9 @@ extern uint64_t event_get_entry_num(void);
 bool game_is_running = true;
 
 
-static void handle_ctrl_c(int num)
+static void handle_ctrl_c(int unused)
 {
-  num = num; // avoid  compiler warning
+  unused = unused; // avoid  compiler warning
   exit(1); // run the 'atexit' functions
 }
 

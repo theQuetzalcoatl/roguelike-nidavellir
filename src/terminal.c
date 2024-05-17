@@ -88,7 +88,7 @@ void term_putchar_xy(const char c, const uint16_t x, const uint16_t y)
 
 #define ROUNDED_DIVISION(a, b) ((((a)<<1)/(b) + 1) >> 1)
 
-/*
+/* BRESENHAM'S ALGORITHM
 Explanation:
   floating math:
     deltaY = dY/dX   // deltaY = dY/dX*deltaX (deltaX being 1)
