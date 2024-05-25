@@ -259,7 +259,6 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
       if(mob == player){
         for(item_t* it = item_get_list(); it; it = it->next){
           if(it->pos.x == (dx + player->pos.x) && it->pos.y == ((dy + player->pos.y))){
-            //((potion_t*)it->spec_attr)->use(it);
 						place_into_inventory(player, it);
             mob_move_by(player, dx, dy);
             break;

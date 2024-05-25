@@ -23,37 +23,45 @@ item_t *item_spawn(void)
   spawned_item->stands_on = ITEM_SYMBOL;
   spawned_item->type = I_potion; // NOTE: change this to random
   spawned_item->pos = (point_t){.x = 0, .y = 0};
+  spawned_item->next = NULL;
 
   room_t *r = room_get_rooms();
   uint8_t random_room = CALC_RAND(room_get_num_of_rooms()-1, 0);
 
   spawned_item->stands_on = random_room != 0 ? EMPTY_SPACE: ROOM_FLOOR; /* there can be item in the starting room, which is already drawn */
-  while(tries < 4 ){
+  while(tries < 4){
+		bool found = false;
     uint8_t random_x = CALC_RAND(r[random_room].width-2, 1) + r[random_room].pos.x;
     uint8_t random_y = CALC_RAND(r[random_room].height-2, 1) + r[random_room].pos.y;
 
-    if(items_head == NULL) items_head = spawned_item;
-    for(item_t *i = item_get_list(); i; i = i->next){
-      if(i->pos.x != random_x || i->pos.y != random_y){
-        spawned_item->pos = (point_t){.x=random_x, .y=random_y};
-        goto found_place;
-      }
-      else ++tries;
-    };
+    if(items_head == NULL){
+			spawned_item->pos = (point_t){.x=random_x, .y=random_y};
+			break;
+		}
+		else{
+			for(item_t *i = item_get_list(); i; i = i->next){
+				if(i->pos.x == random_x && i->pos.y == random_y){
+					++tries;
+					found = true;
+				}
+			}
+			if(!found){
+				spawned_item->pos = (point_t){.x=random_x, .y=random_y};
+				break;
+			}
+		}
   }
-
-found_place:
 
   if(tries > 3){
     free(spawned_item);
     nidebug("Could not find a place for item!\n");
     return NULL;
   }
-  else{
+  else if(items_head == NULL) items_head = spawned_item;
+	else{
     item_t *it = items_head;
     for(; it->next; it = it->next);
     it->next = spawned_item;
-    spawned_item->next = NULL;
   }
 
   /* specify item */
@@ -68,7 +76,6 @@ found_place:
   spec_item->use = health_up_by_10;
 
   spawned_item->spec_attr = spec_item;
-
   return spawned_item;
 }
 
