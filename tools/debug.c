@@ -51,8 +51,10 @@ void debug_display_object_stats(const room_t *r, const item_t *i, const mob_t *m
   }
 
   for(; i; i = i->next){
-    term_move_cursor(i->pos.x, i->pos.y - 1);
-    printf("i%i:%ii", i->pos.x, i->pos.y);
+    if(i->pos.x != 0 && i->pos.y != 0){
+      term_move_cursor(i->pos.x, i->pos.y - 1);
+      printf("i%i:%ii", i->pos.x, i->pos.y);
+    }
   }
 
   for(; m; m = m->next){

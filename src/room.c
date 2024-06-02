@@ -147,6 +147,34 @@ static void make_corridor(const point_t starting, const point_t ending, const ui
   corridors[num_of_corridors - 1] = newest_corridor;
 }
 
+static int get_neighbouring_empty_cell(cell_t *cells, uint8_t prev_cell_index)
+{
+  uint16_t directions[4] = {0,1,2,3};
+  stir_elements_randomly(sizeof(directions), directions);
+
+  for(uint8_t tries = sizeof(directions); tries; --tries){
+    switch(directions[tries])
+    {
+      case 0: /* UP */
+        if(CELL_ABOVE(prev_cell_index) >= 0 && cells[CELL_ABOVE(prev_cell_index)].room == NULL) return CELL_ABOVE(prev_cell_index); 
+      break;
+      case 1: /* DOWN */
+        if(CELL_BELOW(prev_cell_index) <= 8 && cells[CELL_BELOW(prev_cell_index)].room == NULL) return CELL_BELOW(prev_cell_index); 
+      break;
+      case 2: /* LEFT */
+        if(CELL_ON_THE_LEFT(prev_cell_index) >= 0 && cells[CELL_ON_THE_LEFT(prev_cell_index)].room == NULL) return CELL_ON_THE_LEFT(prev_cell_index); 
+      break;
+      case 3: /* RIGHT */
+        if(CELL_ON_THE_RIGHT(prev_cell_index) <= 8 && cells[CELL_ON_THE_RIGHT(prev_cell_index)].room == NULL) return CELL_ON_THE_RIGHT(prev_cell_index); 
+      break;
+      default: break;
+    }
+  }
+  /* edge case where the prev cell was at a corner and we cant get out */
+  for(int8_t cell_i = 8; cell_i >= 0; --cell_i) if(cells[cell_i].room == NULL) return cell_i;
+
+  return 0; /* pleasing the compiler, most likely wont end up here */ 
+}
 
 room_t *room_create_rooms(void)
 {
@@ -179,20 +207,26 @@ room_t *room_create_rooms(void)
   }
   for(int x = 0; x < TERMINAL_WIDTH - 3; ++x) term_putchar_xy('~', x, RUNIC_LINE_POS - 1);*/
 
-  uint16_t random_cell_indexes[MAX_ROOMS_PER_LEVEL] = {0,1,2,3,4,5,6,7,8};
-  stir_elements_randomly(sizeof(random_cell_indexes)/sizeof(random_cell_indexes[0]), random_cell_indexes);
-
   /* place rooms in cells */
   for(uint8_t n = 0; n < num_of_rooms; ++n){
-    rooms[n].pos = window_cell[random_cell_indexes[n]].pos; /* init room from cell's pos(upperleft corner) */
+    if(n == 0){
+      int starting_cell_index = CALC_RAND(MAX_ROOMS_PER_LEVEL, 0);
+      rooms[n].pos = window_cell[starting_cell_index].pos;
+      window_cell[starting_cell_index].room = rooms + n;
+      rooms[n].in_cell = starting_cell_index;
+    }
+    else{
+      int prev_cell_index = rooms[n-1].in_cell;
+      int cell_index = get_neighbouring_empty_cell(window_cell, prev_cell_index);
+      rooms[n].pos = window_cell[cell_index].pos;
+      window_cell[cell_index].room = rooms + n;
+      rooms[n].in_cell = cell_index;
+    }
     rooms[n].width = CALC_RAND(MAX_ROOM_WIDTH, MIN_ROOM_WIDTH);
     rooms[n].height = CALC_RAND(MAX_ROOM_HEIGHT, MIN_ROOM_HEIGHT);
 
     rooms[n].pos.x += CALC_RAND(cell_width - rooms[n].width - BORDER , 0);
     rooms[n].pos.y += CALC_RAND(cell_height - rooms[n].height - BORDER, 0);
-
-    window_cell[random_cell_indexes[n]].room = rooms + n;
-    rooms[n].in_cell = random_cell_indexes[n];
   }
 
   /* door+corridor generation */
