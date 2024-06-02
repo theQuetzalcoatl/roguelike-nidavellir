@@ -411,9 +411,9 @@ static void summon_player(mob_t *player)
   room_t *rooms = room_get_rooms();
   if(summoned == false){
     if(room_get_rooms() != NULL)
-      *player = (mob_t){.pos.x=rooms[0].pos.x+1, .pos.y=rooms[0].pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL};
+      *player = (mob_t){.pos.x=rooms[STARTING].pos.x+1, .pos.y=rooms[STARTING].pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health=100, .level=1, .next=NULL};
     else
-      *player = (mob_t){.pos.x=1, .pos.y=1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health = 100, .level=1, .next = NULL, .last_seen = (point_t){.x=0, .y=0} };
+      *player = (mob_t){.pos.x=1, .pos.y=1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health=100, .level=1, .next=NULL, .last_seen=(point_t){.x=0, .y=0} };
     summoned = true;
   }
   else{
@@ -425,10 +425,10 @@ static void summon_player(mob_t *player)
 
 static void summon_goblin(mob_t *goblin)
 {
-  *goblin = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_GOBLIN, .health=15, .level=1, .next = NULL, .last_seen = (point_t){.x=0, .y=0}};
+  *goblin = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_GOBLIN, .health=15, .level=1, .next=NULL, .last_seen=(point_t){.x=0, .y=0}};
 }
 
 static void summon_draugr(mob_t *draugr)
 {
-  *draugr = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_DRAUGR, .health=20, .level=10, .next = NULL, .last_seen = (point_t){.x=0, .y=0}}; 
+  *draugr = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_DRAUGR, .health=20, .level=10, .next=NULL, .last_seen=(point_t){.x=0, .y=0}}; 
 }

@@ -52,6 +52,7 @@ extern void room_draw_corridor_piece(const corridor_t *c, const point_t player);
 #define ROOM_FLOOR      '.'
 #define ROOM_DOOR       '/'
 #define EMPTY_SPACE     ' '
+#define STARTING        (0u)
 
 #define ALREADY_DRAWN (1u)
 

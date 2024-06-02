@@ -85,7 +85,7 @@ void cutscene_dead(void)
   system("clear");
 }
 
-void stir_elements_randomly(uint64_t array_len, uint16_t *array)
+void stir_elements_randomly(uint64_t array_len, uint16_t *array) /* NOTE: change 1st argument to max_index, because sizeof(arr)-1 is calculated at compile time */
 {
   /* Durstenfeld's in-place shuffle*/
   uint16_t tmp, rn = 0;
