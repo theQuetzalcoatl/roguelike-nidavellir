@@ -5,25 +5,32 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define EMPTY NULL
+
 static void health_up_by_10(item_t *item);
 static void destroy_item(item_t *i);
 
-static item_t *items_head = NULL;
+static item_t *items_head = EMPTY;
 
+static bool is_near_door(uint16_t x, uint16_t y)
+{
+  if(ROOM_DOOR == term_getchar_xy(x-1, y)) return true;
+  else if(ROOM_DOOR == term_getchar_xy(x+1, y)) return true;
+  else if(ROOM_DOOR == term_getchar_xy(x, y-1)) return true;
+  else if(ROOM_DOOR == term_getchar_xy(x, y+1)) return true;
+  else return false;
+}
 
 item_t *item_spawn(void)
 {
   uint8_t tries = 0;
   item_t *spawned_item = malloc(sizeof(item_t));
   if(spawned_item == NULL){
-    printf("Could not spawn item! In %s at %i.\n", __FILE__, __LINE__);
-    exit(1);
+    nidebug("Could not spawn item! In %s at %i.\n", __FILE__, __LINE__);
+    return NULL;
   }
 
-  spawned_item->stands_on = ITEM_SYMBOL;
-  spawned_item->type = I_potion; // NOTE: change this to random
-  spawned_item->pos = (point_t){.x = 0, .y = 0};
-  spawned_item->next = NULL;
+  *spawned_item = (item_t){.next = NULL, .pos.x = 0, .pos.y = 0, .type = I_potion};
 
   room_t *r = room_get_rooms();
   uint8_t random_room = CALC_RAND(room_get_num_of_rooms()-1, 0);
@@ -34,7 +41,7 @@ item_t *item_spawn(void)
     uint8_t random_x = CALC_RAND(r[random_room].width-2, 1) + r[random_room].pos.x;
     uint8_t random_y = CALC_RAND(r[random_room].height-2, 1) + r[random_room].pos.y;
 
-    if(items_head == NULL){
+    if(item_get_list() == EMPTY){
 			spawned_item->pos = (point_t){.x=random_x, .y=random_y};
 			break;
 		}
@@ -43,9 +50,10 @@ item_t *item_spawn(void)
 				if(i->pos.x == random_x && i->pos.y == random_y){
 					++tries;
 					found = true;
+          break;
 				}
 			}
-			if(!found){
+			if(!found && !is_near_door(random_x, random_y)){
 				spawned_item->pos = (point_t){.x=random_x, .y=random_y};
 				break;
 			}
@@ -57,7 +65,7 @@ item_t *item_spawn(void)
     nidebug("Could not find a place for item!\n");
     return NULL;
   }
-  else if(items_head == NULL) items_head = spawned_item;
+  else if(item_get_list() == EMPTY) items_head = spawned_item;
 	else{
     item_t *it = items_head;
     for(; it->next; it = it->next);
@@ -65,17 +73,17 @@ item_t *item_spawn(void)
   }
 
   /* specify item */
-  potion_t *spec_item = malloc(sizeof(potion_t));
-  if(spec_item == NULL){
-    printf("Could not spawn special item! In %s at %i.\n", __FILE__, __LINE__);
-    exit(1);
+  switch(spawned_item->type)
+  {
+    case I_potion:
+      spawned_item->description = strdup("potion ");
+      spawned_item->use = health_up_by_10;
+      spawned_item->spec_attr = malloc(sizeof(potion_t));
+      ((potion_t*)spawned_item->spec_attr)->color = strdup("blue ");
+      break;
+    default: nidebug("Invalid item type!"); 
   }
 
-  spec_item->color = calloc(10, sizeof(char));
-  strcpy(spec_item->color, "Blue");
-  spec_item->use = health_up_by_10;
-
-  spawned_item->spec_attr = spec_item;
   return spawned_item;
 }
 
@@ -104,7 +112,7 @@ static void destroy_item(item_t *i)
     while(search_it->next != i) search_it = search_it->next;
     search_it->next = i->next;
   }
-  term_putchar_xy(i->stands_on, i->pos.x, i->pos.y);
+  item_hide(*i);
   free(((potion_t*)i->spec_attr)->color);
   free(i->spec_attr);
   free(i);

@@ -45,10 +45,7 @@ static void check_window_size(void)
   }
 }
 
-void check_nordic_font()
-{
 	//   /usr/share/fonts/truetype/freefont/FreeMono.ttf
-}
 
 int main(void)
 {

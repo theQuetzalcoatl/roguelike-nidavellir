@@ -112,7 +112,10 @@ static void place_into_inventory(mob_t *m, item_t *i)
 			i->stands_on = EMPTY_SPACE; /* (0;0) is definitely empty space */ 
 			i->pos.x = 0;
 			i->pos.y = 0; /* NOTE: change it to a define UNKONW place or something */
-			event_log_add("You picked up an unknown blue potion");
+      char event_string[200] = "You picked up a ";
+      strcat(event_string, ((potion_t*)i->spec_attr)->color);
+      strcat(event_string, i->description);
+			event_log_add(event_string);
 			return;
 		}
 	}
@@ -133,8 +136,8 @@ bool mob_open_player_inventory(void)
 	mob_t *p = mob_get_player();
 
 	for(uint8_t slot = 0; slot < INVENTORY_SIZE; ++slot){
-		if(p->inventory[slot] != INV_EMPTY) printf(" %d %i\n", slot, p->inventory[slot]->type);
-		else printf(" %d empty\n", slot);
+		if(p->inventory[slot] != INV_EMPTY) printf(" %d %s\n", slot, p->inventory[slot]->description);
+		else printf(" x empty\n");
 	}
 
   term_move_cursor(0, RUNIC_LINE_POS - 1);
@@ -143,7 +146,7 @@ bool mob_open_player_inventory(void)
 
   if(requested_slot < INVENTORY_SIZE){
 		if(p->inventory[requested_slot] != INV_EMPTY){
-			((potion_t*)p->inventory[requested_slot]->spec_attr)->use(p->inventory[requested_slot]);
+			p->inventory[requested_slot]->use(p->inventory[requested_slot]);
 			p->inventory[requested_slot] = INV_EMPTY;
 
 			if(p->stands_on == ITEM_SYMBOL){

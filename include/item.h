@@ -19,13 +19,14 @@ typedef struct item_t
   point_t pos;
   uint8_t stands_on;
   uint16_t type;
+  char *description;
   void *spec_attr;
+  void (*use)(struct item_t *item);
   struct item_t *next;
 }item_t;
 
 typedef struct
 {
-  void (*use)(item_t *item);
   char *color;
 }potion_t;
 

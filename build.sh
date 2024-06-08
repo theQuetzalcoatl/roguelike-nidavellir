@@ -14,10 +14,9 @@ function main()
 	local debug_lvl='-g0';
 
   if [[ ${debug} -eq 1 ]]; then
-    local debug_lvl="-g3";
+    local debug_lvl="-g2";
     optimization="-O0";
     #local aux='-aux-info aux.txt';
-
   fi
 
   opts="${debug_lvl} ${warnings} ${optimization} ${aux}";
