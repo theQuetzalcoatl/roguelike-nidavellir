@@ -122,7 +122,7 @@ static void place_into_inventory(mob_t *m, item_t *i)
 }
 
 
-bool mob_open_player_inventory(void)
+bool mob_open_player_inventory(const uint8_t action)
 {
 	bool action_happened = false;
   for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row){
@@ -141,23 +141,28 @@ bool mob_open_player_inventory(void)
 	}
 
   term_move_cursor(0, RUNIC_LINE_POS - 1);
-  printf("Press 0-8 to choose an item, any other key to get back...\n");
+  char *action_str = (action == DROP_ITEM) ? "drop" : "use";
+  printf("Press 0-8 to choosewhich item to %s, any other key to get back...\n", action_str);
 	uint8_t requested_slot = get_keypress() - '0';
 
   if(requested_slot < INVENTORY_SIZE){
 		if(p->inventory[requested_slot] != INV_EMPTY){
-			p->inventory[requested_slot]->use(p->inventory[requested_slot]);
-			p->inventory[requested_slot] = INV_EMPTY;
-
-			if(p->stands_on == ITEM_SYMBOL){
-				for(item_t *i = item_get_list(); i; i = i->next){
-					if(i->pos.x == p->pos.x && i->pos.y == p->pos.y){
-						p->stands_on = i->stands_on;
-						place_into_inventory(p, i);
-						break;
-					}
-				}
-			}
+      if(action == USE_ITEM){
+        p->inventory[requested_slot]->use(p->inventory[requested_slot]);
+        p->inventory[requested_slot] = INV_EMPTY;
+        if(p->stands_on == ITEM_SYMBOL){
+          for(item_t *i = item_get_list(); i; i = i->next){
+            if(i->pos.x == p->pos.x && i->pos.y == p->pos.y){
+              p->stands_on = i->stands_on;
+              place_into_inventory(p, i);
+              break;
+            }
+          }
+        }
+      }
+      else if(action == DROP_ITEM && item_drop(p->inventory[requested_slot], p) == DROPPED){
+        p->inventory[requested_slot] = INV_EMPTY;
+      }
 		}
 		else event_log_add("You found nothing in your backpack.");
 		action_happened = true;

@@ -130,6 +130,18 @@ void item_hide(item_t it)
 }
 
 
+bool item_drop(item_t *i, struct mob_t *m)
+{
+  if(m->stands_on == ROOM_FLOOR){
+    i->stands_on = m->stands_on;
+    m->stands_on = ITEM_SYMBOL;
+    i->pos = m->pos;
+    return DROPPED;
+  }
+  return !DROPPED;
+}
+
+
 /****************************
  ** ITEM ACTIONS
  ***************************/

@@ -24,6 +24,8 @@
 
 typedef uint16_t mob_id_t;
 
+struct item_t; /* forward declaring item to be able to use it */
+
 typedef struct mob_t
 {
   point_t pos;
@@ -48,6 +50,6 @@ extern void mob_show(mob_t mob);
 extern void mob_hide(mob_t mob);
 extern void mob_handle_movement(mob_t *mob, input_code_t step_to);
 extern mob_t *mob_get_player(void);
-extern bool mob_open_player_inventory(void);
+extern bool mob_open_player_inventory(const uint8_t action);
 
 #endif /* _CREATURE_ */

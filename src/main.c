@@ -124,7 +124,9 @@ int main(void)
         stats_displayed = true;
         continue;
 			case 'i':
-				bool action_happend = mob_open_player_inventory();
+			case 'd':
+        uint8_t action = (input == 'i') ? USE_ITEM : DROP_ITEM;
+				bool action_happend = mob_open_player_inventory(action);
 				if(action_happend) break;
 				else continue;
       default:

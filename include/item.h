@@ -7,12 +7,17 @@
 #include <stdint.h>
 
 #define ITEM_SYMBOL '*'
+#define DROP_ITEM (4u)
+#define USE_ITEM  (5u)
+#define DROPPED true
 
 enum ITEMS
 {
   I_potion,
   NUM_OF_ITEMS
 };
+
+struct mob_t; /* forward declaring mob to be able to use it */
 
 typedef struct item_t
 {
@@ -36,5 +41,6 @@ extern item_t *item_get_list(void);
 extern void item_hide(item_t it);
 extern void item_show(item_t it);
 extern void item_free_items(void);
+extern bool item_drop(item_t *i, struct mob_t *m);
 
 #endif /* _ITEM_H */
