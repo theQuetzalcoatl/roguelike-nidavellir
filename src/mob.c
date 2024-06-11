@@ -142,7 +142,7 @@ bool mob_open_player_inventory(const uint8_t action)
 
   term_move_cursor(0, RUNIC_LINE_POS - 1);
   char *action_str = (action == DROP_ITEM) ? "drop" : "use";
-  printf("Press 0-8 to choosewhich item to %s, any other key to get back...\n", action_str);
+  printf("Press 0-8 to choose which item to %s, any other key to get back...\n", action_str);
 	uint8_t requested_slot = get_keypress() - '0';
 
   if(requested_slot < INVENTORY_SIZE){
@@ -159,13 +159,15 @@ bool mob_open_player_inventory(const uint8_t action)
             }
           }
         }
+        action_happened = true;
       }
-      else if(action == DROP_ITEM && item_drop(p->inventory[requested_slot], p) == DROPPED){
+      else if(action == DROP_ITEM && p->stands_on == ROOM_FLOOR){
+        item_drop(p->inventory[requested_slot], p);
         p->inventory[requested_slot] = INV_EMPTY;
+        action_happened = true;
       }
 		}
 		else event_log_add("You found nothing in your backpack.");
-		action_happened = true;
 	}
 
   for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){

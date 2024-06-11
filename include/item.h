@@ -41,6 +41,6 @@ extern item_t *item_get_list(void);
 extern void item_hide(item_t it);
 extern void item_show(item_t it);
 extern void item_free_items(void);
-extern bool item_drop(item_t *i, struct mob_t *m);
+extern void item_drop(item_t *i, struct mob_t *m);
 
 #endif /* _ITEM_H */
