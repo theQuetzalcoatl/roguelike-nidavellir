@@ -2,7 +2,7 @@
 
 function main()
 {
-  local debug=0;
+  local debug=1;
 
   local game_name="nidavellir";
   local includes="$PWD/include/";

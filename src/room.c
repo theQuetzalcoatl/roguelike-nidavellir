@@ -150,9 +150,9 @@ static void make_corridor(const point_t starting, const point_t ending, const ui
 static int get_neighbouring_empty_cell(cell_t *cells, uint8_t prev_cell_index)
 {
   uint16_t directions[4] = {0,1,2,3};
-  stir_elements_randomly(sizeof(directions), directions);
+  stir_elements_randomly(sizeof(directions)/sizeof(directions[0]), directions);
 
-  for(uint8_t tries = sizeof(directions); tries; --tries){
+  for(uint8_t tries = sizeof(directions)/sizeof(directions[0]); tries; --tries){
     switch(directions[tries])
     {
       case 0: /* UP */
@@ -194,20 +194,6 @@ room_t *room_create_rooms(void)
       [3] = {.pos.x = 0*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL}, [4] = {.pos.x = 1*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL}, [5] = {.pos.x = 2*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL},
       [6] = {.pos.x = 0*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}, [7] = {.pos.x = 1*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}, [8] = {.pos.x = 2*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}
                                                   };
-  /* DEBUG  - draws the cells' outline */
-  /*for(int i = 3; i; --i){
-    int x = window_cell[3-i].pos.x - 1;
-    for(int row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy('8', x, row);
-  }
-  for(int row = 0; row < RUNIC_LINE_POS; ++row) term_putchar_xy('8', TERMINAL_WIDTH-3, row);
-
-  for(int i = 0; i < 7; i += 3){
-    int y = window_cell[i].pos.y - 1;
-    for(int x = 0; x < TERMINAL_WIDTH - 3; ++x) term_putchar_xy('~', x, y);
-  }
-  for(int x = 0; x < TERMINAL_WIDTH - 3; ++x) term_putchar_xy('~', x, RUNIC_LINE_POS - 1);*/
-
-  /* place rooms in cells */
   for(uint8_t n = 0; n < num_of_rooms; ++n){
     if(n == 0){
       int starting_cell_index = CALC_RAND(MAX_ROOMS_PER_LEVEL, 0);

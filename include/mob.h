@@ -8,13 +8,13 @@
 #include "input.h"
 
 #define ID_PLAYER '@'
-#define ID_THOR 'T'
+#define ID_RAT '~'
+#define ID_BERSERKR 'B'
 #define ID_ODIN 'O'
 #define ID_GOBLIN 'G'
 #define ID_DRAUGR 'D'
 #define ID_TROLL 't'
 #define ID_WITCH 'W'
-#define ID_MIMIR 'M'
 
 #define INVENTORY_WIDTH  (3u)
 #define INVENTORY_HEIGHT (3u)

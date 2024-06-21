@@ -311,7 +311,7 @@ mob_t *mob_summon(const mob_id_t id)
       break;
   
     default:
-      nidebug("Unknown creature id: %d", id);
+      nidebug("Unknown creature id: %c", id);
       free(summoned_creature);
       return NULL;
   }

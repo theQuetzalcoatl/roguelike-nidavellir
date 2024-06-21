@@ -70,7 +70,7 @@ int main(void)
   r = room_create_rooms();
   room_draw(r[STARTING]);
 
-  int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN,ID_DRAUGR};
+  int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN, ID_DRAUGR, ID_BERSERKR};
   for(uint32_t i = 0; i < sizeof(summoned_mobs)/sizeof(summoned_mobs[0]); ++i) mob_summon(summoned_mobs[i]); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
   for(int i = 20; i; --i) item_spawn();
 
