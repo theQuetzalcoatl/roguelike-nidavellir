@@ -35,6 +35,16 @@ typedef struct
   char *color;
 }potion_t;
 
+enum POTION_COLOR
+{
+  RED,
+  BLUE,
+  GREEN,
+  PURPLE,
+  TRANSPARENT,
+  COLOR_COUNT
+};
+
 
 extern item_t *item_spawn(void);
 extern item_t *item_get_list(void);

@@ -122,9 +122,8 @@ static void place_into_inventory(mob_t *m, item_t *i)
 }
 
 
-bool mob_open_player_inventory(const uint8_t action)
+void mob_open_player_inventory(const uint8_t action)
 {
-	bool action_happened = false;
   for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row){
   	term_move_cursor(0, row);
     for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col) printf(" ");
@@ -136,7 +135,7 @@ bool mob_open_player_inventory(const uint8_t action)
 	mob_t *p = mob_get_player();
 
 	for(uint8_t slot = 0; slot < INVENTORY_SIZE; ++slot){
-		if(p->inventory[slot] != INV_EMPTY) printf(" %d %s\n", slot, p->inventory[slot]->description);
+		if(p->inventory[slot] != INV_EMPTY) printf(" %d %s%s\n", slot, ((potion_t *)(p->inventory[slot]->spec_attr))->color, p->inventory[slot]->description); /* NOTE: this is temporary */
 		else printf(" x empty\n");
 	}
 
@@ -159,15 +158,13 @@ bool mob_open_player_inventory(const uint8_t action)
             }
           }
         }
-        action_happened = true;
       }
       else if(action == DROP_ITEM && p->stands_on == ROOM_FLOOR){
         item_drop(p->inventory[requested_slot], p);
         p->inventory[requested_slot] = INV_EMPTY;
-        action_happened = true;
       }
 		}
-		else event_log_add("You found nothing in your backpack.");
+		else event_log_add("You found nothing in your backpack");
 	}
 
   for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col){
@@ -175,7 +172,6 @@ bool mob_open_player_inventory(const uint8_t action)
   }
 
   draw();
-	return action_happened;
 }
 
 void mob_handle_movement(mob_t *mob, input_code_t step_to)

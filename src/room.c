@@ -196,7 +196,7 @@ room_t *room_create_rooms(void)
                                                   };
   for(uint8_t n = 0; n < num_of_rooms; ++n){
     if(n == 0){
-      int starting_cell_index = CALC_RAND(MAX_ROOMS_PER_LEVEL, 0);
+      int starting_cell_index = CALC_RAND(MAX_ROOMS_PER_LEVEL-1, 0);
       rooms[n].pos = window_cell[starting_cell_index].pos;
       window_cell[starting_cell_index].room = rooms + n;
       rooms[n].in_cell = starting_cell_index;

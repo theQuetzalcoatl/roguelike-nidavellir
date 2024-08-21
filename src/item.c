@@ -8,6 +8,7 @@
 #define EMPTY NULL
 
 static void health_up_by_10(item_t *item);
+static void health_up_by_5(item_t *item);
 static void destroy_item(item_t *i);
 
 static item_t *items_head = EMPTY;
@@ -40,6 +41,13 @@ item_t *item_spawn(void)
 		bool found = false;
     uint8_t random_x = CALC_RAND(r[random_room].width-2, 1) + r[random_room].pos.x;
     uint8_t random_y = CALC_RAND(r[random_room].height-2, 1) + r[random_room].pos.y;
+
+    for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next){
+      if(mob->pos.x == random_x && mob->pos.y == random_y){
+        ++tries;
+        continue;
+      }
+    }
 
     if(item_get_list() == EMPTY){
 			spawned_item->pos = (point_t){.x=random_x, .y=random_y};
@@ -77,9 +85,23 @@ item_t *item_spawn(void)
   {
     case I_potion:
       spawned_item->description = strdup("potion ");
-      spawned_item->use = health_up_by_10;
+      spawned_item->use = CALC_RAND(1,0) ? health_up_by_10 : health_up_by_5;
       spawned_item->spec_attr = malloc(sizeof(potion_t));
-      ((potion_t*)spawned_item->spec_attr)->color = strdup("blue ");
+      char *color = NULL;
+      switch(CALC_RAND(COLOR_COUNT-1, 0))
+      {
+        case RED: color = strdup("red ");
+          break;
+        case BLUE: color = strdup("blue ");
+          break;
+        case GREEN: color = strdup("green ");
+          break;
+        case PURPLE: color = strdup("purple ");
+          break;
+        case TRANSPARENT: color = strdup("transparent ");
+          break;
+      }
+      ((potion_t *)spawned_item->spec_attr)->color = color; 
       break;
     default: nidebug("Invalid item type!"); 
   }
@@ -146,6 +168,15 @@ static void health_up_by_10(item_t *item)
 {
   mob_t *player =  mob_get_player();
   player->health += 10u;
+  player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly */
+  destroy_item(item);
+}
+
+
+static void health_up_by_5(item_t *item)
+{
+  mob_t *player =  mob_get_player();
+  player->health += 5u;
   player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly */
   destroy_item(item);
 }

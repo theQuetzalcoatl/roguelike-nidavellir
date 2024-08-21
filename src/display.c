@@ -1,9 +1,10 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "display.h"
 #include "input.h"
-#include "stdlib.h"
+#include "room.h"
 
 extern char **event_get_entries(void);
 extern uint64_t event_get_entry_num(void);
@@ -110,7 +111,7 @@ void display_recent_events(void)
 {
   term_move_cursor(LOWER_DIVIDING_LINE_X_POS + 2, RUNIC_LINE_POS + 1);
   for(uint8_t col = LOWER_DIVIDING_LINE_X_POS + 2; col < TERMINAL_WIDTH-2; ++col){
-    for(uint8_t row = RUNIC_LINE_POS + 1; row < TERMINAL_HEIGHT; ++row) term_putchar_xy(' ', col, row);
+    for(uint8_t row = RUNIC_LINE_POS + 1; row < TERMINAL_HEIGHT; ++row) term_putchar_xy(EMPTY_SPACE, col, row);
   }
 
   term_move_cursor(LOWER_DIVIDING_LINE_X_POS + 2, RUNIC_LINE_POS + 1);
