@@ -85,7 +85,6 @@ item_t *item_spawn(void)
   {
     case I_potion:
       spawned_item->description = strdup("potion ");
-      spawned_item->use = CALC_RAND(1,0) ? health_up_by_10 : health_up_by_5;
       spawned_item->spec_attr = malloc(sizeof(potion_t));
       char *color = NULL;
       switch(CALC_RAND(COLOR_COUNT-1, 0))
@@ -101,7 +100,15 @@ item_t *item_spawn(void)
         case TRANSPARENT: color = strdup("transparent ");
           break;
       }
-      ((potion_t *)spawned_item->spec_attr)->color = color; 
+      ((potion_t *)spawned_item->spec_attr)->color = color;
+      for(item_t *it = item_get_list(); it; it = it->next){
+        if(!strcmp(color, ((potion_t *)it->spec_attr)->color)){
+          spawned_item->use = it->use;
+          break;
+        }
+      }
+      if(spawned_item->use == NULL)
+        spawned_item->use = CALC_RAND(1,0) ? health_up_by_10 : health_up_by_5;
       break;
     default: nidebug("Invalid item type!"); 
   }

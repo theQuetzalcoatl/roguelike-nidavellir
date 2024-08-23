@@ -211,7 +211,7 @@ room_t *room_create_rooms(void)
     rooms[n].width = CALC_RAND(MAX_ROOM_WIDTH, MIN_ROOM_WIDTH);
     rooms[n].height = CALC_RAND(MAX_ROOM_HEIGHT, MIN_ROOM_HEIGHT);
 
-    rooms[n].pos.x += CALC_RAND(cell_width - rooms[n].width - BORDER , 0);
+    rooms[n].pos.x += CALC_RAND(cell_width - rooms[n].width - BORDER-1 , 0);
     rooms[n].pos.y += CALC_RAND(cell_height - rooms[n].height - BORDER, 0);
   }
 
