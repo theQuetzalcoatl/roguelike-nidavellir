@@ -28,14 +28,14 @@ struct item_t; /* forward declaring item to be able to use it */
 
 typedef struct mob_t
 {
+  struct item_t *inventory[INVENTORY_HEIGHT*INVENTORY_WIDTH]; /* NOTE: compiler doesn't accetp simple item_t, fix it */
+  struct mob_t *next;
   point_t pos;
+  point_t last_seen;
   char symbol;
   uint8_t stands_on;
   int8_t health;
   uint8_t level;
-  point_t last_seen;
-	struct item_t *inventory[INVENTORY_HEIGHT*INVENTORY_WIDTH]; /* NOTE: compiler doesn't accetp simple item_t, fix it */
-  struct mob_t *next;
 }mob_t;
 
 #define PLAYER_MAX_HEALTH (100u)

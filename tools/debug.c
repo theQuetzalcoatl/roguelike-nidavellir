@@ -44,7 +44,7 @@ void nidebug(const char *s, ...)
 void debug_display_object_stats(const room_t *r, const item_t *i, const mob_t *m)
 {
 	if(r){
-		for(int i = room_get_num_of_rooms() - 1; i >= 0; --i){
+		for(int i = room_get_room_count() - 1; i >= 0; --i){
 	    term_move_cursor(r[i].pos.x, r[i].pos.y - 1);
 	    printf("R%i:%iR", r[i].pos.x, r[i].pos.y);
 		}

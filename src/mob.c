@@ -318,7 +318,7 @@ mob_t *mob_summon(const mob_id_t id)
     head->next = NULL;
   }
 
-	memset(&summoned_creature->inventory, (int)NULL, INVENTORY_WIDTH*INVENTORY_HEIGHT*sizeof(summoned_creature->inventory[0]));
+	memset(&summoned_creature->inventory, 0, INVENTORY_WIDTH*INVENTORY_HEIGHT*sizeof(summoned_creature->inventory[0]));
 
   return summoned_creature;
 }
@@ -383,10 +383,10 @@ static point_t get_random_pos(void)
   const room_t *room;
   uint16_t selected_room, tries;
   point_t mobp;
-  if(room_get_rooms() == NULL || room_get_num_of_rooms() == 0) return (point_t){.x=0, .y=0};
+  if(room_get_rooms() == NULL || room_get_room_count() == 0) return (point_t){.x=0, .y=0};
   else{
     for(tries = 10; tries; --tries){
-      selected_room = CALC_RAND(room_get_num_of_rooms()-1, 1); // room[0] is where the player starts, it shall be safe originally, thats why it is [numofroom:1]
+      selected_room = CALC_RAND(room_get_room_count()-1, 1); // room[0] is where the player starts, it shall be safe originally, thats why it is [numofroom:1]
       room = room_get_rooms() + selected_room;
 
       mobp.x = room->pos.x;

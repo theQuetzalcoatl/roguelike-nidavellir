@@ -8,7 +8,6 @@
 #include "terminal.h"
 #include "cutscenes.h"
 #include "mob.h"
-
 #include "room.h"
 #include "corridor.h"
 #include "input.h"
@@ -53,7 +52,7 @@ int main(void)
   room_t *r = NULL;
   uint64_t turns = 0, prev_event_num = 0;
   input_code_t input = NO_ARROW;
-  bool stats_displayed = false;
+  bool objects_displayed= false;
   uint64_t rested_turns = 0;
 
   check_window_size();
@@ -89,11 +88,11 @@ int main(void)
   while(game_is_running){
     input = get_keypress();
 
-    if(stats_displayed == true){
+    if(objects_displayed== true){
       for (uint16_t row = 0; row < RUNIC_LINE_POS; ++row){
         for (uint16_t col = 0; col < TERMINAL_WIDTH - 2; ++col) term_putchar_xy(term_getchar_xy(col, row), col, row);
       }
-      stats_displayed = false;
+      objects_displayed= false;
     }
 
     switch(input)
@@ -106,7 +105,7 @@ int main(void)
       case 'Q':
         game_is_running = false;
         continue;
-      case '.': /* rest */
+      case '.': 
         ++rested_turns;
         if(rested_turns % 10 == 0 ){ /* NOTE: refactor */
           player->health += 5u;
@@ -121,7 +120,7 @@ int main(void)
         continue;
       case 'D':
         debug_display_object_stats(room_get_rooms(), item_get_list(), mob_get_mobs());
-        stats_displayed = true;
+        objects_displayed= true;
         continue;
 			case 'i':
 			case 'd':

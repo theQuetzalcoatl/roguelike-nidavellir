@@ -24,10 +24,10 @@
 #define HORIZONTAL (0u)
 #define VERTICAL   (1u)
 
-static uint8_t num_of_rooms = 0;
+static uint8_t room_count = 0;
 static room_t *rooms = NULL;
 
-static uint8_t num_of_corridors = 0;
+static uint8_t corridor_count = 0;
 static corridor_t *corridors = NULL;
 
 
@@ -38,9 +38,9 @@ typedef struct
 }cell_t;
 
 
-uint8_t room_get_num_of_rooms(void) { return num_of_rooms; }
+uint8_t room_get_room_count(void) { return room_count; }
 room_t *room_get_rooms(void) { return rooms; }
-uint8_t room_get_num_of_corridors(void) { return num_of_corridors; }
+uint8_t room_get_corridor_count(void) { return corridor_count; }
 corridor_t *room_get_corridors(void) { return corridors; }
 
 
@@ -61,7 +61,7 @@ corridor_t *room_find_corridor_with_player(const point_t player)
 
   /* NOTE: what if two corridors cross each other? */
   /* is player in the square created by the two endpoints? */
-  for(int8_t n = room_get_num_of_corridors() - 1; n >= 0; --n){
+  for(int8_t n = room_get_corridor_count() - 1; n >= 0; --n){
     point_t upper_left = (point_t){.x = (c[n].line[0].start.x > c[n].line[2].end.x) ? c[n].line[2].end.x : c[n].line[0].start.x,
                                 .y = (c[n].line[0].start.y > c[n].line[2].end.y) ? c[n].line[2].end.y : c[n].line[0].start.y};
     point_t lower_right = (point_t){.x = (c[n].line[0].start.x < c[n].line[2].end.x) ? c[n].line[2].end.x : c[n].line[0].start.x,
@@ -100,12 +100,12 @@ void room_draw_corridor_piece(const corridor_t *c, const point_t player)
 
 static void make_corridor(const point_t starting, const point_t ending, const uint8_t initial_orientation)
 {
-  corridors = realloc(corridors, (num_of_corridors + 1)*(sizeof(corridor_t)));
+  corridors = realloc(corridors, (corridor_count + 1)*(sizeof(corridor_t)));
   if(!corridors){
-    nidebug("Could not allocate memory for another corridor! Corridor num:%d", num_of_corridors);
+    nidebug("Could not allocate memory for another corridor! Corridor num:%d", corridor_count);
     exit(1);
   }
-  else ++num_of_corridors;
+  else ++corridor_count;
 
   int8_t y_dir = (starting.y > ending.y) ? -1 : 1;
   int8_t x_dir = (starting.x > ending.x) ? -1 : 1;
@@ -144,7 +144,7 @@ static void make_corridor(const point_t starting, const point_t ending, const ui
     nidebug("Invalid initial orientation received during corridor making!");
     exit(1);
   }
-  corridors[num_of_corridors - 1] = newest_corridor;
+  corridors[corridor_count - 1] = newest_corridor;
 }
 
 static int get_neighbouring_empty_cell(cell_t *cells, uint8_t prev_cell_index)
@@ -178,8 +178,8 @@ static int get_neighbouring_empty_cell(cell_t *cells, uint8_t prev_cell_index)
 
 room_t *room_create_rooms(void)
 {
-  num_of_rooms = CALC_RAND(MAX_ROOMS_PER_LEVEL, MIN_ROOMS_PER_LEVEL);
-  rooms = malloc(num_of_rooms*sizeof(room_t));
+  room_count = CALC_RAND(MAX_ROOMS_PER_LEVEL, MIN_ROOMS_PER_LEVEL);
+  rooms = malloc(room_count*sizeof(room_t));
 
   if(rooms == NULL){ /* NOTE: should we decrease the room number until MIN in order to try avoiding a crash? */
     nidebug("Could not allocate enough memory for rooms in %s:%i.\n", __FILE__, __LINE__);
@@ -194,7 +194,7 @@ room_t *room_create_rooms(void)
       [3] = {.pos.x = 0*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL}, [4] = {.pos.x = 1*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL}, [5] = {.pos.x = 2*cell_width + BORDER, .pos.y = 1*cell_height + BORDER, .room=NULL},
       [6] = {.pos.x = 0*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}, [7] = {.pos.x = 1*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}, [8] = {.pos.x = 2*cell_width + BORDER, .pos.y = 2*cell_height + BORDER, .room=NULL}
                                                   };
-  for(uint8_t n = 0; n < num_of_rooms; ++n){
+  for(uint8_t n = 0; n < room_count; ++n){
     if(n == 0){
       int starting_cell_index = CALC_RAND(MAX_ROOMS_PER_LEVEL-1, 0);
       rooms[n].pos = window_cell[starting_cell_index].pos;
@@ -216,7 +216,7 @@ room_t *room_create_rooms(void)
   }
 
   /* door+corridor generation */
-  for(uint8_t n = 0; n < num_of_rooms; ++n){
+  for(uint8_t n = 0; n < room_count; ++n){
     int8_t cell_index = (rooms + n)->in_cell;
 
     int8_t adjacent_cell = CELL_ABOVE(cell_index);
@@ -287,7 +287,7 @@ room_t *room_create_rooms(void)
 room_t *room_find(const point_t p)
 {
   room_t *r = room_get_rooms();
-  int8_t n = room_get_num_of_rooms() - 1;
+  int8_t n = room_get_room_count() - 1;
 
   while(n){ /* 0 not included because that's the room where the player starts, therefore already drawn */
     if((r + n)->left_door.pos.x == p.x && (r + n)->left_door.pos.y == p.y) break;

@@ -38,7 +38,7 @@ typedef struct corridor_t
 }corridor_t;
 
 extern uint8_t room_draw(const room_t r);
-extern uint8_t room_get_num_of_rooms(void);
+extern uint8_t room_get_room_count(void);
 extern room_t *room_create_rooms(void);
 extern room_t *room_get_rooms(void);
 extern room_t *room_find(const point_t p);

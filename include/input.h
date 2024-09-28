@@ -19,3 +19,4 @@ typedef uint32_t input_code_t;
 extern input_code_t get_keypress(void);
 
 #endif /* _INPUT_ */
+

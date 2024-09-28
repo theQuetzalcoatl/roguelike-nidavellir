@@ -34,7 +34,7 @@ item_t *item_spawn(void)
   *spawned_item = (item_t){.next = NULL, .pos.x = 0, .pos.y = 0, .type = I_potion};
 
   room_t *r = room_get_rooms();
-  uint8_t random_room = CALC_RAND(room_get_num_of_rooms()-1, 0);
+  uint8_t random_room = CALC_RAND(room_get_room_count()-1, 0);
 
   spawned_item->stands_on = random_room != 0 ? EMPTY_SPACE: ROOM_FLOOR; /* there can be item in the starting room, which is already drawn */
   while(tries < 4){

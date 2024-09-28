@@ -22,3 +22,4 @@ input_code_t get_keypress(void)
     return 0;
   }
 }
+

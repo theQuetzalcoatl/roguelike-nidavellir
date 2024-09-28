@@ -21,13 +21,13 @@ struct mob_t; /* forward declaring mob to be able to use it */
 
 typedef struct item_t
 {
-  point_t pos;
-  uint8_t stands_on;
-  uint16_t type;
-  char *description;
-  void *spec_attr;
   void (*use)(struct item_t *item);
+  char *description;
   struct item_t *next;
+  void *spec_attr;
+  point_t pos;
+  uint16_t type;
+  uint8_t stands_on;
 }item_t;
 
 typedef struct
