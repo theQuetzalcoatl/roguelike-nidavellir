@@ -89,11 +89,9 @@ static void attack(mob_t *attacked_mob)
 {
   /* TODO: refactor hardcoded stuff */
   int8_t damage = CALC_RAND(20,0);
-  nidebug("Attacked: dmg:%i, char:%c, durability:%i, health:%i", damage, attacked_mob->symbol, (SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability), attacked_mob->health);
   if(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->type == GAMBISON){
     if(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability) damage -= 5;
       if(damage < 0) damage = 0;
-      nidebug("Attacked: dmg:%i, char:%c, durability:%i, health:%i", damage, attacked_mob->symbol, (SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability), attacked_mob->health);
       attacked_mob->health -= damage;
       if(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability) --(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability);
   }
@@ -254,7 +252,6 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
       if(mob == player){
         for(mob_t *hostile_mob = mob_get_mobs(); hostile_mob; hostile_mob = hostile_mob->next){
           if(hostile_mob->pos.x == (dx + player->pos.x) && hostile_mob->pos.y == (dy + player->pos.y)){
-            nidebug("[%c] health: %i", hostile_mob->symbol, hostile_mob->health);
             attack(hostile_mob);
             event_log_add("You chopped a piece out of *the mob*");
             break;
@@ -421,7 +418,6 @@ static void summon_player(mob_t *player)
     *player = (mob_t){.pos.x=rooms[STARTING].pos.x+1, .pos.y=rooms[STARTING].pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health=100, .level=1, .next=NULL,
                       .gear.lhand = NULL, .gear.rhand = NULL, .gear.armor = item_spawn(I_armor) };
     player->gear.armor->pos.x = player->gear.armor->pos.y = 0;
-    nidebug("players's armor type:%i", SPEC_ATTR(player->gear.armor, armor_t)->type);
     summoned = true;
   }
   else{

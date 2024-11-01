@@ -114,7 +114,6 @@ item_t *item_spawn(int type)
     case I_armor:
       spawned_item->spec_attr = malloc(sizeof(armor_t)); /* TODO: free it in item_remove  */
       *SPEC_ATTR(spawned_item, armor_t) = (armor_t){.type = GAMBISON, .durability = 10};
-      nidebug("item type: %i", SPEC_ATTR(spawned_item, armor_t)->type);
       break;
     default: nidebug("Invalid item type!"); 
   }
