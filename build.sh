@@ -2,7 +2,10 @@
 
 function main()
 {
-  local debug=0;
+
+#set -x
+
+  local debug=1;
 
   local game_name="nidavellir";
   local includes="$PWD/include/";
@@ -10,7 +13,7 @@ function main()
 
   local copts='-funsigned-char';
   local warnings="-Wall -Wextra -Wmissing-include-dirs -Wdouble-promotion -Wignored-qualifiers -Wswitch-default -Wuninitialized";
-  local additional_warnings="-Wconversion"; 
+  local additional_warnings="-Wconversion -fanalyzer"; 
 	local optimization='-O2';
 	local debug_lvl='-g0';
 

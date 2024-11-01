@@ -87,8 +87,17 @@ mob_t *mob_get_player(void) { return player; }
 
 static void attack(mob_t *attacked_mob)
 {
+  /* TODO: refactor hardcoded stuff */
   int8_t damage = CALC_RAND(20,0);
-  attacked_mob->health -= damage;
+  nidebug("Attacked: dmg:%i, char:%c, durability:%i, health:%i", damage, attacked_mob->symbol, (SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability), attacked_mob->health);
+  if(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->type == GAMBISON){
+    if(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability) damage -= 5;
+      if(damage < 0) damage = 0;
+      nidebug("Attacked: dmg:%i, char:%c, durability:%i, health:%i", damage, attacked_mob->symbol, (SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability), attacked_mob->health);
+      attacked_mob->health -= damage;
+      if(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability) --(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability);
+  }
+
   if(attacked_mob->health <= 0){
     attacked_mob->health = 0;
     if(attacked_mob == player) game_is_running = false;
@@ -97,23 +106,16 @@ static void attack(mob_t *attacked_mob)
 }
 
 
-static void attack_player(void)
-{
-  attack(player);
-}
-
-
 static void place_into_inventory(mob_t *m, item_t *i)
 {
+  char event_string[200] = "You picked up a ";
 	for(uint8_t slot = 0; slot < INVENTORY_SIZE; ++slot){
 		if(m->inventory[slot] == INV_EMPTY){
 			m->inventory[slot] = i;
 			item_hide(*i);
 			i->stands_on = EMPTY_SPACE; /* (0;0) is definitely empty space */ 
-			i->pos.x = 0;
-			i->pos.y = 0; /* NOTE: change it to a define UNKONW place or something */
-      char event_string[200] = "You picked up a ";
-      strcat(event_string, ((potion_t*)i->spec_attr)->color);
+			i->pos.x = i->pos.y = 0; /* NOTE: change it to a define UNKONW place or something */
+      strcat(event_string, SPEC_ATTR(i, potion_t)->color);
       strcat(event_string, i->description);
 			event_log_add(event_string);
 			return;
@@ -135,7 +137,7 @@ void mob_open_player_inventory(const uint8_t action)
 	mob_t *p = mob_get_player();
 
 	for(uint8_t slot = 0; slot < INVENTORY_SIZE; ++slot){
-		if(p->inventory[slot] != INV_EMPTY) printf(" %d %s%s\n", slot, ((potion_t *)(p->inventory[slot]->spec_attr))->color, p->inventory[slot]->description); /* NOTE: this is temporary */
+		if(p->inventory[slot] != INV_EMPTY) printf(" %d %s%s\n", slot, SPEC_ATTR(p->inventory[slot], potion_t)->color, p->inventory[slot]->description); /* NOTE: this is temporary */
 		else printf(" x empty\n");
 	}
 
@@ -357,7 +359,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
     }
     else{
       mob_show(*mob);
-      attack_player();
+      attack(player);
       event_log_add("*the mob* cut you badly!");
     }
   }
@@ -416,14 +418,14 @@ static void summon_player(mob_t *player)
   static bool summoned = false;
   room_t *rooms = room_get_rooms();
   if(summoned == false){
-    if(room_get_rooms() != NULL)
-      *player = (mob_t){.pos.x=rooms[STARTING].pos.x+1, .pos.y=rooms[STARTING].pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health=100, .level=1, .next=NULL};
-    else
-      *player = (mob_t){.pos.x=1, .pos.y=1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health=100, .level=1, .next=NULL, .last_seen=(point_t){.x=0, .y=0} };
+    *player = (mob_t){.pos.x=rooms[STARTING].pos.x+1, .pos.y=rooms[STARTING].pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health=100, .level=1, .next=NULL,
+                      .gear.lhand = NULL, .gear.rhand = NULL, .gear.armor = item_spawn(I_armor) };
+    player->gear.armor->pos.x = player->gear.armor->pos.y = 0;
+    nidebug("players's armor type:%i", SPEC_ATTR(player->gear.armor, armor_t)->type);
     summoned = true;
   }
   else{
-    nidebug("Player could not be summoned after it was already so\n");
+    nidebug("Player could not be summoned after it was already\n");
     free(player);
     player = NULL;
   }
@@ -431,10 +433,14 @@ static void summon_player(mob_t *player)
 
 static void summon_goblin(mob_t *goblin)
 {
-  *goblin = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_GOBLIN, .health=15, .level=1, .next=NULL, .last_seen=(point_t){.x=0, .y=0}};
+  *goblin = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_GOBLIN, .health=15, .level=1, .next=NULL, .last_seen=(point_t){.x=0, .y=0},
+                    .gear.lhand = NULL, .gear.rhand = NULL, .gear.armor = item_spawn(I_armor) };
+  goblin->gear.armor->pos.x = goblin->gear.armor->pos.y = 0;
 }
 
 static void summon_draugr(mob_t *draugr)
 {
-  *draugr = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_DRAUGR, .health=20, .level=10, .next=NULL, .last_seen=(point_t){.x=0, .y=0}}; 
+  *draugr = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_DRAUGR, .health=20, .level=10, .next=NULL, .last_seen=(point_t){.x=0, .y=0},
+                    .gear.lhand = NULL, .gear.rhand = NULL, .gear.armor = item_spawn(I_armor) };
+  draugr->gear.armor->pos.x = draugr->gear.armor->pos.y = 0;
 }

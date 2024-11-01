@@ -10,11 +10,13 @@
 #define DROP_ITEM (4u)
 #define USE_ITEM  (5u)
 #define DROPPED true
+#define SPEC_ATTR(p_item, type) ((type *)p_item->spec_attr)
 
 enum ITEMS
 {
   I_potion,
-  NUM_OF_ITEMS
+  I_armor,
+  ITEMS_COUNT
 };
 
 struct mob_t; /* forward declaring mob to be able to use it */
@@ -22,6 +24,7 @@ struct mob_t; /* forward declaring mob to be able to use it */
 typedef struct item_t
 {
   void (*use)(struct item_t *item);
+  void (*enchantment)(struct item_t *item);
   char *description;
   struct item_t *next;
   void *spec_attr;
@@ -29,6 +32,8 @@ typedef struct item_t
   uint16_t type;
   uint8_t stands_on;
 }item_t;
+
+/* -------- POTIONS -------- */
 
 typedef struct
 {
@@ -46,7 +51,24 @@ enum POTION_COLOR
 };
 
 
-extern item_t *item_spawn(void);
+/* -------- ARMOR -------- */
+
+typedef struct
+{
+  uint8_t type;
+  int8_t durability;
+}armor_t;
+
+enum ARMOR_TYPE
+{
+  CLOTH,
+  GAMBISON,
+  MAIL,
+  PLATE,
+  ARMOR_TYPE_COUNT
+};
+
+extern item_t *item_spawn(int type);
 extern item_t *item_get_list(void);
 extern void item_hide(item_t it);
 extern void item_show(item_t it);

@@ -8,13 +8,8 @@
 #include "input.h"
 
 #define ID_PLAYER '@'
-#define ID_RAT '~'
-#define ID_BERSERKR 'B'
-#define ID_ODIN 'O'
 #define ID_GOBLIN 'G'
 #define ID_DRAUGR 'D'
-#define ID_TROLL 't'
-#define ID_WITCH 'W'
 
 #define INVENTORY_WIDTH  (3u)
 #define INVENTORY_HEIGHT (3u)
@@ -28,8 +23,11 @@ struct item_t; /* forward declaring item to be able to use it */
 
 typedef struct mob_t
 {
-  struct item_t *inventory[INVENTORY_HEIGHT*INVENTORY_WIDTH]; /* NOTE: compiler doesn't accetp simple item_t, fix it */
+  struct item_t *inventory[INVENTORY_SIZE]; /* NOTE: compiler doesn't accept simple item_t, fix it */
   struct mob_t *next;
+  struct{
+    struct item_t *lhand, *rhand, *armor;
+  }gear;
   point_t pos;
   point_t last_seen;
   char symbol;

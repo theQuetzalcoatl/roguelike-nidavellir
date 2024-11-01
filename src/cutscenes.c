@@ -30,7 +30,7 @@ void cutscene_intro(void)
   fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL) | O_NONBLOCK); /* set input to non-blocking to be able to skip cutscene */
   fflush(stdin);
 
-  for(uint8_t line = 0; sizeof(latin_havamal_16)/sizeof(latin_havamal_16[0]) > line; ++line){
+  for(uint8_t line = 0; ELEMENT_COUNT(latin_havamal_16) > line; ++line){
     term_move_cursor(text.x, text.y + line);
     printf("%s", runic_havamal_16[line]);
   }

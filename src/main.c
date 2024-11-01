@@ -63,15 +63,15 @@ int main(void)
   debug_init();
 
   void (*exit_funcs[])(void) = {term_restore_original, debug_deinit, mob_free_mobs, item_free_items};
-  for(uint32_t i = 0; i < sizeof(exit_funcs)/sizeof(exit_funcs[0]); ++i) atexit(exit_funcs[i]);
+  for(uint32_t i = 0; i < ELEMENT_COUNT(exit_funcs); ++i) atexit(exit_funcs[i]);
 
   cutscene_intro();
   r = room_create_rooms();
   room_draw(r[STARTING]);
 
-  int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN, ID_DRAUGR, ID_BERSERKR};
-  for(uint32_t i = 0; i < sizeof(summoned_mobs)/sizeof(summoned_mobs[0]); ++i) mob_summon(summoned_mobs[i]); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
-  for(int i = 20; i; --i) item_spawn();
+  int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN, ID_DRAUGR};
+  for(uint32_t i = 0; i < ELEMENT_COUNT(summoned_mobs); ++i) mob_summon(summoned_mobs[i]); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
+  for(int i = 20; i; --i) item_spawn(I_potion);
 
   player = mob_get_player();
   display_runic_lines();
@@ -109,7 +109,7 @@ int main(void)
         ++rested_turns;
         if(rested_turns % 10 == 0 ){ /* NOTE: refactor */
           player->health += 5u;
-          player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly */
+          player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreasonably complicatedly */
         }
         break;
       case '?':
@@ -143,7 +143,6 @@ int main(void)
     } 
 
     draw();
-
     ++turns;
   }
 
@@ -151,6 +150,7 @@ int main(void)
   if(!player->health) cutscene_dead();
   free(r);
   free(room_get_corridors());
+  /* NOTE: free mobs as well  */
 
   return 0;
 }

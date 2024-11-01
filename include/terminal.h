@@ -12,6 +12,7 @@ typedef struct point_t
 }point_t;
 
 #define CALC_RAND(max, min) (rand()%(max - min + 1) + min) // [max:min]
+#define ELEMENT_COUNT(array) (sizeof(array)/sizeof(array[0]))
 
 
 extern void term_setup(void);

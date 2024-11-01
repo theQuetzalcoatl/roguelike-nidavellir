@@ -22,7 +22,7 @@ static bool is_near_door(uint16_t x, uint16_t y)
   else return false;
 }
 
-item_t *item_spawn(void)
+item_t *item_spawn(int type)
 {
   uint8_t tries = 0;
   item_t *spawned_item = malloc(sizeof(item_t));
@@ -31,7 +31,7 @@ item_t *item_spawn(void)
     return NULL;
   }
 
-  *spawned_item = (item_t){.next = NULL, .pos.x = 0, .pos.y = 0, .type = I_potion};
+  *spawned_item = (item_t){.next = NULL, .pos.x = 0, .pos.y = 0, .type = type};
 
   room_t *r = room_get_rooms();
   uint8_t random_room = CALC_RAND(room_get_room_count()-1, 0);
@@ -99,16 +99,22 @@ item_t *item_spawn(void)
           break;
         case TRANSPARENT: color = strdup("transparent ");
           break;
+        default: color = strdup("COLOR");
       }
-      ((potion_t *)spawned_item->spec_attr)->color = color;
+      SPEC_ATTR(spawned_item, potion_t)->color = color;
       for(item_t *it = item_get_list(); it; it = it->next){
-        if(!strcmp(color, ((potion_t *)it->spec_attr)->color)){
+        if(it->type == I_potion && !strcmp(color, SPEC_ATTR(spawned_item, potion_t)->color)){
           spawned_item->use = it->use;
           break;
         }
       }
       if(spawned_item->use == NULL)
         spawned_item->use = CALC_RAND(1,0) ? health_up_by_10 : health_up_by_5;
+      break;
+    case I_armor:
+      spawned_item->spec_attr = malloc(sizeof(armor_t)); /* TODO: free it in item_remove  */
+      *SPEC_ATTR(spawned_item, armor_t) = (armor_t){.type = GAMBISON, .durability = 10};
+      nidebug("item type: %i", SPEC_ATTR(spawned_item, armor_t)->type);
       break;
     default: nidebug("Invalid item type!"); 
   }
@@ -142,7 +148,8 @@ static void destroy_item(item_t *i)
     search_it->next = i->next;
   }
   item_hide(*i);
-  free(((potion_t*)i->spec_attr)->color);
+  /* TODO: handle non potion freeing  */
+  free(SPEC_ATTR(i, potion_t)->color);
   free(i->spec_attr);
   free(i);
 }

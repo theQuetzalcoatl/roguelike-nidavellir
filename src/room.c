@@ -150,9 +150,9 @@ static void make_corridor(const point_t starting, const point_t ending, const ui
 static int get_neighbouring_empty_cell(cell_t *cells, uint8_t prev_cell_index)
 {
   uint16_t directions[4] = {0,1,2,3};
-  stir_elements_randomly(sizeof(directions)/sizeof(directions[0]), directions);
+  stir_elements_randomly(ELEMENT_COUNT(directions), directions);
 
-  for(uint8_t tries = sizeof(directions)/sizeof(directions[0]); tries; --tries){
+  for(uint8_t tries = ELEMENT_COUNT(directions); tries; --tries){
     switch(directions[tries])
     {
       case 0: /* UP */
