@@ -84,20 +84,20 @@ item_t *item_spawn(int type)
   switch(spawned_item->type)
   {
     case I_potion:
-      spawned_item->description = strdup("potion ");
+      spawned_item->description = strdup("potion");
       spawned_item->spec_attr = malloc(sizeof(potion_t));
       char *color = NULL;
       switch(CALC_RAND(COLOR_COUNT-1, 0))
       {
-        case RED: color = strdup("red ");
+        case RED: color = strdup("red");
           break;
-        case BLUE: color = strdup("blue ");
+        case BLUE: color = strdup("blue");
           break;
-        case GREEN: color = strdup("green ");
+        case GREEN: color = strdup("green");
           break;
-        case PURPLE: color = strdup("purple ");
+        case PURPLE: color = strdup("purple");
           break;
-        case TRANSPARENT: color = strdup("transparent ");
+        case TRANSPARENT: color = strdup("transparent");
           break;
         default: color = strdup("COLOR");
       }
@@ -112,6 +112,7 @@ item_t *item_spawn(int type)
         spawned_item->use = CALC_RAND(1,0) ? health_up_by_10 : health_up_by_5;
       break;
     case I_armor:
+      spawned_item->description = strdup("Gambison ");
       spawned_item->spec_attr = malloc(sizeof(armor_t)); /* TODO: free it in item_remove  */
       *SPEC_ATTR(spawned_item, armor_t) = (armor_t){.type = GAMBISON, .durability = 10};
       break;

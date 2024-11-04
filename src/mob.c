@@ -106,15 +106,14 @@ static void attack(mob_t *attacked_mob)
 
 static void place_into_inventory(mob_t *m, item_t *i)
 {
-  char event_string[200] = "You picked up a ";
+  char event_string[200];
 	for(uint8_t slot = 0; slot < INVENTORY_SIZE; ++slot){
 		if(m->inventory[slot] == INV_EMPTY){
 			m->inventory[slot] = i;
 			item_hide(*i);
 			i->stands_on = EMPTY_SPACE; /* (0;0) is definitely empty space */ 
 			i->pos.x = i->pos.y = 0; /* NOTE: change it to a define UNKONW place or something */
-      strcat(event_string, SPEC_ATTR(i, potion_t)->color);
-      strcat(event_string, i->description);
+      snprintf(event_string, 50, "You picked up a %s %s", SPEC_ATTR(i, potion_t)->color, i->description);
 			event_log_add(event_string);
 			return;
 		}
@@ -135,7 +134,7 @@ void mob_open_player_inventory(const uint8_t action)
 	mob_t *p = mob_get_player();
 
 	for(uint8_t slot = 0; slot < INVENTORY_SIZE; ++slot){
-		if(p->inventory[slot] != INV_EMPTY) printf(" %d %s%s\n", slot, SPEC_ATTR(p->inventory[slot], potion_t)->color, p->inventory[slot]->description); /* NOTE: this is temporary */
+		if(p->inventory[slot] != INV_EMPTY) printf(" %d %s %s\n", slot, SPEC_ATTR(p->inventory[slot], potion_t)->color, p->inventory[slot]->description); /* NOTE: this is temporary */
 		else printf(" x empty\n");
 	}
 

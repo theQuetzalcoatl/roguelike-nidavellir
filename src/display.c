@@ -40,6 +40,8 @@ void display_player_stats(const mob_t player, const uint64_t turns)
   printf("level: %d    ", player.level);
   term_move_cursor(6, RUNIC_LINE_POS + 4);
   printf("Turns: %ld", turns);
+  term_move_cursor(6, RUNIC_LINE_POS + 5);
+  printf("Armor: %s(%i/10)", player.gear.armor->description, SPEC_ATTR(player.gear.armor, armor_t)->durability);
 }
 
 
