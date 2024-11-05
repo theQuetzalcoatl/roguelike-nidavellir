@@ -41,7 +41,8 @@ void display_player_stats(const mob_t player, const uint64_t turns)
   term_move_cursor(6, RUNIC_LINE_POS + 4);
   printf("Turns: %ld", turns);
   term_move_cursor(6, RUNIC_LINE_POS + 5);
-  printf("Armor: %s(%i/10)", player.gear.armor->description, SPEC_ATTR(player.gear.armor, armor_t)->durability);
+  if(HAS_ARMOR(&player)) printf("Armor: %s(%i/10)", player.gear.armor->description, SPEC_ATTR(player.gear.armor, armor_t)->durability);
+  else printf("Armor: None");
 }
 
 

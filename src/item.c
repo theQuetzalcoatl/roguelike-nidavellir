@@ -9,7 +9,6 @@
 
 static void health_up_by_10(item_t *item);
 static void health_up_by_5(item_t *item);
-static void destroy_item(item_t *i);
 
 static item_t *items_head = EMPTY;
 
@@ -122,6 +121,7 @@ item_t *item_spawn(int type)
   return spawned_item;
 }
 
+
 void item_free_items(void)
 {
   item_t *item = NULL;
@@ -138,7 +138,7 @@ item_t *item_get_list(void)
   return items_head;
 }
 
-static void destroy_item(item_t *i)
+void item_destroy(item_t *i)
 {
   item_t *search_it = items_head;
 
@@ -148,9 +148,10 @@ static void destroy_item(item_t *i)
     search_it->next = i->next;
   }
   item_hide(*i);
-  /* TODO: handle non potion freeing  */
-  free(SPEC_ATTR(i, potion_t)->color);
+  if(i->type == I_potion) free(SPEC_ATTR(i, potion_t)->color);
+  else if(i->type == I_armor) {/* Notinh to do yet */}
   free(i->spec_attr);
+  free(i->description);
   free(i);
 }
 
@@ -183,7 +184,7 @@ static void health_up_by_10(item_t *item)
   mob_t *player =  mob_get_player();
   player->health += 10u;
   player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly */
-  destroy_item(item);
+  item_destroy(item);
 }
 
 
@@ -192,5 +193,5 @@ static void health_up_by_5(item_t *item)
   mob_t *player =  mob_get_player();
   player->health += 5u;
   player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly */
-  destroy_item(item);
+  item_destroy(item);
 }

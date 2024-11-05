@@ -89,11 +89,20 @@ static void attack(mob_t *attacked_mob)
 {
   /* TODO: refactor hardcoded stuff */
   int8_t damage = CALC_RAND(20,0);
-  if(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->type == GAMBISON){
-    if(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability) damage -= 5;
-      if(damage < 0) damage = 0;
-      attacked_mob->health -= damage;
-      if(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability) --(SPEC_ATTR(attacked_mob->gear.armor, armor_t)->durability);
+  item_t *armor = attacked_mob->gear.armor;
+
+  if(HAS_ARMOR(attacked_mob)){
+    if(SPEC_ATTR(armor, armor_t)->durability) damage -= 5*SPEC_ATTR(armor, armor_t)->type;
+  }
+  if(damage < 0) damage = 0;
+  attacked_mob->health -= damage;
+  if(HAS_ARMOR(attacked_mob) && SPEC_ATTR(armor, armor_t)->durability){
+    --(SPEC_ATTR(armor, armor_t)->durability);
+    
+    if(SPEC_ATTR(armor, armor_t)->durability == 0){
+      item_destroy(armor);
+      attacked_mob->gear.armor = NULL;
+    }
   }
 
   if(attacked_mob->health <= 0){
@@ -205,7 +214,7 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
     case '.':
       return;
     default:
-      nidebug("invalid option for stepping! %s:%d", __FILE__, __LINE__);
+      nidebug("invalid option for stepping! %s:%d", __FILE__, __LINE__); /* TODO: using an item from inventory triggers this, handle it  */
   }
 
   switch(obj_ahead)
@@ -357,6 +366,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
       mob_show(*mob);
       attack(player);
       event_log_add("*the mob* cut you badly!");
+      if(!HAS_ARMOR(player))nidebug("Player armor nincs");
     }
   }
 }

@@ -11,6 +11,7 @@
 #define USE_ITEM  (5u)
 #define DROPPED true
 #define SPEC_ATTR(p_item, type) ((type *)p_item->spec_attr)
+#define HAS_ARMOR(p_mob) (!!((p_mob)->gear.armor))
 
 enum ITEMS
 {
@@ -24,7 +25,6 @@ struct mob_t; /* forward declaring mob to be able to use it */
 typedef struct item_t
 {
   void (*use)(struct item_t *item);
-  void (*enchantment)(struct item_t *item);
   char *description;
   struct item_t *next;
   void *spec_attr;
@@ -74,5 +74,6 @@ extern void item_hide(item_t it);
 extern void item_show(item_t it);
 extern void item_free_items(void);
 extern void item_drop(item_t *i, struct mob_t *m);
+extern void item_destroy(item_t *i);
 
 #endif /* _ITEM_H */
