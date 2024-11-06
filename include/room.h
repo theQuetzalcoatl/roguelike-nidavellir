@@ -2,9 +2,8 @@
 #define _ROOM_
 
 #include <stdint.h>
-#include "terminal.h"
-
 #include <stdlib.h>
+#include "terminal.h"
 
 #define MAX_DOOR_NUM (4u)
 #define MIN_DOOR_NUM (1u)

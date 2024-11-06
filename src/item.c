@@ -12,13 +12,10 @@ static void health_up_by_5(item_t *item);
 
 static item_t *items_head = EMPTY;
 
-static bool is_near_door(uint16_t x, uint16_t y)
+static bool is_near_door(const point_t p, const room_t *r)
 {
-  if(ROOM_DOOR == term_getchar_xy(x-1, y)) return true;
-  else if(ROOM_DOOR == term_getchar_xy(x+1, y)) return true;
-  else if(ROOM_DOOR == term_getchar_xy(x, y-1)) return true;
-  else if(ROOM_DOOR == term_getchar_xy(x, y+1)) return true;
-  else return false;
+  return (p.x == r->right_door.pos.x-1 || p.x == r->left_door.pos.x+1 ||
+          p.y == r->upper_door.pos.y-1 || p.y == r->lower_door.pos.y+1);
 }
 
 item_t *item_spawn(int type)
@@ -60,7 +57,7 @@ item_t *item_spawn(int type)
           break;
 				}
 			}
-			if(!found && !is_near_door(random_x, random_y)){
+			if(!found && !is_near_door((point_t){.x=random_x, .y=random_y }, &r[random_room])){
 				spawned_item->pos = (point_t){.x=random_x, .y=random_y};
 				break;
 			}
@@ -102,16 +99,15 @@ item_t *item_spawn(int type)
       }
       SPEC_ATTR(spawned_item, potion_t)->color = color;
       for(item_t *it = item_get_list(); it; it = it->next){
-        if(it->type == I_potion && !strcmp(color, SPEC_ATTR(spawned_item, potion_t)->color)){
+        if(it->type == I_potion && !strcmp(color, SPEC_ATTR(it, potion_t)->color)){
           spawned_item->use = it->use;
           break;
         }
       }
-      if(spawned_item->use == NULL)
-        spawned_item->use = CALC_RAND(1,0) ? health_up_by_10 : health_up_by_5;
+      if(spawned_item->use == NULL)  spawned_item->use = rand()%100 > 50 ? health_up_by_10 : health_up_by_5;
       break;
     case I_armor:
-      spawned_item->description = strdup("Gambison ");
+      spawned_item->description = strdup("Gambison");
       spawned_item->spec_attr = malloc(sizeof(armor_t)); /* TODO: free it in item_remove  */
       *SPEC_ATTR(spawned_item, armor_t) = (armor_t){.type = GAMBISON, .durability = 10};
       break;
