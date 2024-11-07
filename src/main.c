@@ -15,7 +15,6 @@
 #include "debug.h"
 #include "item.h"
 
-extern void get_objects_from_custom_map(void);
 extern void event_log_add(const char *event);
 extern uint64_t event_get_entry_num(void);
 bool game_is_running = true;
