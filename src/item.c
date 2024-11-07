@@ -12,11 +12,13 @@ static void health_up_by_5(item_t *item);
 
 static item_t *items_head = EMPTY;
 
-static bool is_near_door(const point_t p, const room_t *r)
+static bool is_next_to_door(const point_t p, const room_t *r)
 {
-  return (p.x == r->right_door.pos.x-1 || p.x == r->left_door.pos.x+1 ||
-          p.y == r->upper_door.pos.y-1 || p.y == r->lower_door.pos.y+1);
-}
+  return ( ((p.x == r->right_door.pos.x-1) && (p.y == r->right_door.pos.y)) || 
+           ((p.x == r->left_door.pos.x+1) && (p.y == r->left_door.pos.y))   ||
+           ((p.y == r->upper_door.pos.y+1) && (p.x == r->upper_door.pos.x)) || 
+           ((p.y == r->lower_door.pos.y-1 && p.x == r->lower_door.pos.x)) );
+} /* TODO: refactor by simplifying the bool expression  */
 
 item_t *item_spawn(int type)
 {
@@ -29,39 +31,31 @@ item_t *item_spawn(int type)
 
   *spawned_item = (item_t){.next = NULL, .pos.x = 0, .pos.y = 0, .type = type};
 
+  /* finding a places to put the item at  */
   room_t *r = room_get_rooms();
   uint8_t random_room = CALC_RAND(room_get_room_count()-1, 0);
-
   spawned_item->stands_on = random_room != 0 ? EMPTY_SPACE: ROOM_FLOOR; /* there can be item in the starting room, which is already drawn */
+
   while(tries < 4){
-		bool found = false;
-    uint8_t random_x = CALC_RAND(r[random_room].width-2, 1) + r[random_room].pos.x;
-    uint8_t random_y = CALC_RAND(r[random_room].height-2, 1) + r[random_room].pos.y;
+    uint8_t x = CALC_RAND(r[random_room].width-2, 1) + r[random_room].pos.x;
+    uint8_t y = CALC_RAND(r[random_room].height-2, 1) + r[random_room].pos.y;
 
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next){
-      if(mob->pos.x == random_x && mob->pos.y == random_y){
-        ++tries;
-        continue;
-      }
+      if(mob->pos.x == x && mob->pos.y == y) goto no_luck;
     }
 
-    if(item_get_list() == EMPTY){
-			spawned_item->pos = (point_t){.x=random_x, .y=random_y};
-			break;
-		}
-		else{
-			for(item_t *i = item_get_list(); i; i = i->next){
-				if(i->pos.x == random_x && i->pos.y == random_y){
-					++tries;
-					found = true;
-          break;
-				}
-			}
-			if(!found && !is_near_door((point_t){.x=random_x, .y=random_y }, &r[random_room])){
-				spawned_item->pos = (point_t){.x=random_x, .y=random_y};
-				break;
-			}
-		}
+    for(item_t *i = item_get_list(); i; i = i->next){
+      if(i->pos.x == x && i->pos.y == y) goto no_luck;
+    }
+
+    if(is_next_to_door((point_t){.x=x, .y=y}, &r[random_room])) goto no_luck;
+
+    spawned_item->pos = (point_t){.x=x, .y=y};
+    break;
+    
+no_luck:
+    ++tries;
+    continue;
   }
 
   if(tries > 3){

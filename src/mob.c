@@ -366,7 +366,6 @@ void mob_update(mob_t *mob, input_code_t step_to)
       mob_show(*mob);
       attack(player);
       event_log_add("*the mob* cut you badly!");
-      if(!HAS_ARMOR(player))nidebug("Player armor nincs");
     }
   }
 }
