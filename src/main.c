@@ -18,6 +18,7 @@
 extern void event_log_add(const char *event);
 extern uint64_t event_get_entry_num(void);
 bool game_is_running = true;
+bool wait_till_full_health = false; /* TODO: make this mechanism prettier  */
 
 
 static void handle_ctrl_c(int unused)
@@ -53,7 +54,6 @@ int main(void)
   input_code_t input = NO_ARROW;
   bool objects_displayed= false;
   uint64_t rested_turns = 0;
-  bool wait_till_full_health = false;
 
   check_window_size();
   signal(SIGINT, handle_ctrl_c);

@@ -20,6 +20,7 @@ static mob_t *player = NULL;
 extern bool game_is_running;
 extern void event_log_add(const char *event);
 extern void draw(void);
+extern bool wait_till_full_health;
 
 #define UPPER_EDGE_OF_MAP (-1)
 #define LEFT_EDGE_OF_MAP  (-1)
@@ -365,6 +366,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
     else{
       mob_show(*mob);
       attack(player);
+      wait_till_full_health = false;
       event_log_add("*the mob* cut you badly!");
     }
   }
