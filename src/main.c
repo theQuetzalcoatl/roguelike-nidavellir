@@ -53,6 +53,7 @@ int main(void)
   input_code_t input = NO_ARROW;
   bool objects_displayed= false;
   uint64_t rested_turns = 0;
+  bool wait_till_full_health = false;
 
   check_window_size();
   signal(SIGINT, handle_ctrl_c);
@@ -85,7 +86,8 @@ int main(void)
   /* let the game begin... */
 
   while(game_is_running){
-    input = get_keypress();
+    if(wait_till_full_health == false) input = get_keypress();
+    else input = '.';
 
     if(objects_displayed== true){
       for (uint16_t row = 0; row < RUNIC_LINE_POS; ++row){
@@ -109,7 +111,11 @@ int main(void)
         if(rested_turns % 10 == 0 ){ /* NOTE: refactor */
           player->health += 5u;
           player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreasonably complicatedly */
+          if(player->health == PLAYER_MAX_HEALTH) wait_till_full_health = false;
         }
+        break;
+      case ':':
+        wait_till_full_health = true;
         break;
       case '?':
         display_to_player_window("hotkeys");

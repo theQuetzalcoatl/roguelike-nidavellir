@@ -14,11 +14,11 @@ function main()
   local copts='-funsigned-char';
   local warnings="-Wall -Wextra -Wmissing-include-dirs -Wdouble-promotion -Wignored-qualifiers -Wswitch-default -Wuninitialized";
   local additional_warnings="-Wconversion -fanalyzer"; 
-	local optimization='-O2';
 	local debug_lvl='-g0';
+  local optimization='-O2';
 
   if [[ ${debug} -eq 1 ]]; then
-    local debug_lvl="-g2";
+    debug_lvl="-g2";
     optimization="-O0";
     #local aux='-aux-info aux.txt';
   fi
