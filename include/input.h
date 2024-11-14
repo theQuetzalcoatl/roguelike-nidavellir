@@ -13,6 +13,7 @@
 #define STEP_DOWN ARROW_DOWN
 #define STEP_RIGHT ARROW_RIGHT
 #define STEP_LEFT ARROW_LEFT
+#define USER_INPUT (1U)
 
 typedef uint32_t input_code_t;
 

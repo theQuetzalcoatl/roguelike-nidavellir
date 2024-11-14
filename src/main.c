@@ -17,8 +17,8 @@
 
 extern void event_log_add(const char *event);
 extern uint64_t event_get_entry_num(void);
-bool game_is_running = true;
-bool wait_till_full_health = false; /* TODO: make this mechanism prettier  */
+bool g_game_is_running = true;
+bool g_input_source = USER_INPUT; /* TODO: make this mechanism prettier  */
 
 
 static void handle_ctrl_c(int unused)
@@ -85,11 +85,10 @@ int main(void)
 
   /* let the game begin... */
 
-  while(game_is_running){
-    if(wait_till_full_health == false) input = get_keypress();
-    else input = '.';
+  while(g_game_is_running){
+    input = (g_input_source == USER_INPUT) ? get_keypress() : '.';
 
-    if(objects_displayed== true){
+    if(objects_displayed== true){ /* TODO: delete this  */
       for (uint16_t row = 0; row < RUNIC_LINE_POS; ++row){
         for (uint16_t col = 0; col < TERMINAL_WIDTH - 2; ++col) term_putchar_xy(term_getchar_xy(col, row), col, row);
       }
@@ -104,18 +103,18 @@ int main(void)
       case ARROW_RIGHT:
         break;
       case 'Q':
-        game_is_running = false;
+        g_game_is_running = false;
         continue;
       case '.': 
         ++rested_turns;
         if(rested_turns % 10 == 0 ){ /* NOTE: refactor */
           player->health += 5u;
           player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreasonably complicatedly */
-          if(player->health == PLAYER_MAX_HEALTH) wait_till_full_health = false;
+          if(player->health == PLAYER_MAX_HEALTH) g_input_source = USER_INPUT;
         }
         break;
       case ':':
-        wait_till_full_health = true;
+        g_input_source = !USER_INPUT;
         break;
       case '?':
         display_to_player_window("hotkeys");

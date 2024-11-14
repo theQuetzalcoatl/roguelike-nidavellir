@@ -17,10 +17,10 @@ static void move_towards_last_seen_pos(mob_t *mob);
 static mob_t *head = NULL;
 static mob_t *player = NULL;
 
-extern bool game_is_running;
 extern void event_log_add(const char *event);
 extern void draw(void);
-extern bool wait_till_full_health;
+extern bool g_game_is_running;
+extern bool g_input_source;
 
 #define UPPER_EDGE_OF_MAP (-1)
 #define LEFT_EDGE_OF_MAP  (-1)
@@ -87,8 +87,7 @@ mob_t *mob_get_player(void) { return player; }
 
 
 static void attack(mob_t *attacked_mob)
-{
-  /* TODO: refactor hardcoded stuff */
+{ /* TODO: refactor hardcoded stuff */
   int8_t damage = CALC_RAND(20,0);
   item_t *armor = attacked_mob->gear.armor;
 
@@ -108,7 +107,7 @@ static void attack(mob_t *attacked_mob)
 
   if(attacked_mob->health <= 0){
     attacked_mob->health = 0;
-    if(attacked_mob == player) game_is_running = false;
+    if(attacked_mob == player) g_game_is_running = false;
     else remove_mob(attacked_mob);
   }
 }
@@ -366,7 +365,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
     else{
       mob_show(*mob);
       attack(player);
-      wait_till_full_health = false;
+      g_input_source = USER_INPUT;
       event_log_add("*the mob* cut you badly!");
     }
   }
