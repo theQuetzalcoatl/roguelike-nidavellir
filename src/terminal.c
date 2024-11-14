@@ -62,27 +62,17 @@ void term_move_cursor(const uint16_t x, const uint16_t y)
     }
 }
 
-void term_putchar(char c)
+void term_putchar_xy(const char c, const uint16_t x, const uint16_t y)
 {
+    term_move_cursor(x, y);
     fputc(c, stdout);
     win.content[win.cursor.y][win.cursor.x] = c;
-}
-
-char term_getchar(void)
-{
-    return win.content[win.cursor.y][win.cursor.x];
 }
 
 char term_getchar_xy(const uint16_t x, const uint16_t y)
 {
     term_move_cursor(x, y);
-    return term_getchar();
-}
-
-void term_putchar_xy(const char c, const uint16_t x, const uint16_t y)
-{
-    term_move_cursor(x, y);
-    term_putchar(c);
+    return win.content[win.cursor.y][win.cursor.x];
 }
 
 

@@ -18,9 +18,7 @@ typedef struct point_t
 extern void term_setup(void);
 extern void term_restore_original(void);
 extern void term_move_cursor(const uint16_t x, const uint16_t y);
-extern void term_putchar(char c);
 extern void term_putchar_xy(const char c, const uint16_t x, const uint16_t y);
-extern char term_getchar(void);
 extern char term_getchar_xy(const uint16_t x, const uint16_t y);
 extern  bool is_object_in_eyesight(const point_t obj1, const point_t obj2);
 
