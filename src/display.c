@@ -62,6 +62,7 @@ void display_to_player_window(const char * const option)
     printf("?  Prints this help\n");
     printf("Q  Quits the game\n");
     printf(".  Rest for one turn\n");
+    printf(":  Rest until you reach full health or take damage by an enemy\n");
     printf("E  Show event log\n");
     printf("i  Open your inventory for use\n");
     printf("d  Open your inventory for dropping\n");

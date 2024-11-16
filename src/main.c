@@ -88,11 +88,11 @@ int main(void)
   while(g_game_is_running){
     input = (g_input_source == USER_INPUT) ? get_keypress() : '.';
 
-    if(objects_displayed== true){ /* TODO: delete this  */
+    if(objects_displayed == true){ /* TODO: delete this  */
       for (uint16_t row = 0; row < RUNIC_LINE_POS; ++row){
         for (uint16_t col = 0; col < TERMINAL_WIDTH - 2; ++col) term_putchar_xy(term_getchar_xy(col, row), col, row);
       }
-      objects_displayed= false;
+      objects_displayed = false;
     }
 
     switch(input)
