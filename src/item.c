@@ -100,11 +100,31 @@ no_luck:
       }
       if(spawned_item->use == NULL)  spawned_item->use = rand()%100 > 50 ? health_up_by_10 : health_up_by_5;
       break;
+
     case I_armor:
-      spawned_item->description = strdup("Gambison");
       spawned_item->spec_attr = malloc(sizeof(armor_t)); /* TODO: free it in item_remove  */
-      *SPEC_ATTR(spawned_item, armor_t) = (armor_t){.type = GAMBISON, .durability = 10};
+      int type = CALC_RAND(ARMOR_TYPE_COUNT-1, CLOTH);
+      SPEC_ATTR(spawned_item, armor_t)->durability = type*10;
+      switch(type){
+        case CLOTH:
+          spawned_item->description = strdup("Cloth");
+          SPEC_ATTR(spawned_item, armor_t)->durability = 1; 
+          break;
+        case GAMBISON:
+          spawned_item->description = strdup("Gambison");
+          break;
+        case MAIL:
+          spawned_item->description = strdup("Mail");
+          break;
+        case PLATE:
+          spawned_item->description = strdup("Plate");
+          break;
+        default: 
+          spawned_item->description = strdup("FILL ARMOR DESC"); 
+      }
+      SPEC_ATTR(spawned_item, armor_t)->type = type;
       break;
+
     default: nidebug("Invalid item type!"); 
   }
 
@@ -114,7 +134,7 @@ no_luck:
 
 void item_free_items(void)
 {
-  item_t *item = NULL;
+  item_t *item;
   while(items_head){
     item = items_head->next;
     free(items_head);

@@ -44,7 +44,7 @@ static void check_window_size(void)
   }
 }
 
-	//   /usr/share/fonts/truetype/freefont/FreeMono.ttf
+//   /usr/share/fonts/truetype/freefont/FreeMono.ttf
 
 int main(void)
 {

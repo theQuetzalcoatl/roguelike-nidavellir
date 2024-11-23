@@ -88,13 +88,12 @@ mob_t *mob_get_player(void) { return player; }
 
 static void attack(mob_t *attacked_mob)
 { /* TODO: refactor hardcoded stuff */
-  int8_t damage = CALC_RAND(20,0);
+  int16_t damage = CALC_RAND(20,0);
   item_t *armor = attacked_mob->gear.armor;
 
   if(HAS_ARMOR(attacked_mob)){
-    if(SPEC_ATTR(armor, armor_t)->durability) damage -= 5*SPEC_ATTR(armor, armor_t)->type;
+    if(SPEC_ATTR(armor, armor_t)->durability) damage -= (damage*SPEC_ATTR(armor, armor_t)->type)/10;
   }
-  if(damage < 0) damage = 0;
   attacked_mob->health -= damage;
   if(HAS_ARMOR(attacked_mob) && SPEC_ATTR(armor, armor_t)->durability){
     --(SPEC_ATTR(armor, armor_t)->durability);
