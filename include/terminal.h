@@ -23,6 +23,6 @@ extern char term_getchar_xy(const uint16_t x, const uint16_t y);
 extern  bool is_object_in_eyesight(const point_t obj1, const point_t obj2);
 
 #define TERMINAL_HEIGHT (40u)
-#define TERMINAL_WIDTH (160u) 
+#define TERMINAL_WIDTH (120u) 
 
 #endif /* _TERMINAL_ */ 

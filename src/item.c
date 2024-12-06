@@ -9,6 +9,7 @@
 
 static void health_up_by_10(item_t *item);
 static void health_up_by_5(item_t *item);
+static void equip(item_t *item);
 
 static item_t *items_head = EMPTY;
 
@@ -77,6 +78,7 @@ no_luck:
       spawned_item->description = strdup("potion");
       spawned_item->spec_attr = malloc(sizeof(potion_t));
       char *color = NULL;
+
       switch(CALC_RAND(COLOR_COUNT-1, 0))
       {
         case RED: color = strdup("red");
@@ -92,12 +94,14 @@ no_luck:
         default: color = strdup("COLOR");
       }
       SPEC_ATTR(spawned_item, potion_t)->color = color;
+
       for(item_t *it = item_get_list(); it; it = it->next){
         if(it->type == I_potion && !strcmp(color, SPEC_ATTR(it, potion_t)->color)){
           spawned_item->use = it->use;
           break;
         }
       }
+
       if(spawned_item->use == NULL)  spawned_item->use = rand()%100 > 50 ? health_up_by_10 : health_up_by_5;
       break;
 
@@ -105,7 +109,9 @@ no_luck:
       spawned_item->spec_attr = malloc(sizeof(armor_t)); /* TODO: free it in item_remove  */
       int type = CALC_RAND(ARMOR_TYPE_COUNT-1, CLOTH);
       SPEC_ATTR(spawned_item, armor_t)->durability = type*10;
-      switch(type){
+
+      switch(type)
+      {
         case CLOTH:
           spawned_item->description = strdup("Cloth");
           SPEC_ATTR(spawned_item, armor_t)->durability = 1; 
@@ -123,6 +129,7 @@ no_luck:
           spawned_item->description = strdup("FILL ARMOR DESC"); 
       }
       SPEC_ATTR(spawned_item, armor_t)->type = type;
+      spawned_item->use = equip;
       break;
 
     default: nidebug("Invalid item type!"); 
@@ -204,4 +211,18 @@ static void health_up_by_5(item_t *item)
   player->health += 5u;
   player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly */
   item_destroy(item);
+}
+
+
+static void equip(item_t *item)
+{
+  if(item->type == I_armor){
+    for(uint8_t i = 0; i < INVENTORY_SIZE; ++i){ /* TODO: change iteration to somehow double pointer, item's use() does not support this yet, this for loop shold be temporary  */
+       if(item == mob_get_player()->inventory[i]){
+        item_t *tmp = item;
+        mob_get_player()->inventory[i] = mob_get_player()->gear.armor;
+        mob_get_player()->gear.armor = tmp;
+       }
+    }
+  }
 }

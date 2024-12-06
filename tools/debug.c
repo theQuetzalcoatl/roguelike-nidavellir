@@ -62,3 +62,17 @@ void debug_display_object_stats(const room_t *r, const item_t *i, const mob_t *m
     printf("M%i:%iM", m->pos.x, m->pos.y);
   }
 }
+
+
+void debug_print_item(item_t const * const i, char *helper)
+{
+  nidebug("%s:", helper);
+  nidebug("\n\tuse:%p\n\tdesc:%s\n\tnext:%p\n\tpos:%d;%d\n\ttype:%d\n\tstandson:%c", i->use, i->description, i->next, i->pos.x, i->pos.y,
+          i->type, i->stands_on);
+  switch(i->type){
+    case I_armor:
+      nidebug("\n\t\ttype:%d\n\t\tdurability:%d", SPEC_ATTR(i, armor_t)->type, SPEC_ATTR(i, armor_t)->durability);
+      break;
+    default: nidebug("INVALID ITEM TYPE");
+  }
+}

@@ -71,7 +71,7 @@ int main(void)
 
   int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN, ID_DRAUGR};
   for(uint32_t i = 0; i < ELEMENT_COUNT(summoned_mobs); ++i) mob_summon(summoned_mobs[i]); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
-  for(int i = 20; i; --i) item_spawn(I_potion);
+  for(int i = 20; i; --i) item_spawn(CALC_RAND(ITEMS_COUNT-1, I_potion));
 
   player = mob_get_player();
   display_runic_lines();

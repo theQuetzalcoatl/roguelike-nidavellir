@@ -84,7 +84,7 @@ void display_to_player_window(const char * const option)
     printf("Press up/down to scroll, or any other key to face your fate!");
 
     while(1){
-      for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) { /* NOTE: extract this and the reverse below to its own function(?) used two times */ 
+      for(uint8_t row = 0; row < RUNIC_LINE_POS; ++row) { /* TODO: extract this and the reverse below to its own function(?) used two times */ 
         term_move_cursor(0, row);
         for(uint8_t col = 0; col < TERMINAL_WIDTH-2; ++col) printf(" ");
       }

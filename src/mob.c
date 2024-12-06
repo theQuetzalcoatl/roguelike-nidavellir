@@ -120,8 +120,13 @@ static void place_into_inventory(mob_t *m, item_t *i)
 			m->inventory[slot] = i;
 			item_hide(*i);
 			i->stands_on = EMPTY_SPACE; /* (0;0) is definitely empty space */ 
-			i->pos.x = i->pos.y = 0; /* NOTE: change it to a define UNKONW place or something */
-      snprintf(event_string, 50, "You picked up a %s %s", SPEC_ATTR(i, potion_t)->color, i->description);
+			i->pos.x = i->pos.y = 0; /* NOTE: change it to a defined UNKONW place or something */
+      if(i->type == I_potion)
+        snprintf(event_string, 50, "You picked up a %s %s", SPEC_ATTR(i, potion_t)->color, i->description);
+      else if(i->type == I_armor){
+        uint8_t max_dur = (SPEC_ATTR(i, armor_t)->type == CLOTH) ? 1 : SPEC_ATTR(i, armor_t)->type*10; /* TODO: tie this to the original max durability calc somehow  */
+        snprintf(event_string, 50, "You picked up a %s armor (%d/%d)", i->description, SPEC_ATTR(i, armor_t)->durability,max_dur); /* TODO: make a common method to get the maximum armor durability */
+      }
 			event_log_add(event_string);
 			return;
 		}
@@ -142,7 +147,14 @@ void mob_open_player_inventory(const uint8_t action)
 	mob_t *p = mob_get_player();
 
 	for(uint8_t slot = 0; slot < INVENTORY_SIZE; ++slot){
-		if(p->inventory[slot] != INV_EMPTY) printf(" %d %s %s\n", slot, SPEC_ATTR(p->inventory[slot], potion_t)->color, p->inventory[slot]->description); /* NOTE: this is temporary */
+		if(p->inventory[slot] != INV_EMPTY){
+      if(p->inventory[slot]->type == I_potion)
+        printf(" %d %s %s\n", slot, SPEC_ATTR(p->inventory[slot], potion_t)->color, p->inventory[slot]->description); /* NOTE: this is temporary */
+      else if(p->inventory[slot]->type == I_armor){
+        uint8_t max_dur = (SPEC_ATTR(p->inventory[slot], armor_t)->type == CLOTH) ? 1 : SPEC_ATTR(p->inventory[slot], armor_t)->type*10; /* TODO: tie this to the original max durability calc somehow  */
+        printf(" %d %s armor (%d/%d)\n", slot, p->inventory[slot]->description, SPEC_ATTR(p->inventory[slot], armor_t)->durability, max_dur);
+      }
+    }
 		else printf(" x empty\n");
 	}
 
@@ -154,17 +166,22 @@ void mob_open_player_inventory(const uint8_t action)
   if(requested_slot < INVENTORY_SIZE){
 		if(p->inventory[requested_slot] != INV_EMPTY){
       if(action == USE_ITEM){
-        p->inventory[requested_slot]->use(p->inventory[requested_slot]);
-        p->inventory[requested_slot] = INV_EMPTY;
-        if(p->stands_on == ITEM_SYMBOL){
-          for(item_t *i = item_get_list(); i; i = i->next){
-            if(i->pos.x == p->pos.x && i->pos.y == p->pos.y){
-              p->stands_on = i->stands_on;
-              place_into_inventory(p, i);
-              break;
+          p->inventory[requested_slot]->use((p->inventory[requested_slot]));
+
+        if(p->inventory[requested_slot]->type == I_potion){
+          p->inventory[requested_slot] = INV_EMPTY;
+
+          if(p->stands_on == ITEM_SYMBOL){
+            for(item_t *i = item_get_list(); i; i = i->next){
+              if(i->pos.x == p->pos.x && i->pos.y == p->pos.y){
+                p->stands_on = i->stands_on;
+                place_into_inventory(p, i);
+                break;
+              }
             }
           }
         }
+        else if(p->inventory[requested_slot]->type == I_armor){} /* do nothing, armors have been swapped  */;
       }
       else if(action == DROP_ITEM && p->stands_on == ROOM_FLOOR){
         item_drop(p->inventory[requested_slot], p);
