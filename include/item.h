@@ -24,7 +24,7 @@ struct mob_t; /* forward declaring mob to be able to use it */
 
 typedef struct item_t
 {
-  void (*use)(struct item_t *item);
+  void (*use)(struct item_t **item);
   char *description;
   struct item_t *next;
   void *spec_attr;

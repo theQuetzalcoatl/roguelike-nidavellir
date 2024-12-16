@@ -47,6 +47,10 @@ static void remove_mob(mob_t *mob)
     search_mob->next = mob->next;
   }
   term_putchar_xy(mob->stands_on, mob->pos.x, mob->pos.y);
+  if(HAS_ARMOR(mob)) item_destroy(mob->gear.armor); /* TODO: make the armor drop */
+  for(int i = 0; i < INVENTORY_SIZE; ++i){
+    if(mob->inventory[i] != INV_EMPTY) item_destroy(mob->inventory[i]);
+  }
   free(mob);
 }
 
@@ -166,22 +170,17 @@ void mob_open_player_inventory(const uint8_t action)
   if(requested_slot < INVENTORY_SIZE){
 		if(p->inventory[requested_slot] != INV_EMPTY){
       if(action == USE_ITEM){
-          p->inventory[requested_slot]->use((p->inventory[requested_slot]));
+        p->inventory[requested_slot]->use(&(p->inventory[requested_slot]));
 
-        if(p->inventory[requested_slot]->type == I_potion){
-          p->inventory[requested_slot] = INV_EMPTY;
-
-          if(p->stands_on == ITEM_SYMBOL){
-            for(item_t *i = item_get_list(); i; i = i->next){
-              if(i->pos.x == p->pos.x && i->pos.y == p->pos.y){
-                p->stands_on = i->stands_on;
-                place_into_inventory(p, i);
-                break;
-              }
+        if(p->stands_on == ITEM_SYMBOL){
+          for(item_t *i = item_get_list(); i; i = i->next){
+            if(i->pos.x == p->pos.x && i->pos.y == p->pos.y){
+              p->stands_on = i->stands_on;
+              place_into_inventory(p, i);
+              break;
             }
           }
         }
-        else if(p->inventory[requested_slot]->type == I_armor){} /* do nothing, armors have been swapped  */;
       }
       else if(action == DROP_ITEM && p->stands_on == ROOM_FLOOR){
         item_drop(p->inventory[requested_slot], p);
@@ -456,7 +455,7 @@ static void summon_goblin(mob_t *goblin)
 {
   *goblin = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_GOBLIN, .health=15, .level=1, .next=NULL, .last_seen=(point_t){.x=0, .y=0},
                     .gear.lhand = NULL, .gear.rhand = NULL, .gear.armor = item_spawn(I_armor) };
-  goblin->gear.armor->pos.x = goblin->gear.armor->pos.y = 0;
+  goblin->gear.armor->pos.x = goblin->gear.armor->pos.y = 0; /* TODO: make it so that this does not have to be set here */
 }
 
 static void summon_draugr(mob_t *draugr)

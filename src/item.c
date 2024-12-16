@@ -7,9 +7,9 @@
 
 #define EMPTY NULL
 
-static void health_up_by_10(item_t *item);
-static void health_up_by_5(item_t *item);
-static void equip(item_t *item);
+static void health_up_by_10(item_t **item);
+static void health_up_by_5(item_t **item);
+static void equip(item_t **item);
 
 static item_t *items_head = EMPTY;
 
@@ -196,33 +196,29 @@ void item_drop(item_t *i, struct mob_t *m)
  ** ITEM ACTIONS
  ***************************/
 
-static void health_up_by_10(item_t *item)
+static void health_up_by_10(item_t **item)
 {
   mob_t *player =  mob_get_player();
   player->health += 10u;
   player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly */
-  item_destroy(item);
+  item_destroy(*item);
+  *item = NULL;
 }
 
 
-static void health_up_by_5(item_t *item)
+static void health_up_by_5(item_t **item)
 {
   mob_t *player =  mob_get_player();
   player->health += 5u;
   player->health -= (player->health*(player->health/100) % PLAYER_MAX_HEALTH); /* capping it to max unreaosonably complicatedly */
-  item_destroy(item);
+  item_destroy(*item);
+  *item = NULL;
 }
 
 
-static void equip(item_t *item)
+static void equip(item_t **item)
 {
-  if(item->type == I_armor){
-    for(uint8_t i = 0; i < INVENTORY_SIZE; ++i){ /* TODO: change iteration to somehow double pointer, item's use() does not support this yet, this for loop shold be temporary  */
-       if(item == mob_get_player()->inventory[i]){
-        item_t *tmp = item;
-        mob_get_player()->inventory[i] = mob_get_player()->gear.armor;
-        mob_get_player()->gear.armor = tmp;
-       }
-    }
-  }
+  item_t *tmp = mob_get_player()->gear.armor;
+  mob_get_player()->gear.armor = *item;
+  *item = tmp;
 }
