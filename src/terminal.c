@@ -34,7 +34,7 @@ void term_setup(void)
     s.c_cflag |= CLOCAL;
     s.c_lflag &= ~(ECHO | ICANON);
     //s.c_cc[VTIME] = 0; s.c_cc[VMIN] = 1; IMPLICIT 
-    printf("\x1B[?25l"); /* make cursor invisible */
+    printf(ESC_SEQ "[?25l"); /* make cursor invisible */
     system("temp_PS1=${PS1}; PS1=\"\"; clear;");
 
     for (uint16_t row = 0; row < TERMINAL_HEIGHT; ++row){
@@ -50,13 +50,13 @@ void term_restore_original(void)
     tcsetattr(STDOUT_FILENO, TCSANOW, &original_term_settings);
     term_move_cursor(0,0);
     system("PS1=$temp_PS1; clear;");
-    printf("\x1B[?25h"); /* make cursor visible */
+    printf(ESC_SEQ "[?25h"); /* make cursor visible */
 }
 
 void term_move_cursor(const uint16_t x, const uint16_t y)
 {
     if(x < TERMINAL_WIDTH && y < TERMINAL_HEIGHT){
-        printf("\x1B[%u;%uH", y + 1, x + 1); /* terminal is 1 based, not 0 */
+        printf(ESC_SEQ "[%u;%uH", y + 1, x + 1); /* terminal is 1 based, not 0 */
         win.cursor.x = x;
         win.cursor.y = y;
     }

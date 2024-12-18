@@ -159,7 +159,7 @@ void mob_open_player_inventory(const uint8_t action)
         printf(" %d %s armor (%d/%d)\n", slot, p->inventory[slot]->description, SPEC_ATTR(p->inventory[slot], armor_t)->durability, max_dur);
       }
     }
-		else printf(" x empty\n");
+		else printf(SET_FG_COLOR(WHITE_TEXT) " x empty\n" SET_FG_COLOR(RESET_TEXT));
 	}
 
   term_move_cursor(0, RUNIC_LINE_POS - 1);
