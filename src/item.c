@@ -175,7 +175,9 @@ void item_destroy(item_t *i)
 
 void item_show(item_t it)
 {
+  SET_FG_COLOR(YELLOW_TEXT);
   term_putchar_xy(ITEM_SYMBOL, it.pos.x, it.pos.y);
+  SET_FG_COLOR(DEFAULT_TEXT);
 }
 
 void item_hide(item_t it)

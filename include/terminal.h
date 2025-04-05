@@ -26,10 +26,9 @@ extern bool is_object_in_eyesight(const point_t obj1, const point_t obj2);
 #define TERMINAL_WIDTH (120u) 
 
 #define STRINGIFY(a) #a
-#define EXPAND(a) STRINGIFY(a)
 
 #define ESC_SEQ "\x1b"
-#define SET_FG_COLOR(color_code) ESC_SEQ "[2;" EXPAND(color_code) "m"
+#define SET_FG_COLOR(color_code) printf(ESC_SEQ "[2;" STRINGIFY(color_code) "m")
 
 /* 
   This cannot be an enum otherwise the compiler wont expand the name.
@@ -37,8 +36,8 @@ extern bool is_object_in_eyesight(const point_t obj1, const point_t obj2);
 */
 #define  RESET_TEXT 0
 #define  BLACK_TEXT 30
-#define  RED_TEXT 32
-#define  GREEN_TEXT 31
+#define  RED_TEXT 31
+#define  GREEN_TEXT 32
 #define  YELLOW_TEXT 33
 #define  BLUE_TEXT 34
 #define  MAGENTA_TEXT 35

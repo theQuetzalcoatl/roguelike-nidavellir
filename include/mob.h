@@ -39,12 +39,11 @@ typedef struct mob_t
 #define PLAYER_MAX_HEALTH (100u)
 
 extern void mob_move_by(mob_t *creature, int16_t dx, int16_t dy);
-extern void mob_move_to(mob_t *creature, int16_t x, int16_t y);
 extern void mob_free_mobs(void);
 extern mob_t *mob_summon(const mob_id_t id);
 extern mob_t *mob_get_mobs(void);
 extern void mob_update(mob_t *mob, input_code_t step_to);
-extern void mob_show(mob_t mob);
+extern void mob_show(mob_t *mob);
 extern void mob_hide(mob_t mob);
 extern void mob_handle_movement(mob_t *mob, input_code_t step_to);
 extern mob_t *mob_get_player(void);

@@ -55,16 +55,6 @@ static void remove_mob(mob_t *mob)
 }
 
 
-void mob_move_to(mob_t *mob, int16_t x, int16_t y)
-{
-  if(x > LEFT_EDGE_OF_MAP && y > UPPER_EDGE_OF_MAP){
-    term_putchar_xy(mob->stands_on, mob->pos.x, mob->pos.y);
-    mob->stands_on = term_getchar_xy(x, y);
-    mob->pos.x = x;
-    mob->pos.y = y;
-  }
-}
-
 void mob_move_by(mob_t *mob, int16_t dx, int16_t dy)
 {
   if((dx + mob->pos.x) > LEFT_EDGE_OF_MAP && (dy + mob->pos.y) > UPPER_EDGE_OF_MAP){
@@ -75,15 +65,21 @@ void mob_move_by(mob_t *mob, int16_t dx, int16_t dy)
   }
 }
 
-void mob_show(mob_t mob)
+
+void mob_show(mob_t *mob)
 {
-  term_putchar_xy(mob.symbol, mob.pos.x, mob.pos.y);
+  if(mob == player) SET_FG_COLOR(BLUE_TEXT);
+  else SET_FG_COLOR(RED_TEXT);
+  term_putchar_xy(mob->symbol, mob->pos.x, mob->pos.y);
+  SET_FG_COLOR(RESET_TEXT);
 }
+
 
 void mob_hide(mob_t mob)
 {
   term_putchar_xy(mob.stands_on, mob.pos.x, mob.pos.y);
 }
+
 
 mob_t *mob_get_mobs(void) {  return head; }
 
@@ -159,7 +155,11 @@ void mob_open_player_inventory(const uint8_t action)
         printf(" %d %s armor (%d/%d)\n", slot, p->inventory[slot]->description, SPEC_ATTR(p->inventory[slot], armor_t)->durability, max_dur);
       }
     }
-		else printf(SET_FG_COLOR(WHITE_TEXT) " x empty\n" SET_FG_COLOR(RESET_TEXT));
+		else{
+      SET_FG_COLOR(WHITE_TEXT);
+      printf( " x empty\n" );
+      SET_FG_COLOR(RESET_TEXT);
+    }
 	}
 
   term_move_cursor(0, RUNIC_LINE_POS - 1);
@@ -359,7 +359,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
 {
   if(mob == player){
     mob_handle_movement(mob, step_to);
-    mob_show(*mob);
+    mob_show(mob);
   }
   else{
     int32_t dx = mob->pos.x - player->pos.x;
@@ -369,7 +369,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
       if(is_object_in_eyesight(mob->pos, player->pos)){
         if(abs(dx) > abs(dy)) (dx > 0) ? mob_handle_movement(mob, STEP_LEFT) : mob_handle_movement(mob, STEP_RIGHT);
         else (dy > 0) ? mob_handle_movement(mob, STEP_UP) : mob_handle_movement(mob, STEP_DOWN);
-        mob_show(*mob);
+        mob_show(mob);
         mob->last_seen = player->pos;
       }
       else{
@@ -378,7 +378,7 @@ void mob_update(mob_t *mob, input_code_t step_to)
       }
     }
     else{
-      mob_show(*mob);
+      mob_show(mob);
       attack(player);
       g_input_source = USER_INPUT;
       event_log_add("*the mob* cut you badly!");

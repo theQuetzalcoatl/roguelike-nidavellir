@@ -71,13 +71,17 @@ int main(void)
 
   int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN, ID_DRAUGR};
   for(uint32_t i = 0; i < ELEMENT_COUNT(summoned_mobs); ++i) mob_summon(summoned_mobs[i]); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
-  for(int i = 20; i; --i) item_spawn(CALC_RAND(ITEMS_COUNT-1, I_potion));
+  for(int i = 20; i; --i){
+    uint32_t oo = CALC_RAND(10000, 0);
+    int type = (oo > 8000) ? I_armor : I_potion;
+    item_spawn(type);
+  }
 
   player = mob_get_player();
   display_runic_lines();
   display_player_stats(*player, turns);
 
-  mob_show(*player);
+  mob_show(player);
   for(item_t *it = item_get_list(); it; it = it->next) is_object_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
   draw();
@@ -137,7 +141,7 @@ int main(void)
 
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, input);
     for(item_t *it = item_get_list(); it; it = it->next) is_object_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
-		mob_show(*player); /* NOTE: needs to be done, when the player is out of inv. space and approaches an item, the drawing sequence
+		mob_show(player); /* NOTE: needs to be done, when the player is out of inv. space and approaches an item, the drawing sequence
 													is not the best, resulting in the player disappearing. it temporarily fixes it */
 
     display_player_stats(*player, turns);
