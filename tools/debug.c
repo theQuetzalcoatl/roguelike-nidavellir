@@ -61,6 +61,10 @@ void debug_display_object_stats(const room_t *r, const item_t *i, const mob_t *m
     term_move_cursor(m->pos.x, m->pos.y - 1);
     printf("M%i:%iM", m->pos.x, m->pos.y);
   }
+
+  point_t sc_pos = room_get_staircase_pos();
+  term_move_cursor(sc_pos.x, sc_pos.y - 1);
+  printf("S%i:%iS", sc_pos.x, sc_pos.y);
 }
 
 

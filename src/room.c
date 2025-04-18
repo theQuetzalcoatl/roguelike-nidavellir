@@ -30,6 +30,8 @@ static room_t *rooms = NULL;
 static uint8_t corridor_count = 0;
 static corridor_t *corridors = NULL;
 
+static point_t staircase = {0};
+static bool staircase_discovered = false; /* TODO: maybe make it cleaner? */
 
 typedef struct
 {
@@ -43,6 +45,33 @@ room_t *room_get_rooms(void) { return rooms; }
 uint8_t room_get_corridor_count(void) { return corridor_count; }
 corridor_t *room_get_corridors(void) { return corridors; }
 
+point_t room_get_staircase_pos(void) { return staircase; }
+
+void room_place_staircase(void)
+{
+  int r = CALC_RAND(room_count-1, 1);
+
+  staircase.x = rooms[r].pos.x + 2 + CALC_RAND(rooms[r].width - 4, 0);
+  staircase.y = rooms[r].pos.y + 2 + CALC_RAND(rooms[r].height - 4, 0); /* NOTE: it can implicitly hide an item or - god forbid - a mob */
+
+  staircase_discovered = false;
+}
+
+
+void room_show_staircase(void)
+{
+  staircase_discovered = true;
+  SET_FG_COLOR(CYAN_TEXT);
+  term_putchar_xy(STAIRS, staircase.x, staircase.y);
+  SET_FG_COLOR(DEFAULT_TEXT);
+}
+
+void room_hide_staircase(void)
+{
+
+  if(staircase_discovered) room_show_staircase(); /* NOTE: hardcoded stands on is risky, but I like it */
+  else term_putchar_xy(EMPTY_SPACE, staircase.x, staircase.y); /* NOTE: hardcoded stands on is risky, but I like it */
+}
 
 corridor_t *room_find_corridor_with_player(const point_t player)
 { /* NOTE: refactor!!! */
@@ -96,6 +125,12 @@ void room_draw_corridor_piece(const corridor_t *c, const point_t player)
       }
     }
   }
+}
+
+void room_reset_corridors(void) /* TODO: this is dirty clean it up - this could be at the start of room_create_rooms */
+{
+  corridors = NULL;
+  corridor_count = 0;
 }
 
 static void make_corridor(const point_t starting, const point_t ending, const uint8_t initial_orientation)

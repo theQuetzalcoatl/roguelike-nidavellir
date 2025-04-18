@@ -45,12 +45,18 @@ extern uint8_t room_get_num_of_corridors(void);
 extern corridor_t *room_get_corridors(void);
 extern corridor_t *room_find_corridor_with_player(const point_t player);
 extern void room_draw_corridor_piece(const corridor_t *c, const point_t player);
+extern void room_place_staircase(void);
+extern point_t room_get_staircase_pos(void); 
+extern void room_show_staircase(void);
+extern void room_hide_staircase(void);
+extern void room_reset_corridors(void);
 
 #define VERTICAL_WALL   '|'
 #define HORIZONTAL_WALL '='
 #define ROOM_FLOOR      '.'
 #define ROOM_DOOR       '/'
 #define EMPTY_SPACE     ' '
+#define STAIRS          '%'
 #define STARTING        (0u)
 
 #define ALREADY_DRAWN (1u)

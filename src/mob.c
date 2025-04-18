@@ -8,7 +8,7 @@
 #include "item.h"
 #include "display.h"
 
-static void summon_player(mob_t *player);
+static bool summon_player(mob_t *player);
 static void summon_goblin(mob_t *goblin);
 static void summon_draugr(mob_t *draugr);
 static void add_to_list(mob_t *mob);
@@ -18,6 +18,7 @@ static mob_t *head = NULL;
 static mob_t *player = NULL;
 
 extern void event_log_add(const char *event);
+extern void generate_world_objects(void);
 extern void draw(void);
 extern bool g_game_is_running;
 extern bool g_input_source;
@@ -118,9 +119,9 @@ static void place_into_inventory(mob_t *m, item_t *i)
 	for(uint8_t slot = 0; slot < INVENTORY_SIZE; ++slot){
 		if(m->inventory[slot] == INV_EMPTY){
 			m->inventory[slot] = i;
+      item_remove_from_list(i);
 			item_hide(*i);
-			i->stands_on = EMPTY_SPACE; /* (0;0) is definitely empty space */ 
-			i->pos.x = i->pos.y = 0; /* NOTE: change it to a defined UNKONW place or something */
+
       if(i->type == I_potion)
         snprintf(event_string, 50, "You picked up a %s %s", SPEC_ATTR(i, potion_t)->color, i->description);
       else if(i->type == I_armor){
@@ -295,6 +296,23 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
       }
       break;
 
+    case STAIRS:
+      if(mob == player){
+          for(mob_t *m = head->next; m;){ /* removing every mob except the player */
+            mob_t *mm = m->next;
+            remove_mob(m);
+            m = mm;
+          }
+          item_free_items();
+          free(room_get_rooms());
+          free(room_get_corridors()); /* TODO: this sequence kind of occurs at the end of the main function, make this into a function */
+          room_reset_corridors();
+          generate_world_objects();
+          display_runic_lines();
+          display_recent_events(); 
+      }
+      break;
+
     default:
       nidebug("Unknown object ahead:[%c] in %s:%d", obj_ahead, __FILE__, __LINE__);
   }
@@ -309,17 +327,16 @@ void mob_handle_movement(mob_t *mob, input_code_t step_to)
 
 mob_t *mob_summon(const mob_id_t id)
 {
+  bool first_summon = true;
+
   mob_t *summoned_creature = malloc(sizeof(mob_t));
-  if(summoned_creature == NULL){
-    nidebug("Could not summon creature in %s:%d", __FILE__, __LINE__);
-    exit(1);
-  }
+  if(summoned_creature == NULL) exit(1);
 
   switch(id)
   {
     case ID_PLAYER:
-      player = summoned_creature;
-      summon_player(summoned_creature);
+      first_summon = summon_player(summoned_creature);
+      if(first_summon) player = summoned_creature;
       break;
     case ID_GOBLIN:
       summon_goblin(summoned_creature);
@@ -334,13 +351,12 @@ mob_t *mob_summon(const mob_id_t id)
       return NULL;
   }
 
-  if(summoned_creature != NULL && head) add_to_list(summoned_creature);
+  if(id == ID_PLAYER && !first_summon) free(summoned_creature);
   else{
-    head = summoned_creature;
-    head->next = NULL;
+    if(head) add_to_list(summoned_creature);
+    else head = summoned_creature;
+    memset(&summoned_creature->inventory, 0, INVENTORY_WIDTH*INVENTORY_HEIGHT*sizeof(summoned_creature->inventory[0]));
   }
-
-	memset(&summoned_creature->inventory, 0, INVENTORY_WIDTH*INVENTORY_HEIGHT*sizeof(summoned_creature->inventory[0]));
 
   return summoned_creature;
 }
@@ -349,7 +365,7 @@ mob_t *mob_summon(const mob_id_t id)
 static void add_to_list(mob_t *mob)
 {
   mob_t *mobs = mob_get_mobs();
-  for(; mobs->next; mobs = mobs->next);
+  for(; mobs->next; mobs = mobs->next);/* TODO: make it while */
   mobs->next = mob;
   mob->next = NULL;
 }
@@ -434,20 +450,26 @@ found_place:
 
     /* -------- MOB SUMMONING -------- */
 
-static void summon_player(mob_t *player)
+static bool summon_player(mob_t *_player)
 {
   static bool summoned = false;
   room_t *rooms = room_get_rooms();
   if(summoned == false){
-    *player = (mob_t){.pos.x=rooms[STARTING].pos.x+1, .pos.y=rooms[STARTING].pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health=100, .level=1, .next=NULL,
+    *_player = (mob_t){.pos.x=rooms[STARTING].pos.x+1, .pos.y=rooms[STARTING].pos.y+1, .stands_on=ROOM_FLOOR, .symbol=ID_PLAYER, .health=100, .level=1, .next=NULL,
                       .gear.lhand = NULL, .gear.rhand = NULL, .gear.armor = item_spawn(I_armor) };
-    player->gear.armor->pos.x = player->gear.armor->pos.y = 0;
+    item_remove_from_list(_player->gear.armor); /* TODO: make item spawn not add the spawned item to the list */
+    _player->gear.armor->pos.x = _player->gear.armor->pos.y = 0; /* TODO: delete this if this is not in the available item list */
     summoned = true;
+    return true;
   }
   else{
+    _player = mob_get_mobs();
+    nidebug("room pos: [%d:%d]", rooms[STARTING].pos.x, rooms[STARTING].pos.y);
+    _player->pos = (point_t){.x = rooms[STARTING].pos.x+1, .y = rooms[STARTING].pos.y+1};
+    nidebug("player pos: [%d:%d]", _player->pos.x, _player->pos.y);
+    _player->stands_on = ROOM_FLOOR;
     nidebug("Player could not be summoned after it was already\n");
-    free(player);
-    player = NULL;
+    return false; /* TODO: make it more descriptive */
   }
 }
 
@@ -455,6 +477,7 @@ static void summon_goblin(mob_t *goblin)
 {
   *goblin = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_GOBLIN, .health=15, .level=1, .next=NULL, .last_seen=(point_t){.x=0, .y=0},
                     .gear.lhand = NULL, .gear.rhand = NULL, .gear.armor = item_spawn(I_armor) };
+  item_remove_from_list(goblin->gear.armor);
   goblin->gear.armor->pos.x = goblin->gear.armor->pos.y = 0; /* TODO: make it so that this does not have to be set here */
 }
 
@@ -462,5 +485,6 @@ static void summon_draugr(mob_t *draugr)
 {
   *draugr = (mob_t){.pos=get_random_pos(), .stands_on=EMPTY_SPACE, .symbol=ID_DRAUGR, .health=20, .level=10, .next=NULL, .last_seen=(point_t){.x=0, .y=0},
                     .gear.lhand = NULL, .gear.rhand = NULL, .gear.armor = item_spawn(I_armor) };
+  item_remove_from_list(draugr->gear.armor);
   draugr->gear.armor->pos.x = draugr->gear.armor->pos.y = 0;
 }

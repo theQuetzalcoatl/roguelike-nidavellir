@@ -155,7 +155,7 @@ item_t *item_get_list(void)
   return items_head;
 }
 
-void item_destroy(item_t *i)
+void item_remove_from_list(item_t *i)
 {
   item_t *search_it = items_head;
 
@@ -164,9 +164,12 @@ void item_destroy(item_t *i)
     while(search_it->next != i) search_it = search_it->next;
     search_it->next = i->next;
   }
-  item_hide(*i);
+}
+
+void item_destroy(item_t *i)
+{
   if(i->type == I_potion) free(SPEC_ATTR(i, potion_t)->color);
-  else if(i->type == I_armor) {/* Notinh to do yet */}
+  else if(i->type == I_armor) {/* TODO: free armor */}
   free(i->spec_attr);
   free(i->description);
   free(i);
@@ -191,6 +194,8 @@ void item_drop(item_t *i, struct mob_t *m)
   i->stands_on = m->stands_on;
   m->stands_on = ITEM_SYMBOL;
   i->pos = m->pos;
+  i->next = items_head;
+  items_head = i;
 }
 
 

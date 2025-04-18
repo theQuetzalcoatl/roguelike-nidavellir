@@ -46,6 +46,29 @@ static void check_window_size(void)
 
 //   /usr/share/fonts/truetype/freefont/FreeMono.ttf
 
+
+void generate_world_objects(void)
+{
+  for (uint16_t row = 0; row < TERMINAL_HEIGHT; ++row){
+    for (uint16_t col = 0; col < TERMINAL_WIDTH; ++col) term_putchar_xy(EMPTY_SPACE, col, row);
+  }
+
+  room_t *r = room_create_rooms();
+  room_draw(r[STARTING]); 
+
+  room_place_staircase();
+
+  int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN, ID_DRAUGR};
+  for(uint32_t i = 0; i < ELEMENT_COUNT(summoned_mobs); ++i) mob_summon(summoned_mobs[i]); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
+  for(int it = 20; it; --it){
+    uint32_t oo = CALC_RAND(10000, 0);
+    int type = (oo > 8000) ? I_armor : I_potion;
+    item_spawn(type);
+  }
+
+}
+
+
 int main(void)
 {
   mob_t *player = NULL;
@@ -66,21 +89,13 @@ int main(void)
   for(uint32_t i = 0; i < ELEMENT_COUNT(exit_funcs); ++i) atexit(exit_funcs[i]);
 
   cutscene_intro();
-  r = room_create_rooms();
-  room_draw(r[STARTING]);
-
-  int summoned_mobs[] = {ID_PLAYER, ID_DRAUGR, ID_DRAUGR, ID_GOBLIN, ID_GOBLIN, ID_DRAUGR};
-  for(uint32_t i = 0; i < ELEMENT_COUNT(summoned_mobs); ++i) mob_summon(summoned_mobs[i]); /* player should be summoned first to be updated first, otherwise some mobs will be before him, and they see him at a previous point in time */
-  for(int i = 20; i; --i){
-    uint32_t oo = CALC_RAND(10000, 0);
-    int type = (oo > 8000) ? I_armor : I_potion;
-    item_spawn(type);
-  }
+  generate_world_objects();
 
   player = mob_get_player();
+
+  /* show stuff */
   display_runic_lines();
   display_player_stats(*player, turns);
-
   mob_show(player);
   for(item_t *it = item_get_list(); it; it = it->next) is_object_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
 
@@ -141,6 +156,7 @@ int main(void)
 
     for(mob_t *mob = mob_get_mobs(); mob; mob = mob->next) mob_update(mob, input);
     for(item_t *it = item_get_list(); it; it = it->next) is_object_in_eyesight(it->pos, player->pos) ? item_show(*it) : item_hide(*it);
+    is_object_in_eyesight(room_get_staircase_pos(), player->pos) ? room_show_staircase() : room_hide_staircase();
 		mob_show(player); /* NOTE: needs to be done, when the player is out of inv. space and approaches an item, the drawing sequence
 													is not the best, resulting in the player disappearing. it temporarily fixes it */
 
@@ -158,7 +174,6 @@ int main(void)
   if(!player->health) cutscene_dead();
   free(r);
   free(room_get_corridors());
-  /* NOTE: free mobs as well  */
 
   return 0;
 }

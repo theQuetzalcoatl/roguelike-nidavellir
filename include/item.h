@@ -75,5 +75,6 @@ extern void item_show(item_t it);
 extern void item_free_items(void);
 extern void item_drop(item_t *i, struct mob_t *m);
 extern void item_destroy(item_t *i);
+extern void item_remove_from_list(item_t *i);
 
 #endif /* _ITEM_H */
